@@ -1,0 +1,899 @@
+gui:
+  title: "&0源质锻造"
+
+debug:
+  combat: false
+
+forge:
+  guarantee-material-affix: true
+
+score:
+  base-per-tier: 100.0
+  min-score: 1
+  price:
+    multiplier-base: 0.5
+    score-divisor: 250.0
+    min-price: 1.0
+  combat-weights:
+    default: 5.0
+    damage: 10.0
+    physical_damage: 10.0
+    magic_damage: 10.0
+    element_damage: 10.0
+    true_damage: 18.0
+    pierce: 15.0
+    crit_chance: 250.0
+    crit_damage: 90.0
+    poison: 12.0
+    burn: 12.0
+    slow: 12.0
+    physical_resistance: 350.0
+    magic_resistance: 350.0
+    fire_resistance: 4.0
+    ice_resistance: 4.0
+    lightning_resistance: 4.0
+    dodge_chance: 500.0
+  affix-weights:
+    # 可选：按词条 ID 覆盖上面的 combat-weights。
+    # 例如 crit_damage: 100.0 表示破势每 1 点加 100 分。
+
+blueprint-item:
+  material: PAPER
+  ce-id: "sourceforge:blueprint_short_sword"
+  custom-model-data: 0
+  name-format: "&9蓝图: %name%"
+  lore:
+    - "&7蓝图等级: &e%tier%"
+    - "&7装备类型: &f%equipment_type%"
+    - "&7所需材料: &f%materials%"
+
+item-display-names:
+  "minecraft:iron_ingot": "铁锭"
+  "minecraft:stick": "木棍"
+  "minecraft:potion": "药水"
+  "minecraft:flint": "锐化石"
+  "minecraft:amethyst_shard": "会心晶片"
+  "minecraft:blaze_powder": "战意余烬"
+  "minecraft:ghast_tear": "血髓"
+  "minecraft:packed_ice": "霜核"
+  "minecraft:gold_ingot": "枪机铜片"
+  "minecraft:gunpowder": "火药"
+  "minecraft:copper_ingot": "铜锭"
+  "minecraft:leather": "皮革"
+  "minecraft:string": "弦线"
+  "minecraft:diamond": "钻石"
+  "minecraft:lapis_lazuli": "青金石"
+  "yuanzhi:yuanzhi1": "源质核心（Ⅰ级）"
+  "sourceforge:sharp_stone": "锐化石"
+  "sourceforge:focus_crystal": "会心晶片"
+  "sourceforge:venom_vial": "淬毒药剂"
+  "sourceforge:war_ember": "战意余烬"
+  "sourceforge:blood_essence": "血髓"
+  "sourceforge:frost_core": "霜核"
+  "sourceforge:metal_spring": "金属弹簧"
+  "sourceforge:gunpowder_charge": "火药装药"
+  "sourceforge:rime_shard": "霜片"
+  "sourceforge:bulwark_plate": "玄铁甲片"
+  "sourceforge:rune_thread": "秘纹丝线"
+
+blueprints:
+  short_sword:
+    display-name: "短剑"
+    equipment-type: short_sword
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 2
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+      - id: "minecraft:stick"
+        amount: 1
+  flintlock:
+    display-name: "燧发枪"
+    equipment-type: flintlock
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 2
+      - id: "minecraft:copper_ingot"
+        amount: 2
+      - id: "minecraft:gunpowder"
+        amount: 1
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  source_bow:
+    display-name: "源质弓"
+    equipment-type: source_bow
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:string"
+        amount: 3
+      - id: "minecraft:stick"
+        amount: 3
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  source_crossbow:
+    display-name: "源质弩"
+    equipment-type: source_crossbow
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:string"
+        amount: 2
+      - id: "minecraft:stick"
+        amount: 3
+      - id: "minecraft:iron_ingot"
+        amount: 1
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  longsword:
+    display-name: "长剑"
+    equipment-type: longsword
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 3
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+      - id: "minecraft:stick"
+        amount: 1
+  spear:
+    display-name: "长枪"
+    equipment-type: spear
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 2
+      - id: "minecraft:stick"
+        amount: 2
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  dagger:
+    display-name: "短匕"
+    equipment-type: dagger
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 1
+      - id: "minecraft:gold_ingot"
+        amount: 1
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  bulwark_helmet:
+    display-name: "玄铁守御头盔"
+    equipment-type: bulwark_helmet
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 5
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  bulwark_chestplate:
+    display-name: "玄铁守御胸甲"
+    equipment-type: bulwark_chestplate
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 8
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  bulwark_leggings:
+    display-name: "玄铁守御护腿"
+    equipment-type: bulwark_leggings
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 7
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  bulwark_boots:
+    display-name: "玄铁守御靴子"
+    equipment-type: bulwark_boots
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:iron_ingot"
+        amount: 4
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  ward_helmet:
+    display-name: "织法秘纹兜帽"
+    equipment-type: ward_helmet
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:leather"
+        amount: 5
+      - id: "minecraft:lapis_lazuli"
+        amount: 2
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  ward_chestplate:
+    display-name: "织法秘纹长袍"
+    equipment-type: ward_chestplate
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:leather"
+        amount: 8
+      - id: "minecraft:lapis_lazuli"
+        amount: 3
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  ward_leggings:
+    display-name: "织法秘纹护腿"
+    equipment-type: ward_leggings
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:leather"
+        amount: 7
+      - id: "minecraft:lapis_lazuli"
+        amount: 3
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+  ward_boots:
+    display-name: "织法秘纹软靴"
+    equipment-type: ward_boots
+    tier:
+      min: 1
+      max: 3
+      fixed: 0
+    affix-slots:
+      min: 1
+      max: 3
+    max-affixes: 4
+    requirements:
+      - id: "minecraft:leather"
+        amount: 4
+      - id: "minecraft:lapis_lazuli"
+        amount: 2
+      - id: "yuanzhi:yuanzhi1"
+        amount: 1
+
+equipment:
+  short_sword:
+    display-name: "短剑"
+    material: IRON_SWORD
+    ce-id: "sourceforge:short_sword"
+    weapon-category: melee_light
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 100.0
+    base-lore:
+      - "&8源质锻造成品"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 1.0
+          max: 2.0
+        magic_damage:
+          chance: 0.30
+          min: 0.4
+          max: 0.8
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 2.0
+          max: 3.5
+        magic_damage:
+          chance: 0.40
+          min: 0.7
+          max: 1.2
+        crit_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.22
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 3.0
+          max: 5.0
+        magic_damage:
+          chance: 0.50
+          min: 1.0
+          max: 1.8
+        crit_damage:
+          chance: 0.35
+          min: 0.15
+          max: 0.35
+  flintlock:
+    display-name: "燧发枪"
+    material: CROSSBOW
+    ce-id: "sourceforge:flintlock"
+    weapon-category: firearm
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 260.0
+    base-lore:
+      - "&8源质远程武器"
+      - "&7需要弹药与射击节奏"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 1.0
+          max: 1.8
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 1.8
+          max: 3.0
+        crit_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.20
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 2.6
+          max: 4.2
+        magic_damage:
+          chance: 0.20
+          min: 0.5
+          max: 1.0
+        crit_damage:
+          chance: 0.40
+          min: 0.18
+          max: 0.40
+  source_bow:
+    display-name: "源质弓"
+    material: BOW
+    ce-id: "sourceforge:source_bow"
+    weapon-category: bow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 180.0
+    base-lore:
+      - "&8源质远程武器"
+      - "&7稳定射击，词条按远程规则结算"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 0.8
+          max: 1.6
+        magic_damage:
+          chance: 0.25
+          min: 0.4
+          max: 0.8
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 1.6
+          max: 2.8
+        magic_damage:
+          chance: 0.35
+          min: 0.7
+          max: 1.2
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 2.4
+          max: 4.0
+        magic_damage:
+          chance: 0.45
+          min: 1.0
+          max: 1.8
+        crit_damage:
+          chance: 0.25
+          min: 0.12
+          max: 0.28
+  source_crossbow:
+    display-name: "源质弩"
+    material: CROSSBOW
+    ce-id: "sourceforge:source_crossbow"
+    weapon-category: crossbow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质远程武器"
+      - "&7高穿透，词条按远程规则结算"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 1.0
+          max: 1.8
+        magic_damage:
+          chance: 0.25
+          min: 0.4
+          max: 0.8
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 1.8
+          max: 3.2
+        magic_damage:
+          chance: 0.35
+          min: 0.8
+          max: 1.4
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 2.8
+          max: 4.6
+        magic_damage:
+          chance: 0.45
+          min: 1.1
+          max: 2.0
+        crit_damage:
+          chance: 0.35
+          min: 0.14
+          max: 0.34
+  longsword:
+    display-name: "长剑"
+    material: IRON_SWORD
+    ce-id: "sourceforge:longsword"
+    weapon-category: melee_heavy
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 180.0
+    base-lore:
+      - "&8源质长柄兵器"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 1.4
+          max: 2.4
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 2.2
+          max: 3.8
+        crit_damage:
+          chance: 0.25
+          min: 0.10
+          max: 0.22
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 3.2
+          max: 5.0
+        magic_damage:
+          chance: 0.20
+          min: 0.5
+          max: 1.0
+        crit_damage:
+          chance: 0.40
+          min: 0.18
+          max: 0.42
+  spear:
+    display-name: "长枪"
+    material: TRIDENT
+    ce-id: "sourceforge:spear"
+    weapon-category: polearm
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质穿刺武器"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 1.0
+          max: 2.0
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 2.0
+          max: 3.2
+        magic_damage:
+          chance: 0.25
+          min: 0.4
+          max: 0.8
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 3.0
+          max: 4.8
+        magic_damage:
+          chance: 0.35
+          min: 0.7
+          max: 1.4
+        crit_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.25
+  dagger:
+    display-name: "短匕"
+    material: GOLDEN_SWORD
+    ce-id: "sourceforge:dagger"
+    weapon-category: melee_light
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 140.0
+    base-lore:
+      - "&8源质轻武器"
+    affixes:
+      - physical_damage
+      - magic_damage
+      - crit_damage
+    tier-affixes:
+      1:
+        physical_damage:
+          chance: 1.0
+          min: 0.8
+          max: 1.6
+        magic_damage:
+          chance: 0.25
+          min: 0.3
+          max: 0.7
+      2:
+        physical_damage:
+          chance: 1.0
+          min: 1.6
+          max: 2.8
+        magic_damage:
+          chance: 0.35
+          min: 0.5
+          max: 1.0
+        crit_damage:
+          chance: 0.20
+          min: 0.08
+          max: 0.18
+      3:
+        physical_damage:
+          chance: 1.0
+          min: 2.4
+          max: 4.0
+        magic_damage:
+          chance: 0.45
+          min: 0.8
+          max: 1.5
+        crit_damage:
+          chance: 0.30
+          min: 0.12
+          max: 0.28
+
+  bulwark_helmet:
+    display-name: "玄铁守御头盔"
+    material: IRON_HELMET
+    ce-id: "sourceforge:bulwark_helmet"
+    weapon-category: armor_physical
+    effective-slots:
+      - head
+    vanilla-attributes:
+      physical-defense: 2.0
+      magic-defense: 0.7
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
+    affixes:
+      - physical_resistance
+      - magic_resistance
+      - dodge_chance
+    tier-affixes: &bulwark_tier_affixes
+      1:
+        physical_resistance:
+          chance: 1.0
+          min: 0.03
+          max: 0.06
+        magic_resistance:
+          chance: 0.20
+          min: 0.01
+          max: 0.03
+      2:
+        physical_resistance:
+          chance: 1.0
+          min: 0.05
+          max: 0.08
+        magic_resistance:
+          chance: 0.25
+          min: 0.02
+          max: 0.04
+      3:
+        physical_resistance:
+          chance: 1.0
+          min: 0.07
+          max: 0.11
+        magic_resistance:
+          chance: 0.30
+          min: 0.02
+          max: 0.05
+        dodge_chance:
+          chance: 0.18
+          min: 0.02
+          max: 0.04
+  bulwark_chestplate:
+    display-name: "玄铁守御胸甲"
+    material: IRON_CHESTPLATE
+    ce-id: "sourceforge:bulwark_chestplate"
+    weapon-category: armor_physical
+    effective-slots:
+      - chest
+    vanilla-attributes:
+      physical-defense: 6.0
+      magic-defense: 2.1
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 360.0
+    base-lore:
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
+    affixes:
+      - physical_resistance
+      - magic_resistance
+      - dodge_chance
+    tier-affixes: *bulwark_tier_affixes
+  bulwark_leggings:
+    display-name: "玄铁守御护腿"
+    material: IRON_LEGGINGS
+    ce-id: "sourceforge:bulwark_leggings"
+    weapon-category: armor_physical
+    effective-slots:
+      - legs
+    vanilla-attributes:
+      physical-defense: 5.0
+      magic-defense: 1.8
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 320.0
+    base-lore:
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
+    affixes:
+      - physical_resistance
+      - magic_resistance
+      - dodge_chance
+    tier-affixes: *bulwark_tier_affixes
+  bulwark_boots:
+    display-name: "玄铁守御靴子"
+    material: IRON_BOOTS
+    ce-id: "sourceforge:bulwark_boots"
+    weapon-category: armor_physical
+    effective-slots:
+      - feet
+    vanilla-attributes:
+      physical-defense: 2.0
+      magic-defense: 0.7
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 200.0
+    base-lore:
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
+    affixes:
+      - physical_resistance
+      - magic_resistance
+      - dodge_chance
+    tier-affixes: *bulwark_tier_affixes
+
+  ward_helmet:
+    display-name: "织法秘纹兜帽"
+    material: LEATHER_HELMET
+    ce-id: "sourceforge:ward_helmet"
+    weapon-category: armor_magic
+    effective-slots:
+      - head
+    vanilla-attributes:
+      physical-defense: 0.9
+      magic-defense: 2.0
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 240.0
+    base-lore:
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
+    affixes:
+      - magic_resistance
+      - physical_resistance
+      - dodge_chance
+    tier-affixes: &ward_tier_affixes
+      1:
+        magic_resistance:
+          chance: 1.0
+          min: 0.03
+          max: 0.06
+        physical_resistance:
+          chance: 0.18
+          min: 0.01
+          max: 0.03
+      2:
+        magic_resistance:
+          chance: 1.0
+          min: 0.05
+          max: 0.08
+        physical_resistance:
+          chance: 0.22
+          min: 0.02
+          max: 0.04
+      3:
+        magic_resistance:
+          chance: 1.0
+          min: 0.07
+          max: 0.11
+        physical_resistance:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
+        dodge_chance:
+          chance: 0.25
+          min: 0.03
+          max: 0.06
+  ward_chestplate:
+    display-name: "织法秘纹长袍"
+    material: LEATHER_CHESTPLATE
+    ce-id: "sourceforge:ward_chestplate"
+    weapon-category: armor_magic
+    effective-slots:
+      - chest
+    vanilla-attributes:
+      physical-defense: 2.7
+      magic-defense: 6.0
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 380.0
+    base-lore:
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
+    affixes:
+      - magic_resistance
+      - physical_resistance
+      - dodge_chance
+    tier-affixes: *ward_tier_affixes
+  ward_leggings:
+    display-name: "织法秘纹护腿"
+    material: LEATHER_LEGGINGS
+    ce-id: "sourceforge:ward_leggings"
+    weapon-category: armor_magic
+    effective-slots:
+      - legs
+    vanilla-attributes:
+      physical-defense: 2.3
+      magic-defense: 5.0
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 340.0
+    base-lore:
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
+    affixes:
+      - magic_resistance
+      - physical_resistance
+      - dodge_chance
+    tier-affixes: *ward_tier_affixes
+  ward_boots:
+    display-name: "织法秘纹软靴"
+    material: LEATHER_BOOTS
+    ce-id: "sourceforge:ward_boots"
+    weapon-category: armor_magic
+    effective-slots:
+      - feet
+    vanilla-attributes:
+      physical-defense: 0.9
+      magic-defense: 2.0
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
+    affixes:
+      - magic_resistance
+      - physical_resistance
+      - dodge_chance
+    tier-affixes: *ward_tier_affixes

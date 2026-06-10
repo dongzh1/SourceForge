@@ -1,0 +1,16 @@
+id: blood_essence
+display-name: "血髓"
+item: "sourceforge:blood_essence"
+amount: 1
+affixes:
+  crit_damage:
+    chance: 0.25
+    min: 0.12
+    max: 0.28
+  true_damage:
+    chance: 0.12
+    min: 0.3
+    max: 0.9
+    weapon-categories:
+      - melee_light
+      - melee_heavy

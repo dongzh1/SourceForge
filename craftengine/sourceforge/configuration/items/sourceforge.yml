@@ -1,0 +1,191 @@
+items:
+  sourceforge:blueprint_short_sword:
+    material: paper
+    data:
+      item-name: "<!i><blue>蓝图: 短剑"
+    texture: sourceforge:item/blueprint_short_sword
+
+  sourceforge:short_sword:
+    material: iron_sword
+    data:
+      item-name: "<!i><white>短剑"
+      unbreakable: true
+    texture: sourceforge:item/short_sword
+
+  sourceforge:flintlock:
+    material: crossbow
+    data:
+      item-name: "<!i><gold>燧发枪"
+      unbreakable: true
+
+  sourceforge:source_bow:
+    material: bow
+    data:
+      item-name: "<!i><green>源质弓"
+      unbreakable: true
+
+  sourceforge:source_crossbow:
+    material: crossbow
+    data:
+      item-name: "<!i><yellow>源质弩"
+      unbreakable: true
+
+  sourceforge:longsword:
+    material: iron_sword
+    data:
+      item-name: "<!i><white>长剑"
+      unbreakable: true
+
+  sourceforge:spear:
+    material: trident
+    data:
+      item-name: "<!i><aqua>长枪"
+      unbreakable: true
+
+  sourceforge:dagger:
+    material: golden_sword
+    data:
+      item-name: "<!i><gray>短匕"
+      unbreakable: true
+
+  sourceforge:bulwark_helmet:
+    material: iron_helmet
+    data:
+      item-name: "<!i><gray>玄铁守御头盔"
+      unbreakable: true
+
+  sourceforge:bulwark_chestplate:
+    material: iron_chestplate
+    data:
+      item-name: "<!i><gray>玄铁守御胸甲"
+      unbreakable: true
+
+  sourceforge:bulwark_leggings:
+    material: iron_leggings
+    data:
+      item-name: "<!i><gray>玄铁守御护腿"
+      unbreakable: true
+
+  sourceforge:bulwark_boots:
+    material: iron_boots
+    data:
+      item-name: "<!i><gray>玄铁守御靴子"
+      unbreakable: true
+
+  sourceforge:ward_helmet:
+    material: leather_helmet
+    data:
+      item-name: "<!i><aqua>织法秘纹兜帽"
+      unbreakable: true
+
+  sourceforge:ward_chestplate:
+    material: leather_chestplate
+    data:
+      item-name: "<!i><aqua>织法秘纹长袍"
+      unbreakable: true
+
+  sourceforge:ward_leggings:
+    material: leather_leggings
+    data:
+      item-name: "<!i><aqua>织法秘纹护腿"
+      unbreakable: true
+
+  sourceforge:ward_boots:
+    material: leather_boots
+    data:
+      item-name: "<!i><aqua>织法秘纹软靴"
+      unbreakable: true
+
+  sourceforge:sharp_stone:
+    material: flint
+    data:
+      item-name: "<!i><gray>锐化石"
+
+  sourceforge:focus_crystal:
+    material: amethyst_shard
+    data:
+      item-name: "<!i><light_purple>会心晶片"
+
+  sourceforge:venom_vial:
+    material: potion
+    data:
+      item-name: "<!i><green>淬毒药剂"
+
+  sourceforge:war_ember:
+    material: blaze_powder
+    data:
+      item-name: "<!i><gold>战意余烬"
+
+  sourceforge:blood_essence:
+    material: ghast_tear
+    data:
+      item-name: "<!i><red>血髓"
+
+  sourceforge:frost_core:
+    material: packed_ice
+    data:
+      item-name: "<!i><aqua>霜核"
+
+  sourceforge:metal_spring:
+    material: gold_ingot
+    data:
+      item-name: "<!i><yellow>金属弹簧"
+
+  sourceforge:gunpowder_charge:
+    material: gunpowder
+    data:
+      item-name: "<!i><dark_gray>火药装药"
+
+  sourceforge:rime_shard:
+    material: packed_ice
+    data:
+      item-name: "<!i><aqua>霜片"
+
+  sourceforge:bulwark_plate:
+    material: iron_ingot
+    data:
+      item-name: "<!i><gray>玄铁甲片"
+
+  sourceforge:rune_thread:
+    material: string
+    data:
+      item-name: "<!i><aqua>秘纹丝线"
+
+categories:
+  sourceforge:internal:
+    name: <!i><white>SourceForge</white>
+    hidden: true
+    icon: sourceforge:blueprint_short_sword
+    list:
+      - sourceforge:blueprint_short_sword
+      - sourceforge:short_sword
+      - sourceforge:flintlock
+      - sourceforge:source_bow
+      - sourceforge:source_crossbow
+      - sourceforge:longsword
+      - sourceforge:spear
+      - sourceforge:dagger
+      - sourceforge:bulwark_helmet
+      - sourceforge:bulwark_chestplate
+      - sourceforge:bulwark_leggings
+      - sourceforge:bulwark_boots
+      - sourceforge:ward_helmet
+      - sourceforge:ward_chestplate
+      - sourceforge:ward_leggings
+      - sourceforge:ward_boots
+  sourceforge:materials:
+    name: <!i><white>SourceForge Materials</white>
+    hidden: true
+    icon: sourceforge:sharp_stone
+    list:
+      - sourceforge:sharp_stone
+      - sourceforge:focus_crystal
+      - sourceforge:venom_vial
+      - sourceforge:war_ember
+      - sourceforge:blood_essence
+      - sourceforge:frost_core
+      - sourceforge:metal_spring
+      - sourceforge:gunpowder_charge
+      - sourceforge:rime_shard
+      - sourceforge:bulwark_plate
+      - sourceforge:rune_thread

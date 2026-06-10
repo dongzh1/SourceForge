@@ -1,0 +1,815 @@
+enchants:
+  lifesteal:
+    display-name: "汲血"
+    type-name: "被动"
+    max-level: 3
+    description-format: "造成伤害后回复 %lifesteal_percent%% 最终伤害"
+    short-format: "伤害后回血 %lifesteal_percent%%"
+    levels:
+      1: { lifesteal-rate: 0.07 }
+      2: { lifesteal-rate: 0.10 }
+      3: { lifesteal-rate: 0.13 }
+
+  flame_burst:
+    display-name: "焰爆"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %fire_damage% 火元素伤害"
+    short-format: "%chance_percent%% 追加火伤"
+    levels:
+      1: { chance: 0.12, fire-damage: 3.5 }
+      2: { chance: 0.16, fire-damage: 5.0 }
+      3: { chance: 0.20, fire-damage: 6.5 }
+
+  frost_bind:
+    display-name: "霜缚"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %ice_damage% 冰元素伤害并缓速 %slow_seconds% 秒"
+    short-format: "%chance_percent%% 冰伤缓速"
+    levels:
+      1: { chance: 0.10, ice-damage: 2.5, slow-chance: 0.10, slow-duration-ticks: 60, slow-amplifier: 0 }
+      2: { chance: 0.15, ice-damage: 3.5, slow-chance: 0.15, slow-duration-ticks: 80, slow-amplifier: 0 }
+      3: { chance: 0.20, ice-damage: 4.5, slow-chance: 0.20, slow-duration-ticks: 100, slow-amplifier: 1 }
+
+  thunder_dash:
+    display-name: "雷跃"
+    type-name: "主动"
+    max-level: 3
+    action: thunder_dash
+    description-format: "右键突进并对附近敌人造成 %lightning_damage% 雷元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键雷跃 %cooldown_seconds%秒冷却"
+    levels:
+      1: { lightning-damage: 6.0, radius: 2.75, cooldown-millis: 8500, launch-strength: 0.95, launch-y: 0.28 }
+      2: { lightning-damage: 8.0, radius: 3.10, cooldown-millis: 7000, launch-strength: 1.10, launch-y: 0.31 }
+      3: { lightning-damage: 10.0, radius: 3.45, cooldown-millis: 5500, launch-strength: 1.25, launch-y: 0.34 }
+
+  mythic_flame_wave:
+    display-name: "炎浪"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_FlameWave"
+    description-format: "右键释放 MythicMobs 技能 SF_FlameWave，冷却 %cooldown_seconds% 秒"
+    short-format: "右键炎浪 %cooldown_seconds%秒冷却"
+    levels:
+      1: { cooldown-millis: 12000 }
+      2: { cooldown-millis: 10000 }
+      3: { cooldown-millis: 8000 }
+
+  keen_edge:
+    display-name: "利刃"
+    type-name: "被动"
+    max-level: 5
+    description-format: "物理和法术伤害提高 %damage_bonus_percent%%"
+    short-format: "物理/法术 +%damage_bonus_percent%%"
+    levels:
+      1: { damage-bonus-rate: 0.04 }
+      2: { damage-bonus-rate: 0.08 }
+      3: { damage-bonus-rate: 0.12 }
+      4: { damage-bonus-rate: 0.16 }
+      5: { damage-bonus-rate: 0.20 }
+
+  shockwave:
+    display-name: "震退"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%knockback_chance_percent%% 概率击退目标"
+    short-format: "%knockback_chance_percent%% 击退"
+    levels:
+      1: { knockback-chance: 0.18, knockback-strength: 0.53 }
+      2: { knockback-chance: 0.26, knockback-strength: 0.71 }
+      3: { knockback-chance: 0.34, knockback-strength: 0.89 }
+
+  thorn_guard:
+    display-name: "棘甲"
+    type-name: "被动"
+    max-level: 3
+    description-format: "受近战伤害时反弹 %reflect_damage% 真实伤害"
+    short-format: "受击反弹 %reflect_damage%"
+    levels:
+      1: { reflect-damage: 1.8 }
+      2: { reflect-damage: 2.6 }
+      3: { reflect-damage: 3.4 }
+
+  blood_hunt:
+    display-name: "血猎"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击率 +%crit_chance_percent%%，吸血 +%lifesteal_percent%%"
+    short-format: "暴击+吸血"
+    levels:
+      1: { crit-chance-bonus: 0.03, lifesteal-rate: 0.03 }
+      2: { crit-chance-bonus: 0.05, lifesteal-rate: 0.05 }
+      3: { crit-chance-bonus: 0.07, lifesteal-rate: 0.07 }
+
+  mana_edge:
+    display-name: "魔刃"
+    type-name: "被动"
+    max-level: 3
+    description-format: "法术伤害提高 %magic_damage_percent%%，追加 %magic_damage% 法术伤害"
+    short-format: "法伤 +%magic_damage_percent%%"
+    levels:
+      1: { magic-damage-rate: 0.06, magic-damage: 1.0 }
+      2: { magic-damage-rate: 0.10, magic-damage: 1.6 }
+      3: { magic-damage-rate: 0.14, magic-damage: 2.2 }
+
+  armor_breaker:
+    display-name: "裂甲"
+    type-name: "被动"
+    max-level: 3
+    description-format: "攻击时获得 %armor_pierce% 破甲"
+    short-format: "破甲 +%armor_pierce%"
+    levels:
+      1: { armor-pierce: 0.7 }
+      2: { armor-pierce: 1.2 }
+      3: { armor-pierce: 1.8 }
+
+  eagle_eye:
+    display-name: "鹰眼"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击率提高 %crit_chance_percent%%"
+    short-format: "暴击率 +%crit_chance_percent%%"
+    levels:
+      1: { crit-chance-bonus: 0.04 }
+      2: { crit-chance-bonus: 0.07 }
+      3: { crit-chance-bonus: 0.10 }
+
+  executioner:
+    display-name: "处决"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击伤害提高 %crit_damage_percent%%"
+    short-format: "暴伤 +%crit_damage_percent%%"
+    levels:
+      1: { crit-damage-bonus: 0.15 }
+      2: { crit-damage-bonus: 0.25 }
+      3: { crit-damage-bonus: 0.35 }
+
+  soul_pierce:
+    display-name: "穿魂"
+    type-name: "被动"
+    max-level: 3
+    description-format: "追加 %true_damage% 真实伤害"
+    short-format: "真实 +%true_damage%"
+    levels:
+      1: { true-damage: 0.6 }
+      2: { true-damage: 1.0 }
+      3: { true-damage: 1.4 }
+
+  ember_brand:
+    display-name: "烙印"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %fire_damage% 火元素伤害，并有 %burn_chance_percent%% 概率点燃"
+    short-format: "%chance_percent%% 火伤"
+    levels:
+      1: { chance: 0.18, fire-damage: 2.2, burn-chance: 0.12, burn-duration-ticks: 60 }
+      2: { chance: 0.24, fire-damage: 3.4, burn-chance: 0.18, burn-duration-ticks: 80 }
+      3: { chance: 0.30, fire-damage: 4.6, burn-chance: 0.24, burn-duration-ticks: 100 }
+
+  rime_needle:
+    display-name: "霜针"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %ice_damage% 冰元素伤害，%slow_chance_percent%% 概率缓速"
+    short-format: "%chance_percent%% 冰伤"
+    levels:
+      1: { chance: 0.18, ice-damage: 1.8, slow-chance: 0.12, slow-duration-ticks: 50 }
+      2: { chance: 0.25, ice-damage: 2.8, slow-chance: 0.18, slow-duration-ticks: 70 }
+      3: { chance: 0.32, ice-damage: 3.8, slow-chance: 0.24, slow-duration-ticks: 90 }
+
+  thunder_mark:
+    display-name: "雷痕"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %lightning_damage% 雷元素伤害"
+    short-format: "%chance_percent%% 雷伤"
+    levels:
+      1: { chance: 0.16, lightning-damage: 2.6 }
+      2: { chance: 0.22, lightning-damage: 3.8 }
+      3: { chance: 0.28, lightning-damage: 5.0 }
+
+  tide_cut:
+    display-name: "潮切"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %water_damage% 水元素伤害"
+    short-format: "%chance_percent%% 水伤"
+    levels:
+      1: { chance: 0.18, water-damage: 2.0 }
+      2: { chance: 0.24, water-damage: 3.2 }
+      3: { chance: 0.30, water-damage: 4.4 }
+
+  vine_lash:
+    display-name: "藤缚"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %wood_damage% 木元素伤害，%poison_chance_percent%% 概率中毒"
+    short-format: "%chance_percent%% 木伤"
+    levels:
+      1: { chance: 0.16, wood-damage: 1.8, poison-chance: 0.10, poison-duration-ticks: 60 }
+      2: { chance: 0.22, wood-damage: 2.8, poison-chance: 0.16, poison-duration-ticks: 80 }
+      3: { chance: 0.28, wood-damage: 3.8, poison-chance: 0.22, poison-duration-ticks: 100 }
+
+  battle_trance:
+    display-name: "战意"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理伤害提高 %physical_damage_percent%%"
+    short-format: "物理 +%physical_damage_percent%%"
+    levels:
+      1: { physical-damage-rate: 0.05 }
+      2: { physical-damage-rate: 0.09 }
+      3: { physical-damage-rate: 0.13 }
+
+  spell_focus:
+    display-name: "凝法"
+    type-name: "被动"
+    max-level: 3
+    description-format: "法术伤害提高 %magic_damage_percent%%"
+    short-format: "法术 +%magic_damage_percent%%"
+    levels:
+      1: { magic-damage-rate: 0.06 }
+      2: { magic-damage-rate: 0.11 }
+      3: { magic-damage-rate: 0.16 }
+
+  dual_flow:
+    display-name: "双流"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理 +%physical_damage_percent%%，法术 +%magic_damage_percent%%"
+    short-format: "物法双加"
+    levels:
+      1: { physical-damage-rate: 0.03, magic-damage-rate: 0.03 }
+      2: { physical-damage-rate: 0.05, magic-damage-rate: 0.05 }
+      3: { physical-damage-rate: 0.07, magic-damage-rate: 0.07 }
+
+  precise_strike:
+    display-name: "精准"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击率 +%crit_chance_percent%%，暴击伤害 +%crit_damage_percent%%"
+    short-format: "暴击强化"
+    levels:
+      1: { crit-chance-bonus: 0.02, crit-damage-bonus: 0.10 }
+      2: { crit-chance-bonus: 0.04, crit-damage-bonus: 0.16 }
+      3: { crit-chance-bonus: 0.06, crit-damage-bonus: 0.22 }
+
+  guard_break:
+    display-name: "破阵"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理伤害 +%physical_damage_percent%%，破甲 +%armor_pierce%"
+    short-format: "物理破甲"
+    levels:
+      1: { physical-damage-rate: 0.03, armor-pierce: 0.5 }
+      2: { physical-damage-rate: 0.05, armor-pierce: 0.9 }
+      3: { physical-damage-rate: 0.07, armor-pierce: 1.3 }
+
+  soul_siphon:
+    display-name: "噬魂"
+    type-name: "被动"
+    max-level: 3
+    description-format: "追加 %true_damage% 真实伤害，并获得 %lifesteal_percent%% 吸血"
+    short-format: "真实+吸血"
+    levels:
+      1: { true-damage: 0.4, lifesteal-rate: 0.03 }
+      2: { true-damage: 0.7, lifesteal-rate: 0.05 }
+      3: { true-damage: 1.0, lifesteal-rate: 0.07 }
+
+  fire_nova:
+    display-name: "火环"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的火环，造成 %fire_damage% 火元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键火环"
+    levels:
+      1: { fire-damage: 5.0, radius: 3.5, cooldown-millis: 11000 }
+      2: { fire-damage: 7.0, radius: 4.0, cooldown-millis: 9500 }
+      3: { fire-damage: 9.0, radius: 4.5, cooldown-millis: 8000 }
+
+  frost_nova:
+    display-name: "冰环"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的冰环，造成 %ice_damage% 冰元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键冰环"
+    levels:
+      1: { ice-damage: 4.5, radius: 3.5, cooldown-millis: 11000 }
+      2: { ice-damage: 6.2, radius: 4.0, cooldown-millis: 9500 }
+      3: { ice-damage: 8.0, radius: 4.5, cooldown-millis: 8000 }
+
+  thunder_nova:
+    display-name: "雷环"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的雷环，造成 %lightning_damage% 雷元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键雷环"
+    levels:
+      1: { lightning-damage: 5.5, radius: 3.3, cooldown-millis: 12000 }
+      2: { lightning-damage: 7.5, radius: 3.8, cooldown-millis: 10500 }
+      3: { lightning-damage: 9.5, radius: 4.3, cooldown-millis: 9000 }
+
+  water_nova:
+    display-name: "潮环"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的潮环，造成 %water_damage% 水元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键潮环"
+    levels:
+      1: { water-damage: 4.8, radius: 3.7, cooldown-millis: 11000 }
+      2: { water-damage: 6.5, radius: 4.2, cooldown-millis: 9500 }
+      3: { water-damage: 8.2, radius: 4.7, cooldown-millis: 8000 }
+
+  wood_nova:
+    display-name: "森环"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的森环，造成 %wood_damage% 木元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键森环"
+    levels:
+      1: { wood-damage: 4.2, radius: 3.8, cooldown-millis: 11500 }
+      2: { wood-damage: 6.0, radius: 4.3, cooldown-millis: 10000 }
+      3: { wood-damage: 7.8, radius: 4.8, cooldown-millis: 8500 }
+
+  blink_step:
+    display-name: "瞬步"
+    type-name: "主动"
+    max-level: 3
+    action: blink
+    description-format: "右键向前闪烁 %distance% 格，冷却 %cooldown_seconds% 秒"
+    short-format: "右键闪烁"
+    levels:
+      1: { distance: 4.0, cooldown-millis: 9000 }
+      2: { distance: 5.5, cooldown-millis: 7500 }
+      3: { distance: 7.0, cooldown-millis: 6000 }
+
+  recovery_prayer:
+    display-name: "回生"
+    type-name: "主动"
+    max-level: 3
+    action: heal
+    description-format: "右键回复 %heal% 生命，冷却 %cooldown_seconds% 秒"
+    short-format: "右键治疗"
+    levels:
+      1: { heal: 5.0, cooldown-millis: 16000 }
+      2: { heal: 7.5, cooldown-millis: 14000 }
+      3: { heal: 10.0, cooldown-millis: 12000 }
+
+  crystal_barrier:
+    display-name: "晶壁"
+    type-name: "主动"
+    max-level: 3
+    action: shield
+    description-format: "右键获得 %shield% 护盾，持续 %duration_seconds% 秒，冷却 %cooldown_seconds% 秒"
+    short-format: "右键护盾"
+    levels:
+      1: { shield: 6.0, duration-millis: 6000, cooldown-millis: 18000 }
+      2: { shield: 9.0, duration-millis: 7000, cooldown-millis: 16000 }
+      3: { shield: 12.0, duration-millis: 8000, cooldown-millis: 14000 }
+
+  earth_shock:
+    display-name: "地裂"
+    type-name: "主动"
+    max-level: 3
+    action: shockwave_active
+    description-format: "右键释放半径 %radius% 的冲击波，造成 %damage% 伤害并击退，冷却 %cooldown_seconds% 秒"
+    short-format: "右键冲击波"
+    levels:
+      1: { damage: 4.0, radius: 3.5, knockback-strength: 0.8, cooldown-millis: 12000 }
+      2: { damage: 5.8, radius: 4.2, knockback-strength: 1.0, cooldown-millis: 10500 }
+      3: { damage: 7.6, radius: 4.9, knockback-strength: 1.2, cooldown-millis: 9000 }
+
+  phase_step:
+    display-name: "相移"
+    type-name: "主动"
+    max-level: 3
+    action: blink
+    description-format: "右键长距离相移 %distance% 格，冷却 %cooldown_seconds% 秒"
+    short-format: "右键相移"
+    levels:
+      1: { distance: 6.0, cooldown-millis: 13000 }
+      2: { distance: 8.0, cooldown-millis: 11000 }
+      3: { distance: 10.0, cooldown-millis: 9000 }
+
+  mythic_ice_spike:
+    display-name: "冰刺"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_IceSpike"
+    description-format: "右键释放 MythicMobs 技能 SF_IceSpike，冷却 %cooldown_seconds% 秒"
+    short-format: "右键冰刺"
+    levels:
+      1: { cooldown-millis: 10000 }
+      2: { cooldown-millis: 8500 }
+      3: { cooldown-millis: 7000 }
+
+  mythic_thunder_chain:
+    display-name: "雷链"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_ThunderChain"
+    description-format: "右键释放 MythicMobs 技能 SF_ThunderChain，冷却 %cooldown_seconds% 秒"
+    short-format: "右键雷链"
+    levels:
+      1: { cooldown-millis: 13000 }
+      2: { cooldown-millis: 11000 }
+      3: { cooldown-millis: 9000 }
+
+  mythic_shadow_slash:
+    display-name: "影斩"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_ShadowSlash"
+    description-format: "右键释放 MythicMobs 技能 SF_ShadowSlash，冷却 %cooldown_seconds% 秒"
+    short-format: "右键影斩"
+    levels:
+      1: { cooldown-millis: 9000 }
+      2: { cooldown-millis: 7500 }
+      3: { cooldown-millis: 6000 }
+
+  mythic_heal_field:
+    display-name: "愈合场"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_HealField"
+    description-format: "右键释放 MythicMobs 技能 SF_HealField，冷却 %cooldown_seconds% 秒"
+    short-format: "右键愈合场"
+    levels:
+      1: { cooldown-millis: 18000 }
+      2: { cooldown-millis: 15500 }
+      3: { cooldown-millis: 13000 }
+
+  mythic_guardian_wall:
+    display-name: "守护壁"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_GuardianWall"
+    description-format: "右键释放 MythicMobs 技能 SF_GuardianWall，冷却 %cooldown_seconds% 秒"
+    short-format: "右键守护壁"
+    levels:
+      1: { cooldown-millis: 20000 }
+      2: { cooldown-millis: 17500 }
+      3: { cooldown-millis: 15000 }
+
+  heavy_cleave:
+    display-name: "重劈"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理伤害 +%physical_damage%，暴击伤害 +%crit_damage_percent%%"
+    short-format: "物伤+暴伤"
+    levels:
+      1: { physical-damage: 0.8, crit-damage-bonus: 0.08 }
+      2: { physical-damage: 1.3, crit-damage-bonus: 0.14 }
+      3: { physical-damage: 1.8, crit-damage-bonus: 0.20 }
+
+  arcane_surge:
+    display-name: "奥涌"
+    type-name: "被动"
+    max-level: 3
+    description-format: "法术伤害 +%magic_damage%，暴击率 +%crit_chance_percent%%"
+    short-format: "法伤+暴击"
+    levels:
+      1: { magic-damage: 0.9, crit-chance-bonus: 0.02 }
+      2: { magic-damage: 1.5, crit-chance-bonus: 0.04 }
+      3: { magic-damage: 2.1, crit-chance-bonus: 0.06 }
+
+  void_cut:
+    display-name: "虚切"
+    type-name: "被动"
+    max-level: 3
+    description-format: "真实伤害 +%true_damage%，破甲 +%armor_pierce%"
+    short-format: "真实+破甲"
+    levels:
+      1: { true-damage: 0.3, armor-pierce: 0.3 }
+      2: { true-damage: 0.5, armor-pierce: 0.6 }
+      3: { true-damage: 0.8, armor-pierce: 0.9 }
+
+  cinder_bite:
+    display-name: "烬咬"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %fire_damage% 火元素伤害，%burn_chance_percent%% 概率点燃"
+    short-format: "火伤点燃"
+    levels:
+      1: { chance: 0.20, fire-damage: 1.6, burn-chance: 0.18, burn-duration-ticks: 70 }
+      2: { chance: 0.27, fire-damage: 2.5, burn-chance: 0.24, burn-duration-ticks: 90 }
+      3: { chance: 0.34, fire-damage: 3.4, burn-chance: 0.30, burn-duration-ticks: 110 }
+
+  glacial_hook:
+    display-name: "寒钩"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %ice_damage% 冰元素伤害，%slow_chance_percent%% 概率缓速"
+    short-format: "冰伤缓速"
+    levels:
+      1: { chance: 0.18, ice-damage: 1.5, slow-chance: 0.18, slow-duration-ticks: 60 }
+      2: { chance: 0.25, ice-damage: 2.4, slow-chance: 0.25, slow-duration-ticks: 80 }
+      3: { chance: 0.32, ice-damage: 3.3, slow-chance: 0.32, slow-duration-ticks: 100, slow-amplifier: 1 }
+
+  spark_flurry:
+    display-name: "电涌"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %lightning_damage% 雷元素伤害"
+    short-format: "高频雷伤"
+    levels:
+      1: { chance: 0.26, lightning-damage: 1.4 }
+      2: { chance: 0.34, lightning-damage: 2.1 }
+      3: { chance: 0.42, lightning-damage: 2.8 }
+
+  tide_return:
+    display-name: "回潮"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %water_damage% 水元素伤害，并获得 %lifesteal_percent%% 吸血"
+    short-format: "水伤吸血"
+    levels:
+      1: { chance: 0.18, water-damage: 1.7, lifesteal-rate: 0.02 }
+      2: { chance: 0.24, water-damage: 2.6, lifesteal-rate: 0.035 }
+      3: { chance: 0.30, water-damage: 3.5, lifesteal-rate: 0.05 }
+
+  spore_edge:
+    display-name: "孢刃"
+    type-name: "被动"
+    max-level: 3
+    description-format: "%chance_percent%% 概率追加 %wood_damage% 木元素伤害，%poison_chance_percent%% 概率中毒"
+    short-format: "木伤中毒"
+    levels:
+      1: { chance: 0.18, wood-damage: 1.4, poison-chance: 0.18, poison-duration-ticks: 80 }
+      2: { chance: 0.24, wood-damage: 2.2, poison-chance: 0.24, poison-duration-ticks: 110 }
+      3: { chance: 0.30, wood-damage: 3.0, poison-chance: 0.30, poison-duration-ticks: 140 }
+
+  quick_mend:
+    display-name: "急愈"
+    type-name: "主动"
+    max-level: 3
+    action: heal
+    description-format: "右键快速回复 %heal% 生命，冷却 %cooldown_seconds% 秒"
+    short-format: "右键急愈"
+    levels:
+      1: { heal: 3.0, cooldown-millis: 9000 }
+      2: { heal: 4.5, cooldown-millis: 8000 }
+      3: { heal: 6.0, cooldown-millis: 7000 }
+
+  iron_will:
+    display-name: "铁意"
+    type-name: "主动"
+    max-level: 3
+    action: shield
+    description-format: "右键获得 %shield% 护盾，持续 %duration_seconds% 秒，冷却 %cooldown_seconds% 秒"
+    short-format: "右键短盾"
+    levels:
+      1: { shield: 8.0, duration-millis: 3500, cooldown-millis: 16000 }
+      2: { shield: 12.0, duration-millis: 4000, cooldown-millis: 14500 }
+      3: { shield: 16.0, duration-millis: 4500, cooldown-millis: 13000 }
+
+  blade_storm:
+    display-name: "刃风"
+    type-name: "主动"
+    max-level: 3
+    action: shockwave_active
+    description-format: "右键释放半径 %radius% 的刃风，造成 %damage% 伤害并击退，冷却 %cooldown_seconds% 秒"
+    short-format: "右键刃风"
+    levels:
+      1: { damage: 3.5, radius: 3.0, knockback-strength: 0.55, cooldown-millis: 8500 }
+      2: { damage: 5.0, radius: 3.5, knockback-strength: 0.70, cooldown-millis: 7500 }
+      3: { damage: 6.5, radius: 4.0, knockback-strength: 0.85, cooldown-millis: 6500 }
+
+  horizon_blink:
+    display-name: "越界"
+    type-name: "主动"
+    max-level: 3
+    action: blink
+    description-format: "右键向前闪烁 %distance% 格，冷却 %cooldown_seconds% 秒"
+    short-format: "右键远闪"
+    levels:
+      1: { distance: 9.0, cooldown-millis: 18000 }
+      2: { distance: 12.0, cooldown-millis: 16000 }
+      3: { distance: 15.0, cooldown-millis: 14000 }
+
+  balance_oath:
+    display-name: "衡誓"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理 +%physical_damage_percent%%，法术 +%magic_damage_percent%%，吸血 +%lifesteal_percent%%"
+    short-format: "均衡吸血"
+    levels:
+      1: { physical-damage-rate: 0.025, magic-damage-rate: 0.025, lifesteal-rate: 0.015 }
+      2: { physical-damage-rate: 0.045, magic-damage-rate: 0.045, lifesteal-rate: 0.025 }
+      3: { physical-damage-rate: 0.065, magic-damage-rate: 0.065, lifesteal-rate: 0.035 }
+
+  piercing_round:
+    display-name: "穿弹"
+    type-name: "被动"
+    max-level: 3
+    description-format: "破甲 +%armor_pierce%，暴击伤害 +%crit_damage_percent%%"
+    short-format: "破甲暴伤"
+    levels:
+      1: { armor-pierce: 0.6, crit-damage-bonus: 0.08 }
+      2: { armor-pierce: 1.0, crit-damage-bonus: 0.14 }
+      3: { armor-pierce: 1.5, crit-damage-bonus: 0.20 }
+
+  quick_draw:
+    display-name: "疾发"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击率 +%crit_chance_percent%%，物理伤害 +%physical_damage%"
+    short-format: "暴击物伤"
+    levels:
+      1: { crit-chance-bonus: 0.04, physical-damage: 0.4 }
+      2: { crit-chance-bonus: 0.07, physical-damage: 0.7 }
+      3: { crit-chance-bonus: 0.10, physical-damage: 1.0 }
+
+  occult_pressure:
+    display-name: "秘压"
+    type-name: "被动"
+    max-level: 3
+    description-format: "法术伤害 +%magic_damage%，真实伤害 +%true_damage%"
+    short-format: "法伤真伤"
+    levels:
+      1: { magic-damage: 1.0, true-damage: 0.2 }
+      2: { magic-damage: 1.7, true-damage: 0.4 }
+      3: { magic-damage: 2.4, true-damage: 0.6 }
+
+  storm_call:
+    display-name: "唤雷"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的强雷场，造成 %lightning_damage% 雷元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键强雷场"
+    levels:
+      1: { lightning-damage: 8.0, radius: 3.8, cooldown-millis: 18000 }
+      2: { lightning-damage: 11.0, radius: 4.4, cooldown-millis: 16000 }
+      3: { lightning-damage: 14.0, radius: 5.0, cooldown-millis: 14000 }
+
+  wildfire_ring:
+    display-name: "野火"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的野火，造成 %fire_damage% 火元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键野火"
+    levels:
+      1: { fire-damage: 4.0, radius: 5.0, cooldown-millis: 15000 }
+      2: { fire-damage: 5.6, radius: 5.8, cooldown-millis: 13500 }
+      3: { fire-damage: 7.2, radius: 6.6, cooldown-millis: 12000 }
+
+  frozen_field:
+    display-name: "冻域"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的冻域，造成 %ice_damage% 冰元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键冻域"
+    levels:
+      1: { ice-damage: 3.8, radius: 5.2, cooldown-millis: 15000 }
+      2: { ice-damage: 5.3, radius: 6.0, cooldown-millis: 13500 }
+      3: { ice-damage: 6.8, radius: 6.8, cooldown-millis: 12000 }
+
+  warding_skin:
+    display-name: "护肤"
+    type-name: "主动"
+    max-level: 3
+    action: shield
+    description-format: "右键获得 %shield% 护盾，持续 %duration_seconds% 秒，冷却 %cooldown_seconds% 秒"
+    short-format: "右键长盾"
+    levels:
+      1: { shield: 4.0, duration-millis: 10000, cooldown-millis: 15000 }
+      2: { shield: 6.0, duration-millis: 12000, cooldown-millis: 13500 }
+      3: { shield: 8.0, duration-millis: 14000, cooldown-millis: 12000 }
+
+  mythic_meteor:
+    display-name: "陨火"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_Meteor"
+    description-format: "右键释放 MythicMobs 技能 SF_Meteor，冷却 %cooldown_seconds% 秒"
+    short-format: "右键陨火"
+    levels:
+      1: { cooldown-millis: 22000 }
+      2: { cooldown-millis: 19500 }
+      3: { cooldown-millis: 17000 }
+
+  mythic_poison_cloud:
+    display-name: "毒云"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_PoisonCloud"
+    description-format: "右键释放 MythicMobs 技能 SF_PoisonCloud，冷却 %cooldown_seconds% 秒"
+    short-format: "右键毒云"
+    levels:
+      1: { cooldown-millis: 17000 }
+      2: { cooldown-millis: 15000 }
+      3: { cooldown-millis: 13000 }
+
+  mythic_water_prison:
+    display-name: "水牢"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_WaterPrison"
+    description-format: "右键释放 MythicMobs 技能 SF_WaterPrison，冷却 %cooldown_seconds% 秒"
+    short-format: "右键水牢"
+    levels:
+      1: { cooldown-millis: 18000 }
+      2: { cooldown-millis: 16000 }
+      3: { cooldown-millis: 14000 }
+
+  mythic_root_snare:
+    display-name: "根缠"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_RootSnare"
+    description-format: "右键释放 MythicMobs 技能 SF_RootSnare，冷却 %cooldown_seconds% 秒"
+    short-format: "右键根缠"
+    levels:
+      1: { cooldown-millis: 16000 }
+      2: { cooldown-millis: 14000 }
+      3: { cooldown-millis: 12000 }
+
+  mythic_blade_arc:
+    display-name: "弧斩"
+    type-name: "主动"
+    max-level: 3
+    action: mythic_skill
+    mythic-skill: "SF_BladeArc"
+    description-format: "右键释放 MythicMobs 技能 SF_BladeArc，冷却 %cooldown_seconds% 秒"
+    short-format: "右键弧斩"
+    levels:
+      1: { cooldown-millis: 9500 }
+      2: { cooldown-millis: 8000 }
+      3: { cooldown-millis: 6500 }
+
+  staggering_hit:
+    display-name: "踉跄"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理伤害 +%physical_damage%，%knockback_chance_percent%% 概率击退"
+    short-format: "物伤击退"
+    levels:
+      1: { physical-damage: 0.5, knockback-chance: 0.14, knockback-strength: 0.45 }
+      2: { physical-damage: 0.9, knockback-chance: 0.22, knockback-strength: 0.60 }
+      3: { physical-damage: 1.3, knockback-chance: 0.30, knockback-strength: 0.75 }
+
+  fatal_focus:
+    display-name: "绝注"
+    type-name: "被动"
+    max-level: 3
+    description-format: "暴击率 +%crit_chance_percent%%，暴击伤害 +%crit_damage_percent%%"
+    short-format: "高暴击"
+    levels:
+      1: { crit-chance-bonus: 0.03, crit-damage-bonus: 0.18 }
+      2: { crit-chance-bonus: 0.05, crit-damage-bonus: 0.30 }
+      3: { crit-chance-bonus: 0.07, crit-damage-bonus: 0.42 }
+
+  splash_burst:
+    display-name: "溅涌"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的水爆，造成 %water_damage% 水元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键水爆"
+    levels:
+      1: { water-damage: 3.2, radius: 3.0, cooldown-millis: 8000 }
+      2: { water-damage: 4.6, radius: 3.4, cooldown-millis: 7000 }
+      3: { water-damage: 6.0, radius: 3.8, cooldown-millis: 6000 }
+
+  briar_burst:
+    display-name: "棘涌"
+    type-name: "主动"
+    max-level: 3
+    action: element_nova
+    description-format: "右键释放半径 %radius% 的棘涌，造成 %wood_damage% 木元素伤害，冷却 %cooldown_seconds% 秒"
+    short-format: "右键棘涌"
+    levels:
+      1: { wood-damage: 3.0, radius: 3.2, cooldown-millis: 8500 }
+      2: { wood-damage: 4.4, radius: 3.7, cooldown-millis: 7500 }
+      3: { wood-damage: 5.8, radius: 4.2, cooldown-millis: 6500 }
+
+  source_mastery:
+    display-name: "源熟"
+    type-name: "被动"
+    max-level: 3
+    description-format: "物理和法术 +%damage_bonus_percent%%，暴击率 +%crit_chance_percent%%"
+    short-format: "全能加成"
+    levels:
+      1: { damage-bonus-rate: 0.025, crit-chance-bonus: 0.015 }
+      2: { damage-bonus-rate: 0.045, crit-chance-bonus: 0.025 }
+      3: { damage-bonus-rate: 0.065, crit-chance-bonus: 0.035 }

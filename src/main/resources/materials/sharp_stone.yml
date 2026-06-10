@@ -1,0 +1,32 @@
+id: sharp_stone
+display-name: "锐化石"
+item: "sourceforge:sharp_stone"
+amount: 1
+affixes:
+  attack_damage:
+    chance: 0.85
+    min: 0.8
+    max: 2.0
+    weapon-categories:
+      - melee_light
+      - melee_heavy
+      - polearm
+      - crossbow
+      - firearm
+    category-scales:
+      melee_light: 0.90
+      melee_heavy: 1.15
+      polearm: 1.0
+      crossbow: 0.65
+      firearm: 0.55
+  armor_pierce:
+    chance: 0.35
+    min: 0.3
+    max: 0.9
+    category-scales:
+      melee_light: 0.65
+      melee_heavy: 0.90
+      polearm: 1.20
+      bow: 0.40
+      crossbow: 1.10
+      firearm: 1.35

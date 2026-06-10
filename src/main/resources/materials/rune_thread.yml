@@ -1,0 +1,33 @@
+id: rune_thread
+display-name: "秘纹丝线"
+item: "sourceforge:rune_thread"
+amount: 1
+affixes:
+  magic_resistance:
+    chance: 0.90
+    min: 0.03
+    max: 0.08
+    weapon-categories:
+      - armor_physical
+      - armor_magic
+    category-scales:
+      armor_physical: 0.55
+      armor_magic: 1.25
+  fire_resistance:
+    chance: 0.30
+    min: 2.0
+    max: 6.0
+    weapon-categories:
+      - armor_magic
+  ice_resistance:
+    chance: 0.30
+    min: 2.0
+    max: 6.0
+    weapon-categories:
+      - armor_magic
+  lightning_resistance:
+    chance: 0.30
+    min: 2.0
+    max: 6.0
+    weapon-categories:
+      - armor_magic
