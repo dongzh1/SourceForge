@@ -337,7 +337,13 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
 
+# ============================================================
+# 装备 — 全12属性覆盖示例
+# 每件装备可按部位侧重覆盖全部12种基础属性
+# ============================================================
+
 equipment:
+  # ===== 短剑：均衡型轻近战 =====
   short_sword:
     display-name: "短剑"
     material: IRON_SWORD
@@ -348,187 +354,44 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 100.0
     base-lore:
-      - "&8源质锻造成品"
+      - "&8源质轻武器 · 均衡型"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
+      - status_chance
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
     tier-affixes:
       1:
-        base_damage:
-          chance: 1.0
-          min: 1.0
-          max: 2.0
-        critical_chance:
-          chance: 0.30
-          min: 0.02
-          max: 0.05
+        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
+        critical_chance: { chance: 0.35, min: 0.02, max: 0.05 }
+        status_chance:   { chance: 0.20, min: 0.02, max: 0.06 }
+        ability_strength:   { chance: 0.12, min: 0.01, max: 0.03 }
+        ability_duration:   { chance: 0.08, min: 0.01, max: 0.02 }
       2:
-        base_damage:
-          chance: 1.0
-          min: 2.0
-          max: 3.5
-        critical_chance:
-          chance: 0.40
-          min: 0.03
-          max: 0.07
-        critical_damage:
-          chance: 0.20
-          min: 0.10
-          max: 0.22
+        base_damage:     { chance: 1.0, min: 2.0, max: 3.5 }
+        critical_chance: { chance: 0.45, min: 0.03, max: 0.08 }
+        critical_damage: { chance: 0.25, min: 0.10, max: 0.22 }
+        status_chance:   { chance: 0.30, min: 0.03, max: 0.10 }
+        ability_strength:   { chance: 0.20, min: 0.02, max: 0.05 }
+        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
+        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
       3:
-        base_damage:
-          chance: 1.0
-          min: 3.0
-          max: 5.0
-        critical_chance:
-          chance: 0.50
-          min: 0.04
-          max: 0.10
-        critical_damage:
-          chance: 0.35
-          min: 0.15
-          max: 0.35
-  flintlock:
-    display-name: "燧发枪"
-    material: CROSSBOW
-    ce-id: "sourceforge:flintlock"
-    weapon-category: firearm
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 260.0
-    base-lore:
-      - "&8源质远程武器"
-      - "&7需要弹药与射击节奏"
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-    tier-affixes:
-      1:
-        base_damage:
-          chance: 1.0
-          min: 1.0
-          max: 1.8
-      2:
-        base_damage:
-          chance: 1.0
-          min: 1.8
-          max: 3.0
-        critical_damage:
-          chance: 0.20
-          min: 0.10
-          max: 0.20
-      3:
-        base_damage:
-          chance: 1.0
-          min: 2.6
-          max: 4.2
-        critical_chance:
-          chance: 0.20
-          min: 0.02
-          max: 0.06
-        critical_damage:
-          chance: 0.40
-          min: 0.18
-          max: 0.40
-  source_bow:
-    display-name: "源质弓"
-    material: BOW
-    ce-id: "sourceforge:source_bow"
-    weapon-category: bow
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 180.0
-    base-lore:
-      - "&8源质远程武器"
-      - "&7稳定射击"
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-    tier-affixes:
-      1:
-        base_damage:
-          chance: 1.0
-          min: 0.8
-          max: 1.6
-        critical_chance:
-          chance: 0.25
-          min: 0.02
-          max: 0.05
-      2:
-        base_damage:
-          chance: 1.0
-          min: 1.6
-          max: 2.8
-        critical_chance:
-          chance: 0.35
-          min: 0.03
-          max: 0.07
-      3:
-        base_damage:
-          chance: 1.0
-          min: 2.4
-          max: 4.0
-        critical_chance:
-          chance: 0.45
-          min: 0.04
-          max: 0.09
-        critical_damage:
-          chance: 0.25
-          min: 0.12
-          max: 0.28
-  source_crossbow:
-    display-name: "源质弩"
-    material: CROSSBOW
-    ce-id: "sourceforge:source_crossbow"
-    weapon-category: crossbow
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 220.0
-    base-lore:
-      - "&8源质远程武器"
-      - "&7高穿透"
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-    tier-affixes:
-      1:
-        base_damage:
-          chance: 1.0
-          min: 1.0
-          max: 1.8
-        critical_chance:
-          chance: 0.25
-          min: 0.02
-          max: 0.05
-      2:
-        base_damage:
-          chance: 1.0
-          min: 1.8
-          max: 3.2
-        critical_chance:
-          chance: 0.35
-          min: 0.03
-          max: 0.07
-      3:
-        base_damage:
-          chance: 1.0
-          min: 2.8
-          max: 4.6
-        critical_chance:
-          chance: 0.45
-          min: 0.04
-          max: 0.09
-        critical_damage:
-          chance: 0.35
-          min: 0.14
-          max: 0.34
+        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
+        critical_chance: { chance: 0.55, min: 0.04, max: 0.10 }
+        critical_damage: { chance: 0.40, min: 0.15, max: 0.35 }
+        status_chance:   { chance: 0.40, min: 0.05, max: 0.14 }
+        ability_strength:   { chance: 0.30, min: 0.03, max: 0.08 }
+        ability_duration:   { chance: 0.25, min: 0.03, max: 0.06 }
+        ability_efficiency: { chance: 0.20, min: 0.02, max: 0.05 }
+        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
+        energy_max:         { chance: 0.10, min: 3.0, max: 8.0 }
+
+  # ===== 长剑：重型近战 =====
   longsword:
     display-name: "长剑"
     material: IRON_SWORD
@@ -539,39 +402,45 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 180.0
     base-lore:
-      - "&8源质长柄兵器"
+      - "&8源质重武器 · 力破型"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
+      - status_chance
+      - armor
+      - health
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - energy_max
     tier-affixes:
       1:
-        base_damage:
-          chance: 1.0
-          min: 1.4
-          max: 2.4
+        base_damage:     { chance: 1.0, min: 1.4, max: 2.4 }
+        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
+        armor:           { chance: 0.15, min: 1.0, max: 2.0 }
+        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
       2:
-        base_damage:
-          chance: 1.0
-          min: 2.2
-          max: 3.8
-        critical_damage:
-          chance: 0.25
-          min: 0.10
-          max: 0.22
+        base_damage:     { chance: 1.0, min: 2.4, max: 4.0 }
+        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
+        critical_damage: { chance: 0.35, min: 0.12, max: 0.28 }
+        armor:           { chance: 0.25, min: 1.5, max: 3.0 }
+        health:          { chance: 0.20, min: 2.0, max: 5.0 }
+        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_duration:   { chance: 0.12, min: 0.01, max: 0.03 }
       3:
-        base_damage:
-          chance: 1.0
-          min: 3.2
-          max: 5.0
-        critical_chance:
-          chance: 0.20
-          min: 0.02
-          max: 0.05
-        critical_damage:
-          chance: 0.40
-          min: 0.18
-          max: 0.42
+        base_damage:     { chance: 1.0, min: 3.5, max: 5.5 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.08 }
+        critical_damage: { chance: 0.50, min: 0.18, max: 0.45 }
+        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
+        armor:           { chance: 0.35, min: 2.0, max: 5.0 }
+        health:          { chance: 0.30, min: 3.0, max: 8.0 }
+        ability_strength:   { chance: 0.25, min: 0.03, max: 0.08 }
+        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
+        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
+
+  # ===== 长枪：穿刺型 =====
   spear:
     display-name: "长枪"
     material: TRIDENT
@@ -582,39 +451,46 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 220.0
     base-lore:
-      - "&8源质穿刺武器"
+      - "&8源质穿刺武器 · 破阵型"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
+      - status_chance
+      - armor
+      - health
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
     tier-affixes:
       1:
-        base_damage:
-          chance: 1.0
-          min: 1.0
-          max: 2.0
+        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
+        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
+        status_chance:   { chance: 0.20, min: 0.02, max: 0.06 }
+        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
       2:
-        base_damage:
-          chance: 1.0
-          min: 2.0
-          max: 3.2
-        critical_chance:
-          chance: 0.25
-          min: 0.02
-          max: 0.05
+        base_damage:     { chance: 1.0, min: 2.0, max: 3.4 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
+        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
+        status_chance:   { chance: 0.30, min: 0.03, max: 0.10 }
+        ability_range:      { chance: 0.25, min: 0.03, max: 0.06 }
+        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
+        energy_max:         { chance: 0.12, min: 3.0, max: 8.0 }
       3:
-        base_damage:
-          chance: 1.0
-          min: 3.0
-          max: 4.8
-        critical_chance:
-          chance: 0.35
-          min: 0.03
-          max: 0.07
-        critical_damage:
-          chance: 0.20
-          min: 0.10
-          max: 0.25
+        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
+        critical_chance: { chance: 0.45, min: 0.04, max: 0.09 }
+        critical_damage: { chance: 0.30, min: 0.12, max: 0.30 }
+        status_chance:   { chance: 0.40, min: 0.05, max: 0.14 }
+        health:          { chance: 0.25, min: 3.0, max: 6.0 }
+        ability_strength:   { chance: 0.20, min: 0.02, max: 0.06 }
+        ability_range:      { chance: 0.35, min: 0.04, max: 0.08 }
+        ability_duration:   { chance: 0.22, min: 0.03, max: 0.06 }
+        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.04 }
+        energy_max:         { chance: 0.20, min: 5.0, max: 12.0 }
+
+  # ===== 短匕：暴击型轻近战 =====
   dagger:
     display-name: "短匕"
     material: GOLDEN_SWORD
@@ -625,48 +501,188 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 140.0
     base-lore:
-      - "&8源质轻武器"
+      - "&8源质轻武器 · 会心型"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
+      - status_chance
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
     tier-affixes:
       1:
-        base_damage:
-          chance: 1.0
-          min: 0.8
-          max: 1.6
-        critical_chance:
-          chance: 0.25
-          min: 0.02
-          max: 0.05
+        base_damage:     { chance: 1.0, min: 0.8, max: 1.6 }
+        critical_chance: { chance: 0.30, min: 0.03, max: 0.06 }
+        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
+        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
       2:
-        base_damage:
-          chance: 1.0
-          min: 1.6
-          max: 2.8
-        critical_chance:
-          chance: 0.35
-          min: 0.03
-          max: 0.07
-        critical_damage:
-          chance: 0.20
-          min: 0.08
-          max: 0.18
+        base_damage:     { chance: 1.0, min: 1.6, max: 2.8 }
+        critical_chance: { chance: 0.40, min: 0.04, max: 0.08 }
+        critical_damage: { chance: 0.30, min: 0.12, max: 0.28 }
+        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
+        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
+        energy_max:         { chance: 0.10, min: 3.0, max: 6.0 }
       3:
-        base_damage:
-          chance: 1.0
-          min: 2.4
-          max: 4.0
-        critical_chance:
-          chance: 0.45
-          min: 0.04
-          max: 0.09
-        critical_damage:
-          chance: 0.30
-          min: 0.12
-          max: 0.28
+        base_damage:     { chance: 1.0, min: 2.4, max: 4.2 }
+        critical_chance: { chance: 0.50, min: 0.05, max: 0.12 }
+        critical_damage: { chance: 0.45, min: 0.18, max: 0.45 }
+        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
+        ability_strength:   { chance: 0.28, min: 0.03, max: 0.08 }
+        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_range:      { chance: 0.12, min: 0.02, max: 0.04 }
+        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
 
+  # ===== 源质弓：精准远程 =====
+  source_bow:
+    display-name: "源质弓"
+    material: BOW
+    ce-id: "sourceforge:source_bow"
+    weapon-category: bow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 180.0
+    base-lore:
+      - "&8源质远程武器 · 精准型"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
+    tier-affixes:
+      1:
+        base_damage:     { chance: 1.0, min: 0.8, max: 1.6 }
+        critical_chance: { chance: 0.30, min: 0.02, max: 0.06 }
+        status_chance:   { chance: 0.25, min: 0.02, max: 0.07 }
+        ability_range:      { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_duration:   { chance: 0.10, min: 0.01, max: 0.03 }
+      2:
+        base_damage:     { chance: 1.0, min: 1.6, max: 3.0 }
+        critical_chance: { chance: 0.40, min: 0.03, max: 0.08 }
+        critical_damage: { chance: 0.20, min: 0.10, max: 0.22 }
+        status_chance:   { chance: 0.35, min: 0.04, max: 0.10 }
+        ability_range:      { chance: 0.28, min: 0.03, max: 0.08 }
+        ability_duration:   { chance: 0.20, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.15, min: 0.01, max: 0.03 }
+      3:
+        base_damage:     { chance: 1.0, min: 2.6, max: 4.4 }
+        critical_chance: { chance: 0.50, min: 0.04, max: 0.10 }
+        critical_damage: { chance: 0.35, min: 0.14, max: 0.32 }
+        status_chance:   { chance: 0.45, min: 0.05, max: 0.14 }
+        ability_strength:   { chance: 0.20, min: 0.02, max: 0.05 }
+        ability_range:      { chance: 0.38, min: 0.04, max: 0.10 }
+        ability_duration:   { chance: 0.30, min: 0.03, max: 0.08 }
+        ability_efficiency: { chance: 0.22, min: 0.02, max: 0.06 }
+        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
+
+  # ===== 源质弩：穿透远程 =====
+  source_crossbow:
+    display-name: "源质弩"
+    material: CROSSBOW
+    ce-id: "sourceforge:source_crossbow"
+    weapon-category: crossbow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质远程武器 · 穿透型"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - armor
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
+    tier-affixes:
+      1:
+        base_damage:     { chance: 1.0, min: 1.0, max: 1.8 }
+        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
+        armor:           { chance: 0.15, min: 1.0, max: 2.0 }
+        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
+      2:
+        base_damage:     { chance: 1.0, min: 1.8, max: 3.2 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
+        critical_damage: { chance: 0.25, min: 0.10, max: 0.24 }
+        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
+        armor:           { chance: 0.25, min: 1.5, max: 3.0 }
+        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.10, min: 0.01, max: 0.03 }
+      3:
+        base_damage:     { chance: 1.0, min: 2.8, max: 4.6 }
+        critical_chance: { chance: 0.45, min: 0.04, max: 0.09 }
+        critical_damage: { chance: 0.40, min: 0.14, max: 0.34 }
+        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
+        armor:           { chance: 0.35, min: 2.0, max: 5.0 }
+        ability_strength:   { chance: 0.25, min: 0.03, max: 0.08 }
+        ability_range:      { chance: 0.20, min: 0.03, max: 0.06 }
+        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
+        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.05 }
+        energy_max:         { chance: 0.12, min: 4.0, max: 8.0 }
+
+  # ===== 燧发枪：爆发火器 =====
+  flintlock:
+    display-name: "燧发枪"
+    material: CROSSBOW
+    ce-id: "sourceforge:flintlock"
+    weapon-category: firearm
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 260.0
+    base-lore:
+      - "&8源质火器 · 爆发型"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - health
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+      - energy_max
+    tier-affixes:
+      1:
+        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
+        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
+        ability_strength:   { chance: 0.15, min: 0.02, max: 0.04 }
+      2:
+        base_damage:     { chance: 1.0, min: 2.0, max: 3.4 }
+        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
+        critical_damage: { chance: 0.35, min: 0.14, max: 0.30 }
+        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
+        ability_strength:   { chance: 0.25, min: 0.03, max: 0.06 }
+        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
+        health:          { chance: 0.15, min: 2.0, max: 5.0 }
+      3:
+        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
+        critical_damage: { chance: 0.50, min: 0.20, max: 0.45 }
+        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
+        ability_strength:   { chance: 0.35, min: 0.04, max: 0.10 }
+        ability_range:      { chance: 0.22, min: 0.03, max: 0.06 }
+        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
+        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.04 }
+        health:          { chance: 0.25, min: 3.0, max: 7.0 }
+        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
+
+  # ===== 玄铁守御防具：生存属性为主，全12属性可出 =====
   bulwark_helmet:
     display-name: "玄铁守御头盔"
     material: IRON_HELMET
@@ -683,38 +699,46 @@ equipment:
       - armor
       - health
       - shield_capacity
-    tier-affixes: &bulwark_tier_affixes
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+    tier-affixes: &bulwark
       1:
-        armor:
-          chance: 1.0
-          min: 2.0
-          max: 4.0
-        health:
-          chance: 0.30
-          min: 2.0
-          max: 4.0
+        armor:           { chance: 1.0, min: 2.0, max: 4.0 }
+        health:          { chance: 0.35, min: 2.0, max: 4.0 }
+        shield_capacity: { chance: 0.20, min: 2.0, max: 4.0 }
+        base_damage:     { chance: 0.10, min: 0.5, max: 1.5 }
+        energy_max:      { chance: 0.10, min: 3.0, max: 6.0 }
+        ability_efficiency: { chance: 0.08, min: 0.01, max: 0.02 }
       2:
-        armor:
-          chance: 1.0
-          min: 3.0
-          max: 6.0
-        health:
-          chance: 0.40
-          min: 3.0
-          max: 6.0
+        armor:           { chance: 1.0, min: 3.0, max: 6.0 }
+        health:          { chance: 0.50, min: 3.0, max: 6.0 }
+        shield_capacity: { chance: 0.35, min: 2.0, max: 5.0 }
+        base_damage:     { chance: 0.18, min: 0.5, max: 2.0 }
+        energy_max:      { chance: 0.18, min: 4.0, max: 8.0 }
+        ability_efficiency: { chance: 0.15, min: 0.01, max: 0.03 }
+        ability_duration:   { chance: 0.12, min: 0.01, max: 0.03 }
+        critical_chance: { chance: 0.12, min: 0.01, max: 0.03 }
+        status_chance:   { chance: 0.10, min: 0.01, max: 0.04 }
       3:
-        armor:
-          chance: 1.0
-          min: 5.0
-          max: 9.0
-        health:
-          chance: 0.50
-          min: 4.0
-          max: 8.0
-        shield_capacity:
-          chance: 0.25
-          min: 3.0
-          max: 6.0
+        armor:           { chance: 1.0, min: 5.0, max: 9.0 }
+        health:          { chance: 0.65, min: 4.0, max: 8.0 }
+        shield_capacity: { chance: 0.50, min: 3.0, max: 7.0 }
+        base_damage:     { chance: 0.28, min: 1.0, max: 3.0 }
+        energy_max:      { chance: 0.28, min: 5.0, max: 12.0 }
+        ability_efficiency: { chance: 0.22, min: 0.02, max: 0.06 }
+        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
+        critical_chance: { chance: 0.18, min: 0.02, max: 0.05 }
+        critical_damage: { chance: 0.12, min: 0.05, max: 0.15 }
+        status_chance:   { chance: 0.15, min: 0.02, max: 0.06 }
+        ability_strength:   { chance: 0.12, min: 0.01, max: 0.04 }
+        ability_range:      { chance: 0.12, min: 0.01, max: 0.03 }
   bulwark_chestplate:
     display-name: "玄铁守御胸甲"
     material: IRON_CHESTPLATE
@@ -731,7 +755,16 @@ equipment:
       - armor
       - health
       - shield_capacity
-    tier-affixes: *bulwark_tier_affixes
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+    tier-affixes: *bulwark
   bulwark_leggings:
     display-name: "玄铁守御护腿"
     material: IRON_LEGGINGS
@@ -748,7 +781,16 @@ equipment:
       - armor
       - health
       - shield_capacity
-    tier-affixes: *bulwark_tier_affixes
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+    tier-affixes: *bulwark
   bulwark_boots:
     display-name: "玄铁守御靴子"
     material: IRON_BOOTS
@@ -765,8 +807,18 @@ equipment:
       - armor
       - health
       - shield_capacity
-    tier-affixes: *bulwark_tier_affixes
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
+      - ability_efficiency
+      - ability_range
+    tier-affixes: *bulwark
 
+  # ===== 织法秘纹防具：技能属性为主，全12属性可出 =====
   ward_helmet:
     display-name: "织法秘纹兜帽"
     material: LEATHER_HELMET
@@ -783,38 +835,47 @@ equipment:
       - energy_max
       - ability_strength
       - ability_duration
-    tier-affixes: &ward_tier_affixes
+      - ability_efficiency
+      - ability_range
+      - health
+      - shield_capacity
+      - armor
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+    tier-affixes: &ward
       1:
-        energy_max:
-          chance: 1.0
-          min: 5.0
-          max: 10.0
-        ability_strength:
-          chance: 0.25
-          min: 0.02
-          max: 0.05
+        energy_max:         { chance: 1.0, min: 5.0, max: 10.0 }
+        ability_strength:   { chance: 0.35, min: 0.02, max: 0.05 }
+        ability_duration:   { chance: 0.25, min: 0.02, max: 0.04 }
+        ability_efficiency: { chance: 0.25, min: 0.02, max: 0.04 }
+        ability_range:      { chance: 0.25, min: 0.02, max: 0.04 }
+        health:             { chance: 0.15, min: 1.0, max: 3.0 }
+        shield_capacity:    { chance: 0.10, min: 1.0, max: 2.0 }
       2:
-        energy_max:
-          chance: 1.0
-          min: 8.0
-          max: 15.0
-        ability_strength:
-          chance: 0.35
-          min: 0.03
-          max: 0.07
+        energy_max:         { chance: 1.0, min: 8.0, max: 15.0 }
+        ability_strength:   { chance: 0.50, min: 0.03, max: 0.07 }
+        ability_duration:   { chance: 0.40, min: 0.03, max: 0.06 }
+        ability_efficiency: { chance: 0.40, min: 0.03, max: 0.06 }
+        ability_range:      { chance: 0.40, min: 0.03, max: 0.06 }
+        health:             { chance: 0.25, min: 2.0, max: 5.0 }
+        shield_capacity:    { chance: 0.18, min: 1.0, max: 3.0 }
+        armor:              { chance: 0.15, min: 1.0, max: 3.0 }
+        base_damage:        { chance: 0.10, min: 0.5, max: 1.5 }
       3:
-        energy_max:
-          chance: 1.0
-          min: 12.0
-          max: 20.0
-        ability_strength:
-          chance: 0.45
-          min: 0.04
-          max: 0.10
-        ability_duration:
-          chance: 0.30
-          min: 0.03
-          max: 0.08
+        energy_max:         { chance: 1.0, min: 12.0, max: 20.0 }
+        ability_strength:   { chance: 0.65, min: 0.04, max: 0.10 }
+        ability_duration:   { chance: 0.55, min: 0.04, max: 0.09 }
+        ability_efficiency: { chance: 0.55, min: 0.04, max: 0.09 }
+        ability_range:      { chance: 0.55, min: 0.04, max: 0.09 }
+        health:             { chance: 0.35, min: 3.0, max: 7.0 }
+        shield_capacity:    { chance: 0.28, min: 2.0, max: 5.0 }
+        armor:              { chance: 0.22, min: 2.0, max: 5.0 }
+        base_damage:        { chance: 0.18, min: 1.0, max: 2.5 }
+        critical_chance:    { chance: 0.15, min: 0.01, max: 0.04 }
+        critical_damage:    { chance: 0.10, min: 0.05, max: 0.12 }
+        status_chance:      { chance: 0.12, min: 0.01, max: 0.04 }
   ward_chestplate:
     display-name: "织法秘纹长袍"
     material: LEATHER_CHESTPLATE
@@ -831,7 +892,16 @@ equipment:
       - energy_max
       - ability_strength
       - ability_duration
-    tier-affixes: *ward_tier_affixes
+      - ability_efficiency
+      - ability_range
+      - health
+      - shield_capacity
+      - armor
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+    tier-affixes: *ward
   ward_leggings:
     display-name: "织法秘纹护腿"
     material: LEATHER_LEGGINGS
@@ -848,7 +918,16 @@ equipment:
       - energy_max
       - ability_strength
       - ability_duration
-    tier-affixes: *ward_tier_affixes
+      - ability_efficiency
+      - ability_range
+      - health
+      - shield_capacity
+      - armor
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+    tier-affixes: *ward
   ward_boots:
     display-name: "织法秘纹软靴"
     material: LEATHER_BOOTS
@@ -865,4 +944,13 @@ equipment:
       - energy_max
       - ability_strength
       - ability_duration
-    tier-affixes: *ward_tier_affixes
+      - ability_efficiency
+      - ability_range
+      - health
+      - shield_capacity
+      - armor
+      - base_damage
+      - critical_chance
+      - critical_damage
+      - status_chance
+    tier-affixes: *ward

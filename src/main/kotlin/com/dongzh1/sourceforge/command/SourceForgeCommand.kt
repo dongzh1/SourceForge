@@ -12,6 +12,7 @@ import org.bukkit.damage.DamageType
 import org.bukkit.entity.Player
 import org.bukkit.NamespacedKey
 import org.bukkit.persistence.PersistentDataType
+import java.text.DecimalFormat
 
 class SourceForgeCommand(
     private val plugin: SourceForge
@@ -204,14 +205,22 @@ class SourceForgeCommand(
                 }
                 sender.sendMessage("§a[SourceForge] §f手持装备已升级")
             }
-            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|debug>")
+            "stats" -> {
+                val player = sender as? Player
+                if (player == null) {
+                    sender.sendMessage("只有玩家可以使用此命令")
+                    return true
+                }
+                showStats(player)
+            }
+            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|stats|debug>")
         }
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
                 args[0].equals("giveblueprint", true) || args[0].equals("giveequipment", true) || args[0].equals("givematerial", true) || args[0].equals("give", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
                 args[0].equals("debug", true) -> listOf("combat").filter { it.startsWith(args[1], true) }
@@ -271,5 +280,113 @@ class SourceForgeCommand(
         val body = expression.substringAfter(":")
         val path = body.substringBefore("?")
         return path.substringBefore(":", "").equals("equipment", ignoreCase = true)
+    }
+
+    private fun showStats(player: Player) {
+        val slots = linkedMapOf(
+            "头盔" to player.inventory.helmet,
+            "胸甲" to player.inventory.chestplate,
+            "护腿" to player.inventory.leggings,
+            "靴子" to player.inventory.boots,
+            "主手" to player.inventory.itemInMainHand,
+            "副手" to player.inventory.itemInOffHand
+        )
+
+        val pieces = slots.mapNotNull { (slotName, item) ->
+            if (plugin.itemService.isSourceEquipment(item)) slotName to item else null
+        }
+        val backpackItems = player.inventory.contents.filterNotNull().filter {
+            plugin.itemService.isSourceEquipment(it) &&
+                (plugin.itemService.equipmentConfig(it)?.effectiveSlots?.any { s -> s == "inventory" || s == "backpack" } == true)
+        }
+        val allItems = pieces.map { it.second } + backpackItems
+
+        if (pieces.isEmpty() && backpackItems.isEmpty()) {
+            player.sendMessage("§c[SourceForge] §f未装备任何 SourceForge 物品")
+            return
+        }
+
+        player.sendMessage("§6========== SourceForge 属性总览 ==========")
+
+        // 已装备
+        if (pieces.isNotEmpty()) {
+            for ((slotName, item) in pieces) {
+                val type = plugin.itemService.weaponType(item) ?: "?"
+                val tier = plugin.itemService.equipmentTier(item)
+                val displayName = plugin.forgeConfig.equipment[type]?.displayName ?: type
+                player.sendMessage("  §7$slotName: §f$displayName §eLv.$tier")
+            }
+        }
+        if (backpackItems.isNotEmpty()) {
+            player.sendMessage("  §7背包生效: §f${backpackItems.size} 件")
+        }
+
+        // 汇总所有属性
+        val totals = mutableMapOf<String, Double>()
+        for (affix in plugin.forgeConfig.affixes.values) {
+            val sum = allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
+            if (sum > 0.0) totals[affix.id] = sum
+        }
+
+        if (totals.isEmpty()) {
+            player.sendMessage("")
+            player.sendMessage("  §7当前装备无属性加成")
+            player.sendMessage("§6==========================================")
+            return
+        }
+
+        // 战斗属性
+        player.sendMessage("")
+        player.sendMessage("§e▎战斗属性")
+        affixLine(player, totals, "base_damage", "基础伤害", 1)
+        affixLine(player, totals, "critical_chance", "暴击几率", 4, percent = true)
+        affixLine(player, totals, "critical_damage", "暴击伤害", 4, percent = true)
+        affixLine(player, totals, "status_chance", "触发几率", 4, percent = true)
+
+        // 生存属性
+        val hasDefense = listOf("armor", "health", "shield_capacity").any { totals.containsKey(it) }
+        if (hasDefense) {
+            player.sendMessage("")
+            player.sendMessage("§e▎生存属性")
+            affixLine(player, totals, "armor", "护甲", 0)
+            affixLine(player, totals, "health", "生命值", 0)
+            affixLine(player, totals, "shield_capacity", "护盾容量", 0)
+        }
+
+        // 技能属性
+        val hasSkill = listOf("energy_max", "ability_strength", "ability_duration", "ability_efficiency", "ability_range").any { totals.containsKey(it) }
+        if (hasSkill) {
+            player.sendMessage("")
+            player.sendMessage("§e▎技能属性")
+            affixLine(player, totals, "energy_max", "能量上限", 0)
+            affixLine(player, totals, "ability_strength", "技能强度", 4, percent = true)
+            affixLine(player, totals, "ability_duration", "技能持续", 4, percent = true)
+            affixLine(player, totals, "ability_efficiency", "技能效率", 4, percent = true)
+            affixLine(player, totals, "ability_range", "技能范围", 4, percent = true)
+        }
+
+        // 评分
+        val totalScore = allItems.sumOf { plugin.itemService.readScore(it) }
+        if (totalScore > 0) {
+            player.sendMessage("")
+            player.sendMessage("§e▎综合")
+            player.sendMessage("  §7总评分: §b$totalScore")
+        }
+
+        player.sendMessage("§6==========================================")
+    }
+
+    private fun affixLine(player: Player, totals: Map<String, Double>, id: String, displayName: String, decimals: Int, percent: Boolean = false) {
+        val value = totals[id] ?: return
+        val formatted = when {
+            percent -> formatPercent(value)
+            decimals <= 0 -> value.toInt().toString()
+            else -> DecimalFormat("0.${"0".repeat(decimals)}").format(value)
+        }
+        player.sendMessage("  §7$displayName: §f$formatted")
+    }
+
+    private fun formatPercent(value: Double): String {
+        return "${DecimalFormat("0.#").format(value * 100.0)}%"
     }
 }
