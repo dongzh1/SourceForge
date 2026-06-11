@@ -321,6 +321,10 @@ class SourceForgeCommand(
 
         val totals = plugin.forgeConfig.affixes.values.associate { affix ->
             affix.id to allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
+        }.toMutableMap()
+        // 技能属性基础值 100%
+        for (id in skillBaseAffixes) {
+            totals[id] = (totals[id] ?: 0.0) + 1.0
         }
 
         player.sendMessage("")
@@ -397,6 +401,12 @@ class SourceForgeCommand(
             "critical_chance",
             "critical_damage",
             "status_chance",
+            "ability_strength",
+            "ability_duration",
+            "ability_efficiency",
+            "ability_range"
+        )
+        val skillBaseAffixes = setOf(
             "ability_strength",
             "ability_duration",
             "ability_efficiency",
