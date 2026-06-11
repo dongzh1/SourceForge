@@ -322,10 +322,12 @@ class SourceForgeCommand(
         val totals = plugin.forgeConfig.affixes.values.associate { affix ->
             affix.id to allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
         }.toMutableMap()
-        // 技能属性基础值 100%
+        // 技能属性基础值
         for (id in skillBaseAffixes) {
             totals[id] = (totals[id] ?: 0.0) + 1.0
         }
+        // ability_range 基础 3 格
+        totals["ability_range"] = (totals["ability_range"] ?: 0.0) + 2.0
 
         player.sendMessage("")
         sendAffixGroup(
