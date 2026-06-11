@@ -949,49 +949,64 @@ PlaceholderAPI 占位符：
 %sourceforge_score%
 %sourceforge_price%
 
-%sourceforge_physical_damage%
-%sourceforge_magic_damage%
-%sourceforge_true_damage%
-%sourceforge_fire_damage%
-%sourceforge_ice_damage%
-%sourceforge_lightning_damage%
-%sourceforge_water_damage%
-%sourceforge_wood_damage%
-%sourceforge_crit_chance%
-%sourceforge_crit_chance_percent%
-%sourceforge_crit_damage%
-%sourceforge_crit_damage_percent%
-%sourceforge_armor_pierce%
+%sourceforge_base_damage%
+%sourceforge_critical_chance%
+%sourceforge_critical_chance_percent%
+%sourceforge_critical_damage%
+%sourceforge_critical_damage_percent%
+%sourceforge_status_chance%
+%sourceforge_status_chance_percent%
 
-%sourceforge_physical_resistance%
-%sourceforge_physical_resistance_percent%
-%sourceforge_magic_resistance%
-%sourceforge_magic_resistance_percent%
-%sourceforge_fire_resistance%
-%sourceforge_ice_resistance%
-%sourceforge_lightning_resistance%
-%sourceforge_water_resistance%
-%sourceforge_wood_resistance%
-%sourceforge_dodge_chance%
-%sourceforge_dodge_chance_percent%
+%sourceforge_ability_strength%
+%sourceforge_ability_strength_percent%
+%sourceforge_ability_duration%
+%sourceforge_ability_duration_percent%
+%sourceforge_ability_efficiency%
+%sourceforge_ability_efficiency_percent%
+%sourceforge_ability_range%
+%sourceforge_ability_range_percent%
 
-%sourceforge_enchant_slots%
-%sourceforge_enchant_used%
-%sourceforge_enchant_<附魔ID>%
-%sourceforge_affix_<加成ID>%
+%sourceforge_health%
+%sourceforge_shield_capacity%
+%sourceforge_total_health%
+%sourceforge_armor%
+%sourceforge_energy_max%
+
+%sourceforge_total_base_damage%
+%sourceforge_total_critical_chance%
+%sourceforge_total_critical_damage%
+%sourceforge_total_status_chance%
+%sourceforge_total_ability_strength%
+%sourceforge_total_ability_duration%
+%sourceforge_total_ability_efficiency%
+%sourceforge_total_ability_range%
+
+%sourceforge_hand_<属性ID>%
+%sourceforge_attr_<属性ID>%
+%sourceforge_total_<属性ID>%
+
+%sourceforge_cooldown_multiplier%
+%sourceforge_hand_cooldown_multiplier%
+%sourceforge_cooldown_<基础冷却秒数>%
+%sourceforge_hand_cooldown_<基础冷却秒数>%
+%sourceforge_strength_multiplier%
+%sourceforge_duration_multiplier%
+%sourceforge_range_multiplier%
 
 %sourceforge_vanilla_attack_damage%
 %sourceforge_vanilla_attack_speed%
-%sourceforge_vanilla_physical_defense%
 %sourceforge_vanilla_armor%
-%sourceforge_vanilla_magic_defense%
 %sourceforge_vanilla_armor_toughness%
+%sourceforge_vanilla_max_health%
 ```
 
 读取规则：
 
-- 伤害、暴击、破甲、装备类型、评分、价格读取玩家主手 SourceForge 装备。
-- 抗性、闪避读取玩家身上 SourceForge 防具总和。
-- 原版物理防御和法术防御读取玩家实时 `ARMOR`、`ARMOR_TOUGHNESS` 属性。
-- `%sourceforge_affix_<加成ID>%` 可读取任意已配置加成，例如 `%sourceforge_affix_burn_chance%`。
-- `%sourceforge_enchant_<附魔ID>%` 返回指定 SourceForge 附魔等级，没有则返回 `0`。
+- 装备类型、等级、评分、价格读取玩家主手 SourceForge 装备。
+- 不带 `total_` 的战斗/技能属性读取玩家主手 SourceForge 装备。
+- `health`、`shield_capacity`、`armor`、`energy_max` 和 `total_` 系列读取玩家全身生效 SF 装备：防具栏，以及 `effective-slots` 包含 `inventory` 或 `backpack` 的物品。
+- `%sourceforge_hand_<属性ID>%` 固定读取主手属性，例如 `%sourceforge_hand_base_damage%`。
+- `%sourceforge_attr_<属性ID>%` 固定读取全身属性，例如 `%sourceforge_attr_ability_efficiency%`。
+- `%sourceforge_cooldown_multiplier%` 返回 `1 - 全身 ability_efficiency`，例如效率 `0.2` 时返回 `0.8000`。
+- `%sourceforge_cooldown_10%` 返回 `10 * (1 - 全身 ability_efficiency)`，可直接用于 MythicMobs 技能参数；主手版本使用 `%sourceforge_hand_cooldown_10%`。
+- `%sourceforge_strength_multiplier%`、`%sourceforge_duration_multiplier%`、`%sourceforge_range_multiplier%` 分别返回 `1 + 全身 ability_strength/duration/range`。

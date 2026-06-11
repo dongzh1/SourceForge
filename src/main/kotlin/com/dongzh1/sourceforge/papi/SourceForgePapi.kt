@@ -32,6 +32,7 @@ object SourceForgePapi : PlaceholderExpansion() {
         val player = p.player ?: return "0"
         val key = params.lowercase()
         val mainHand = player.inventory.itemInMainHand
+        dynamicPlaceholder(player, mainHand, key)?.let { return it }
 
         return when {
             // 装备基本信息
@@ -88,6 +89,55 @@ object SourceForgePapi : PlaceholderExpansion() {
         }
     }
 
+    private fun dynamicPlaceholder(player: Player, mainHand: ItemStack, key: String): String? {
+        when (key) {
+            "cooldown_multiplier", "cooldown_mult" -> {
+                return format(cooldownMultiplier(totalAffix(player, "ability_efficiency")), 4)
+            }
+            "hand_cooldown_multiplier", "hand_cooldown_mult" -> {
+                return format(cooldownMultiplier(plugin.itemService.readAffixValue(mainHand, "ability_efficiency")), 4)
+            }
+            "strength_multiplier", "strength_mult" -> {
+                return format(1.0 + totalAffix(player, "ability_strength"), 4)
+            }
+            "duration_multiplier", "duration_mult" -> {
+                return format(1.0 + totalAffix(player, "ability_duration"), 4)
+            }
+            "range_multiplier", "range_mult" -> {
+                return format(1.0 + totalAffix(player, "ability_range"), 4)
+            }
+        }
+
+        if (key.startsWith("hand_cooldown_")) {
+            val base = key.removePrefix("hand_cooldown_").placeholderNumber() ?: return null
+            val efficiency = plugin.itemService.readAffixValue(mainHand, "ability_efficiency")
+            return format(base * cooldownMultiplier(efficiency), 4)
+        }
+        if (key.startsWith("cooldown_")) {
+            val base = key.removePrefix("cooldown_").placeholderNumber() ?: return null
+            return format(base * cooldownMultiplier(totalAffix(player, "ability_efficiency")), 4)
+        }
+
+        if (key.startsWith("hand_")) {
+            val affixId = key.removePrefix("hand_")
+            return affixValue(affixId) { plugin.itemService.readAffixValue(mainHand, affixId) }
+        }
+        if (key.startsWith("attr_")) {
+            val affixId = key.removePrefix("attr_")
+            return affixValue(affixId) { totalAffix(player, affixId) }
+        }
+        if (key != "total_health" && key.startsWith("total_")) {
+            val affixId = key.removePrefix("total_")
+            return affixValue(affixId) { totalAffix(player, affixId) }
+        }
+        return null
+    }
+
+    private fun affixValue(affixId: String, read: () -> Double): String? {
+        val affix = plugin.forgeConfig.affixes[affixId] ?: return null
+        return format(read(), affix.decimals)
+    }
+
     /** 获取玩家全身 SourceForge 装备某属性总和 */
     private fun totalAffix(player: Player, affixId: String): Double {
         return sourceItems(player).sumOf { plugin.itemService.readAffixValue(it, affixId) }
@@ -112,6 +162,14 @@ object SourceForgePapi : PlaceholderExpansion() {
 
     private fun percent(value: Double): String {
         return format(value * 100.0, 2)
+    }
+
+    private fun cooldownMultiplier(efficiency: Double): Double {
+        return (1.0 - efficiency).coerceAtLeast(0.0)
+    }
+
+    private fun String.placeholderNumber(): Double? {
+        return replace(',', '.').replace('_', '.').toDoubleOrNull()
     }
 
     private fun format(value: Double, decimals: Int): String {
