@@ -301,11 +301,6 @@ class SourceForgeCommand(
         }
         val allItems = pieces.map { it.second } + backpackItems
 
-        if (pieces.isEmpty() && backpackItems.isEmpty()) {
-            player.sendMessage("§c[SourceForge] §f未装备任何 SourceForge 物品")
-            return
-        }
-
         player.sendMessage("§6========== SourceForge 属性总览 ==========")
 
         // 已装备
@@ -320,49 +315,38 @@ class SourceForgeCommand(
         if (backpackItems.isNotEmpty()) {
             player.sendMessage("  §7背包生效: §f${backpackItems.size} 件")
         }
-
-        // 汇总所有属性
-        val totals = mutableMapOf<String, Double>()
-        for (affix in plugin.forgeConfig.affixes.values) {
-            val sum = allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
-            if (sum > 0.0) totals[affix.id] = sum
+        if (pieces.isEmpty() && backpackItems.isEmpty()) {
+            player.sendMessage("  §7当前未装备任何 SourceForge 物品")
         }
 
-        if (totals.isEmpty()) {
-            player.sendMessage("")
-            player.sendMessage("  §7当前装备无属性加成")
-            player.sendMessage("§6==========================================")
-            return
+        val totals = plugin.forgeConfig.affixes.values.associate { affix ->
+            affix.id to allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
         }
 
-        // 战斗属性
         player.sendMessage("")
-        player.sendMessage("§e▎战斗属性")
-        affixLine(player, totals, "base_damage", "基础伤害", 1)
-        affixLine(player, totals, "critical_chance", "暴击几率", 4, percent = true)
-        affixLine(player, totals, "critical_damage", "暴击伤害", 4, percent = true)
-        affixLine(player, totals, "status_chance", "触发几率", 4, percent = true)
+        sendAffixGroup(
+            player,
+            "战斗属性",
+            totals,
+            listOf("base_damage", "critical_chance", "critical_damage", "status_chance", "armor")
+        )
+        sendAffixGroup(
+            player,
+            "生存属性",
+            totals,
+            listOf("health", "shield_capacity")
+        )
+        sendAffixGroup(
+            player,
+            "技能属性",
+            totals,
+            listOf("energy_max", "ability_strength", "ability_duration", "ability_efficiency", "ability_range")
+        )
 
-        // 生存属性
-        val hasDefense = listOf("armor", "health", "shield_capacity").any { totals.containsKey(it) }
-        if (hasDefense) {
-            player.sendMessage("")
-            player.sendMessage("§e▎生存属性")
-            affixLine(player, totals, "armor", "护甲", 0)
-            affixLine(player, totals, "health", "生命值", 0)
-            affixLine(player, totals, "shield_capacity", "护盾容量", 0)
-        }
-
-        // 技能属性
-        val hasSkill = listOf("energy_max", "ability_strength", "ability_duration", "ability_efficiency", "ability_range").any { totals.containsKey(it) }
-        if (hasSkill) {
-            player.sendMessage("")
-            player.sendMessage("§e▎技能属性")
-            affixLine(player, totals, "energy_max", "能量上限", 0)
-            affixLine(player, totals, "ability_strength", "技能强度", 4, percent = true)
-            affixLine(player, totals, "ability_duration", "技能持续", 4, percent = true)
-            affixLine(player, totals, "ability_efficiency", "技能效率", 4, percent = true)
-            affixLine(player, totals, "ability_range", "技能范围", 4, percent = true)
+        val displayedIds = defaultAffixOrder.toSet()
+        val extraAffixes = plugin.forgeConfig.affixes.keys.filter { it !in displayedIds }
+        if (extraAffixes.isNotEmpty()) {
+            sendAffixGroup(player, "其他属性", totals, extraAffixes)
         }
 
         // 评分
@@ -376,17 +360,47 @@ class SourceForgeCommand(
         player.sendMessage("§6==========================================")
     }
 
-    private fun affixLine(player: Player, totals: Map<String, Double>, id: String, displayName: String, decimals: Int, percent: Boolean = false) {
-        val value = totals[id] ?: return
-        val formatted = when {
-            percent -> formatPercent(value)
-            decimals <= 0 -> value.toInt().toString()
-            else -> DecimalFormat("0.${"0".repeat(decimals)}").format(value)
+    private fun sendAffixGroup(player: Player, title: String, totals: Map<String, Double>, ids: List<String>) {
+        val affixes = ids.mapNotNull { plugin.forgeConfig.affixes[it] }
+        if (affixes.isEmpty()) return
+        player.sendMessage("§e▎$title")
+        for (affix in affixes) {
+            val value = totals[affix.id] ?: 0.0
+            player.sendMessage("  §7${affix.displayName}: §f${formatAffixValue(affix.id, value, affix.decimals)}")
         }
-        player.sendMessage("  §7$displayName: §f$formatted")
     }
 
-    private fun formatPercent(value: Double): String {
-        return "${DecimalFormat("0.#").format(value * 100.0)}%"
+    private fun formatAffixValue(id: String, value: Double, decimals: Int): String {
+        if (id in percentAffixes) {
+            return "${DecimalFormat("0.##").format(value * 100.0)}%"
+        }
+        if (decimals <= 0) return value.toInt().toString()
+        return DecimalFormat("0.${"0".repeat(decimals)}").format(value)
+    }
+
+    private companion object {
+        val defaultAffixOrder = listOf(
+            "base_damage",
+            "critical_chance",
+            "critical_damage",
+            "status_chance",
+            "armor",
+            "health",
+            "shield_capacity",
+            "energy_max",
+            "ability_strength",
+            "ability_duration",
+            "ability_efficiency",
+            "ability_range"
+        )
+        val percentAffixes = setOf(
+            "critical_chance",
+            "critical_damage",
+            "status_chance",
+            "ability_strength",
+            "ability_duration",
+            "ability_efficiency",
+            "ability_range"
+        )
     }
 }
