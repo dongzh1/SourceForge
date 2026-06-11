@@ -3,22 +3,11 @@ display-name: "金属弹簧"
 item: "sourceforge:metal_spring"
 amount: 1
 affixes:
-  crit_chance:
+  critical_chance:
     chance: 0.60
+    min: 0.01
+    max: 0.04
+  ability_range:
+    chance: 0.30
     min: 0.02
-    max: 0.05
-    weapon-categories:
-      - crossbow
-      - firearm
-      - bow
-    category-scales:
-      bow: 0.90
-      crossbow: 1.05
-      firearm: 0.75
-  attack_damage:
-    chance: 0.20
-    min: 0.4
-    max: 1.0
-    weapon-categories:
-      - crossbow
-      - firearm
+    max: 0.06

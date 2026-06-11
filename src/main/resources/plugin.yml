@@ -17,7 +17,7 @@ softdepend:
 commands:
   sourceforge:
     description: SourceForge main command
-    usage: /sourceforge <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|enchant|debug>
+    usage: /sourceforge <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|reroll|upgrade|debug>
     aliases:
       - sf
 permissions:

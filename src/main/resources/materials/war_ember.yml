@@ -3,22 +3,11 @@ display-name: "战意余烬"
 item: "sourceforge:war_ember"
 amount: 1
 affixes:
-  burn_chance:
-    chance: 0.85
-    min: 0.8
-    max: 2.8
-    category-scales:
-      melee_light: 0.65
-      melee_heavy: 0.95
-      polearm: 0.85
-      bow: 0.90
-      crossbow: 1.05
-      firearm: 1.35
-  attack_damage:
+  base_damage:
     chance: 0.35
     min: 0.5
     max: 1.4
-    weapon-categories:
-      - melee_light
-      - melee_heavy
-      - polearm
+  status_chance:
+    chance: 0.75
+    min: 0.04
+    max: 0.14

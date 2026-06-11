@@ -15,13 +15,17 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlotGroup
 
+/**
+ * 监控背包内 effective-slots 包含 inventory/backpack 的 SF 装备，
+ * 将其属性动态注入玩家。
+ */
 class InventoryAttributeListener(
     private val plugin: SourceForge
 ) : Listener {
     private val attackDamageKey = NamespacedKey(plugin, "inventory_attack_damage")
     private val attackSpeedKey = NamespacedKey(plugin, "inventory_attack_speed")
-    private val armorKey = NamespacedKey(plugin, "inventory_physical_defense")
-    private val toughnessKey = NamespacedKey(plugin, "inventory_magic_defense")
+    private val armorKey = NamespacedKey(plugin, "inventory_armor")
+    private val healthKey = NamespacedKey(plugin, "inventory_health")
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
@@ -64,27 +68,27 @@ class InventoryAttributeListener(
         clear(player)
         var attackDamage = 0.0
         var attackSpeed = 0.0
-        var physicalDefense = 0.0
-        var magicDefense = 0.0
+        var armor = 0.0
+        var health = 0.0
         for (item in player.inventory.contents.filterNotNull()) {
             val equipment = plugin.itemService.equipmentConfig(item) ?: continue
             if ("inventory" !in equipment.effectiveSlots && "backpack" !in equipment.effectiveSlots) continue
-            attackDamage += plugin.itemService.readFlatPhysicalDamage(item)
+            attackDamage += plugin.itemService.readBaseDamage(item)
             attackSpeed += inventoryAttackSpeed(equipment.weaponCategory)
-            physicalDefense += equipment.physicalDefense
-            magicDefense += equipment.magicDefense
+            armor += plugin.itemService.readAffixValue(item, "armor")
+            health += plugin.itemService.readAffixValue(item, "health") + plugin.itemService.readAffixValue(item, "shield_capacity")
         }
         add(player, Attribute.ATTACK_DAMAGE, attackDamageKey, attackDamage)
         add(player, Attribute.ATTACK_SPEED, attackSpeedKey, attackSpeed)
-        add(player, Attribute.ARMOR, armorKey, physicalDefense)
-        add(player, Attribute.ARMOR_TOUGHNESS, toughnessKey, magicDefense)
+        add(player, Attribute.ARMOR, armorKey, armor)
+        add(player, Attribute.MAX_HEALTH, healthKey, health)
     }
 
     private fun clear(player: Player) {
         player.getAttribute(Attribute.ATTACK_DAMAGE)?.removeModifier(attackDamageKey)
         player.getAttribute(Attribute.ATTACK_SPEED)?.removeModifier(attackSpeedKey)
         player.getAttribute(Attribute.ARMOR)?.removeModifier(armorKey)
-        player.getAttribute(Attribute.ARMOR_TOUGHNESS)?.removeModifier(toughnessKey)
+        player.getAttribute(Attribute.MAX_HEALTH)?.removeModifier(healthKey)
     }
 
     private fun add(player: Player, attribute: Attribute, key: NamespacedKey, amount: Double) {

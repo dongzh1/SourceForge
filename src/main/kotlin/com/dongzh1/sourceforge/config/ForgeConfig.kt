@@ -78,8 +78,6 @@ data class ForgeConfig(
                         .ifEmpty { defaultEffectiveSlots(id, config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase()) }
                         .map { it.lowercase() }
                         .toSet(),
-                    physicalDefense = config.getDouble("$path.vanilla-attributes.physical-defense", defaultPhysicalDefense(id, config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase())),
-                    magicDefense = config.getDouble("$path.vanilla-attributes.magic-defense", defaultMagicDefense(id, config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase())),
                     baseLore = config.getStringList("$path.base-lore"),
                     affixIds = config.getStringList("$path.affixes").ifEmpty { affixes.keys.toList() },
                     tierAffixes = loadTierAffixes(config, "$path.tier-affixes")
@@ -121,7 +119,7 @@ data class ForgeConfig(
                 equipment = equipment,
                 affixes = affixes,
                 forgeMaterials = forgeMaterials,
-                validationWarnings = validate(blueprints, equipment, affixes, forgeMaterials, loadCombat(combatConfig))
+                validationWarnings = validate(blueprints, equipment, affixes, forgeMaterials)
             )
         }
 
@@ -131,7 +129,6 @@ data class ForgeConfig(
         }
 
         private fun loadAffix(config: FileConfiguration, path: String, id: String): AffixConfig {
-            val legacyCombat = config.getString("$path.combat", "")!!.lowercase()
             return AffixConfig(
                 id = id,
                 displayName = config.getString("$path.display-name", id)!!,
@@ -140,86 +137,10 @@ data class ForgeConfig(
                 min = config.getDouble("$path.min", 0.0),
                 max = config.getDouble("$path.max", 0.0),
                 decimals = config.getInt("$path.decimals", 1).coerceAtLeast(0),
-                chance = config.getDouble("$path.chance", 1.0).coerceAtLeast(0.0),
-                lore = config.getString("$path.lore", "&7%name% +%value%")!!,
-                combat = legacyCombat,
-                melee = loadAffixEffect(config, path, "melee", legacyCombat),
-                ranged = loadAffixEffect(config, path, "ranged", legacyCombat),
-                effects = loadNamedEffects(config, path, legacyCombat)
+                combat = config.getString("$path.combat", id)!!.lowercase(),
+                scale = config.getDouble("$path.scale", 1.0),
+                lore = config.getString("$path.lore", "&7%name% +%value%")!!
             )
-        }
-
-        private fun loadNamedEffects(
-            config: FileConfiguration,
-            path: String,
-            fallbackCombat: String
-        ): Map<String, AffixEffectConfig> {
-            val result = linkedMapOf<String, AffixEffectConfig>()
-            config.getConfigurationSection("$path.effects")?.getKeys(false)?.forEach { key ->
-                result[key.lowercase()] = loadAffixEffect(config, "$path.effects", key, fallbackCombat)
-            }
-            return result
-        }
-
-        private fun loadAffixEffect(
-            config: FileConfiguration,
-            path: String,
-            mode: String,
-            fallbackCombat: String
-        ): AffixEffectConfig {
-            val effectPath = "$path.$mode"
-            val combat = config.getString("$effectPath.combat", fallbackCombat)!!.lowercase()
-            return AffixEffectConfig(
-                combat = combat,
-                scale = config.getDouble("$effectPath.scale", 1.0).coerceAtLeast(0.0),
-                damageType = config.getString("$effectPath.damage-type", defaultDamageType(combat))!!.lowercase(),
-                element = config.getString("$effectPath.element", defaultElement(combat))!!.lowercase(),
-                statusEffect = config.getString("$effectPath.status-effect", defaultStatusEffect(combat))!!.lowercase(),
-                statusChance = config.getDouble("$effectPath.status-chance", defaultStatusChance(combat)).coerceAtLeast(0.0),
-                durationTicks = config.getInt("$effectPath.duration-ticks", defaultDuration(combat)).coerceAtLeast(0),
-                amplifier = config.getInt("$effectPath.amplifier", 0).coerceAtLeast(0)
-            )
-        }
-
-        private fun defaultDuration(combat: String): Int {
-            return when (combat) {
-                "poison", "burn" -> 80
-                "slow" -> 60
-                else -> 0
-            }
-        }
-
-        private fun defaultDamageType(combat: String): String {
-            return when (combat) {
-                "poison", "burn", "slow", "element_damage", "magic_damage" -> "magic"
-                "true_damage" -> "true"
-                else -> "physical"
-            }
-        }
-
-        private fun defaultElement(combat: String): String {
-            return when (combat) {
-                "poison" -> "wood"
-                "burn" -> "fire"
-                "slow" -> "ice"
-                else -> "none"
-            }
-        }
-
-        private fun defaultStatusEffect(combat: String): String {
-            return when (combat) {
-                "poison" -> "poison"
-                "burn" -> "burn"
-                "slow" -> "slow"
-                else -> "none"
-            }
-        }
-
-        private fun defaultStatusChance(combat: String): Double {
-            return when (combat) {
-                "poison", "burn", "slow" -> 0.25
-                else -> 0.0
-            }
         }
 
         private fun defaultWeaponCategory(id: String, material: String?): String {
@@ -234,32 +155,6 @@ data class ForgeConfig(
                 "spear" in normalizedId || normalizedMaterial == "trident" -> "polearm"
                 else -> "melee"
             }
-        }
-
-        private fun defaultPhysicalDefense(id: String, weaponCategory: String): Double {
-            if (!weaponCategory.startsWith("armor_")) return 0.0
-            val normalized = id.lowercase()
-            val base = when {
-                "helmet" in normalized -> 2.0
-                "chestplate" in normalized -> 6.0
-                "leggings" in normalized -> 5.0
-                "boots" in normalized -> 2.0
-                else -> 2.0
-            }
-            return if (weaponCategory == "armor_physical") base else base * 0.45
-        }
-
-        private fun defaultMagicDefense(id: String, weaponCategory: String): Double {
-            if (!weaponCategory.startsWith("armor_")) return 0.0
-            val normalized = id.lowercase()
-            val base = when {
-                "helmet" in normalized -> 2.0
-                "chestplate" in normalized -> 6.0
-                "leggings" in normalized -> 5.0
-                "boots" in normalized -> 2.0
-                else -> 2.0
-            }
-            return if (weaponCategory == "armor_magic") base else base * 0.35
         }
 
         private fun defaultEffectiveSlots(id: String, weaponCategory: String): List<String> {
@@ -310,18 +205,9 @@ data class ForgeConfig(
                     affixId = affixId,
                     chance = config.getDouble("$base.chance", 1.0).coerceAtLeast(0.0),
                     min = config.getDouble("$base.min", 0.0),
-                    max = config.getDouble("$base.max", 0.0),
-                    weaponTypes = config.getStringList("$base.weapon-types").map { it.lowercase() }.toSet(),
-                    weaponCategories = config.getStringList("$base.weapon-categories").map { it.lowercase() }.toSet(),
-                    typeScales = loadScaleMap(config, "$base.type-scales"),
-                    categoryScales = loadScaleMap(config, "$base.category-scales")
+                    max = config.getDouble("$base.max", 0.0)
                 )
             }
-        }
-
-        private fun loadScaleMap(config: FileConfiguration, path: String): Map<String, Double> {
-            val section = config.getConfigurationSection(path) ?: return emptyMap()
-            return section.getKeys(false).associate { it.lowercase() to config.getDouble("$path.$it", 1.0) }
         }
 
         private fun loadForgeSystem(config: FileConfiguration): ForgeSystemConfig {
@@ -350,33 +236,8 @@ data class ForgeConfig(
         }
 
         private fun loadCombat(config: FileConfiguration): CombatConfig {
-            val profiles = linkedMapOf<String, MonsterProfileConfig>()
-            config.getConfigurationSection("monster-profiles")?.getKeys(false)?.forEach { id ->
-                val path = "monster-profiles.$id"
-                profiles[id.lowercase()] = MonsterProfileConfig(
-                    id = id.lowercase(),
-                    displayName = config.getString("$path.display-name", id)!!,
-                    tags = config.getStringList("$path.tags").map { it.lowercase() }.toSet(),
-                    entityTypes = config.getStringList("$path.entity-types").map { it.lowercase() }.toSet(),
-                    nameContains = config.getStringList("$path.name-contains").map { it.lowercase() }.toSet(),
-                    elements = config.getStringList("$path.elements").map { it.lowercase() }.toSet(),
-                    attackType = config.getString("$path.attack-type", "physical")!!.lowercase(),
-                    attackElement = config.getString("$path.attack-element", "none")!!.lowercase(),
-                    physicalResistance = config.getDouble("$path.physical-resistance", 0.0),
-                    magicResistance = config.getDouble("$path.magic-resistance", 0.0),
-                    elementResistances = loadScaleMap(config, "$path.element-resistances")
-                )
-            }
-            val reactions = linkedMapOf<String, Map<String, Double>>()
-            config.getConfigurationSection("element-reactions")?.getKeys(false)?.forEach { attacker ->
-                reactions[attacker.lowercase()] = loadScaleMap(config, "element-reactions.$attacker")
-            }
             return CombatConfig(
-                trueDamageScale = config.getDouble("true-damage-scale", 0.45).coerceAtLeast(0.0),
-                elementAbsorbMaxHealPerHit = config.getDouble("element-absorb.max-heal-per-hit", 10.0).coerceAtLeast(0.0),
-                defaultMonsterProfile = config.getString("default-monster-profile", "default")!!.lowercase(),
-                monsterProfiles = profiles,
-                elementReactions = reactions
+                defenseFloor = config.getDouble("defense-floor", 0.10).coerceIn(0.0, 1.0)
             )
         }
 
@@ -384,8 +245,7 @@ data class ForgeConfig(
             blueprints: Map<String, BlueprintConfig>,
             equipment: Map<String, EquipmentConfig>,
             affixes: Map<String, AffixConfig>,
-            forgeMaterials: List<ForgeMaterialConfig>,
-            combat: CombatConfig
+            forgeMaterials: List<ForgeMaterialConfig>
         ): List<String> {
             val warnings = mutableListOf<String>()
             for (blueprint in blueprints.values) {
@@ -413,16 +273,6 @@ data class ForgeConfig(
                 }
                 validateRolls("材料 ${material.id}", material.affixes, affixes, warnings)
             }
-            if (combat.defaultMonsterProfile !in combat.monsterProfiles) {
-                warnings += "combat.yml default-monster-profile ${combat.defaultMonsterProfile} 不存在"
-            }
-            for (profile in combat.monsterProfiles.values) {
-                for ((element, resistance) in profile.elementResistances) {
-                    if (kotlin.math.abs(resistance) <= 1.0 && resistance != 0.0) {
-                        warnings += "怪物档案 ${profile.id} 的 $element 元素抗性为 $resistance，当前元素抗性使用百分制，确认是否应写成 ${resistance * 100.0}"
-                    }
-                }
-            }
             return warnings
         }
 
@@ -440,12 +290,6 @@ data class ForgeConfig(
                 }
                 if (roll.chance <= 0.0) warnings += "$owner 词条 ${roll.affixId} chance <= 0，不会出现"
                 if (roll.max > 0.0 && roll.max < roll.min) warnings += "$owner 词条 ${roll.affixId} max 小于 min"
-                if (affix.id in setOf("fire_resistance", "ice_resistance", "lightning_resistance")) {
-                    val value = maxOf(kotlin.math.abs(roll.min), kotlin.math.abs(roll.max))
-                    if (value in 0.000001..1.0) {
-                        warnings += "$owner 词条 ${roll.affixId} 数值看起来仍是旧小数单位，当前元素抗性使用百分制"
-                    }
-                }
             }
         }
     }
@@ -504,8 +348,6 @@ data class EquipmentConfig(
     val chunkWorldLevelMode: String,
     val pixelShopPrice: Double,
     val effectiveSlots: Set<String>,
-    val physicalDefense: Double,
-    val magicDefense: Double,
     val baseLore: List<String>,
     val affixIds: List<String>,
     val tierAffixes: Map<Int, List<AffixRollConfig>>
@@ -528,11 +370,7 @@ data class AffixRollConfig(
     val affixId: String,
     val chance: Double,
     val min: Double,
-    val max: Double,
-    val weaponTypes: Set<String> = emptySet(),
-    val weaponCategories: Set<String> = emptySet(),
-    val typeScales: Map<String, Double> = emptyMap(),
-    val categoryScales: Map<String, Double> = emptyMap()
+    val max: Double
 )
 
 data class AffixConfig(
@@ -543,43 +381,11 @@ data class AffixConfig(
     val min: Double,
     val max: Double,
     val decimals: Int,
-    val chance: Double,
-    val lore: String,
-    val combat: String,
-    val melee: AffixEffectConfig,
-    val ranged: AffixEffectConfig,
-    val effects: Map<String, AffixEffectConfig>
-)
-
-data class AffixEffectConfig(
     val combat: String,
     val scale: Double,
-    val damageType: String,
-    val element: String,
-    val statusEffect: String,
-    val statusChance: Double,
-    val durationTicks: Int,
-    val amplifier: Int
+    val lore: String
 )
 
 data class CombatConfig(
-    val trueDamageScale: Double,
-    val elementAbsorbMaxHealPerHit: Double,
-    val defaultMonsterProfile: String,
-    val monsterProfiles: Map<String, MonsterProfileConfig>,
-    val elementReactions: Map<String, Map<String, Double>>
-)
-
-data class MonsterProfileConfig(
-    val id: String,
-    val displayName: String,
-    val tags: Set<String>,
-    val entityTypes: Set<String>,
-    val nameContains: Set<String>,
-    val elements: Set<String>,
-    val attackType: String,
-    val attackElement: String,
-    val physicalResistance: Double,
-    val magicResistance: Double,
-    val elementResistances: Map<String, Double>
+    val defenseFloor: Double
 )

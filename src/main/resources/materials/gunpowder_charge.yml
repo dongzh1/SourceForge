@@ -3,23 +3,11 @@ display-name: "火药装药"
 item: "sourceforge:gunpowder_charge"
 amount: 1
 affixes:
-  burn_chance:
+  base_damage:
     chance: 0.75
-    min: 0.8
-    max: 2.6
-    weapon-categories:
-      - crossbow
-      - firearm
-    category-scales:
-      crossbow: 0.85
-      firearm: 1.40
-  crit_damage:
+    min: 0.6
+    max: 2.0
+  critical_damage:
     chance: 0.35
     min: 0.10
-    max: 0.26
-    weapon-categories:
-      - crossbow
-      - firearm
-    category-scales:
-      crossbow: 1.0
-      firearm: 1.25
+    max: 0.30

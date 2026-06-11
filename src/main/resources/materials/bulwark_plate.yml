@@ -3,20 +3,11 @@ display-name: "玄铁甲片"
 item: "sourceforge:bulwark_plate"
 amount: 1
 affixes:
-  physical_resistance:
+  armor:
     chance: 0.90
-    min: 0.03
-    max: 0.08
-    weapon-categories:
-      - armor_physical
-      - armor_magic
-    category-scales:
-      armor_physical: 1.25
-      armor_magic: 0.55
-  fire_resistance:
-    chance: 0.25
+    min: 2.0
+    max: 6.0
+  shield_capacity:
+    chance: 0.40
     min: 2.0
     max: 5.0
-    weapon-categories:
-      - armor_physical
-      - armor_magic

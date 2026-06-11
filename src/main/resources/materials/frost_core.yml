@@ -3,22 +3,11 @@ display-name: "霜核"
 item: "sourceforge:frost_core"
 amount: 1
 affixes:
-  slow_chance:
-    chance: 0.85
-    min: 0.7
-    max: 2.2
-    category-scales:
-      melee_light: 0.65
-      melee_heavy: 0.80
-      polearm: 0.95
-      bow: 1.25
-      crossbow: 0.95
-      firearm: 0.60
-  armor_pierce:
-    chance: 0.20
-    min: 0.2
-    max: 0.7
-    weapon-categories:
-      - polearm
-      - crossbow
-      - firearm
+  critical_chance:
+    chance: 0.55
+    min: 0.02
+    max: 0.06
+  status_chance:
+    chance: 0.60
+    min: 0.03
+    max: 0.10

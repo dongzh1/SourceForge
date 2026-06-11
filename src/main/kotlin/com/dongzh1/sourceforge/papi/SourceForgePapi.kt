@@ -32,56 +32,69 @@ object SourceForgePapi : PlaceholderExpansion() {
         val player = p.player ?: return "0"
         val key = params.lowercase()
         val mainHand = player.inventory.itemInMainHand
+
         return when {
+            // 装备基本信息
             key == "type" || key == "item_type" -> plugin.itemService.weaponType(mainHand) ?: ""
             key == "category" || key == "weapon_category" -> plugin.itemService.weaponCategory(mainHand) ?: ""
             key == "tier" -> plugin.itemService.equipmentTier(mainHand).toString()
             key == "score" -> plugin.itemService.readScore(mainHand).toString()
             key == "price" -> format(plugin.itemService.readPrice(mainHand), 1)
 
-            key == "physical_damage" -> format(plugin.itemService.readFlatPhysicalDamage(mainHand), 1)
-            key == "magic_damage" -> format(plugin.itemService.readFlatMagicDamage(mainHand), 1)
-            key == "true_damage" -> format(plugin.itemService.readTrueDamage(mainHand), 1)
-            key.endsWith("_damage") && key.substringBefore("_damage") in ELEMENTS ->
-                format(plugin.itemService.readElementDamage(mainHand, key.substringBefore("_damage")), 1)
+            // 核心战斗属性 (手持物品)
+            key == "base_damage" -> format(plugin.itemService.readAffixValue(mainHand, "base_damage"), 1)
+            key == "critical_chance" -> format(plugin.itemService.readAffixValue(mainHand, "critical_chance"), 4)
+            key == "critical_chance_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "critical_chance"))
+            key == "critical_damage" -> format(plugin.itemService.readAffixValue(mainHand, "critical_damage"), 4)
+            key == "critical_damage_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "critical_damage"))
+            key == "status_chance" -> format(plugin.itemService.readAffixValue(mainHand, "status_chance"), 4)
+            key == "status_chance_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "status_chance"))
 
-            key == "crit_chance" -> format(plugin.itemService.readAffixValue(mainHand, "crit_chance"), 4)
-            key == "crit_chance_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "crit_chance"))
-            key == "crit_damage" -> format(plugin.itemService.readAffixValue(mainHand, "crit_damage"), 4)
-            key == "crit_damage_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "crit_damage"))
-            key == "armor_pierce" -> format(plugin.itemService.readAffixValue(mainHand, "armor_pierce"), 1)
+            // 技能属性 (手持物品)
+            key == "ability_strength" -> format(plugin.itemService.readAffixValue(mainHand, "ability_strength"), 4)
+            key == "ability_strength_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "ability_strength"))
+            key == "ability_duration" -> format(plugin.itemService.readAffixValue(mainHand, "ability_duration"), 4)
+            key == "ability_duration_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "ability_duration"))
+            key == "ability_efficiency" -> format(plugin.itemService.readAffixValue(mainHand, "ability_efficiency"), 4)
+            key == "ability_efficiency_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "ability_efficiency"))
+            key == "ability_range" -> format(plugin.itemService.readAffixValue(mainHand, "ability_range"), 4)
+            key == "ability_range_percent" -> percent(plugin.itemService.readAffixValue(mainHand, "ability_range"))
 
-            key == "physical_resistance" -> format(armorAffixTotal(player, "physical_resistance"), 4)
-            key == "physical_resistance_percent" -> percent(armorAffixTotal(player, "physical_resistance"))
-            key == "magic_resistance" -> format(armorAffixTotal(player, "magic_resistance"), 4)
-            key == "magic_resistance_percent" -> percent(armorAffixTotal(player, "magic_resistance"))
-            key == "dodge_chance" -> format(armorAffixTotal(player, "dodge_chance"), 4)
-            key == "dodge_chance_percent" -> percent(armorAffixTotal(player, "dodge_chance"))
-            key.endsWith("_resistance") && key.substringBefore("_resistance") in ELEMENTS ->
-                format(armorAffixTotal(player, "${key.substringBefore("_resistance")}_resistance"), 1)
+            // 生存属性 (全身)
+            key == "health" -> format(totalAffix(player, "health"), 0)
+            key == "shield_capacity" -> format(totalAffix(player, "shield_capacity"), 0)
+            key == "total_health" -> format(totalAffix(player, "health") + totalAffix(player, "shield_capacity"), 0)
+            key == "armor" -> format(totalAffix(player, "armor"), 0)
+            key == "energy_max" -> format(totalAffix(player, "energy_max"), 0)
 
-            key == "enchant_slots" -> plugin.enchantService.enchantSlots(mainHand).toString()
-            key == "enchant_used" -> plugin.enchantService.readEnchantLevels(mainHand).size.toString()
-            key.startsWith("enchant_") -> plugin.enchantService
-                .readEnchantLevel(mainHand, key.removePrefix("enchant_"))
-                .toString()
+            // 总属性 (全身)
+            key == "total_base_damage" -> format(totalAffix(player, "base_damage"), 1)
+            key == "total_critical_chance" -> format(totalAffix(player, "critical_chance"), 4)
+            key == "total_critical_damage" -> format(totalAffix(player, "critical_damage"), 4)
+            key == "total_status_chance" -> format(totalAffix(player, "status_chance"), 4)
+            key == "total_ability_strength" -> format(totalAffix(player, "ability_strength"), 4)
+            key == "total_ability_duration" -> format(totalAffix(player, "ability_duration"), 4)
+            key == "total_ability_efficiency" -> format(totalAffix(player, "ability_efficiency"), 4)
+            key == "total_ability_range" -> format(totalAffix(player, "ability_range"), 4)
 
-            key.startsWith("affix_") -> format(plugin.itemService.readAffixValue(mainHand, key.removePrefix("affix_")), 4)
-
+            // 原版属性
             key == "vanilla_attack_damage" -> format(attribute(player, Attribute.ATTACK_DAMAGE), 2)
             key == "vanilla_attack_speed" -> format(attribute(player, Attribute.ATTACK_SPEED), 2)
-            key == "vanilla_physical_defense" || key == "vanilla_armor" -> format(attribute(player, Attribute.ARMOR), 2)
-            key == "vanilla_magic_defense" || key == "vanilla_armor_toughness" -> format(attribute(player, Attribute.ARMOR_TOUGHNESS), 2)
+            key == "vanilla_armor" -> format(attribute(player, Attribute.ARMOR), 2)
+            key == "vanilla_armor_toughness" -> format(attribute(player, Attribute.ARMOR_TOUGHNESS), 2)
+            key == "vanilla_max_health" -> format(attribute(player, Attribute.MAX_HEALTH), 2)
 
             else -> null
         }
     }
 
-    private fun armorAffixTotal(player: Player, affixId: String): Double {
-        return sourceDefensiveItems(player).sumOf { plugin.itemService.readAffixValue(it, affixId) }
+    /** 获取玩家全身 SourceForge 装备某属性总和 */
+    private fun totalAffix(player: Player, affixId: String): Double {
+        return sourceItems(player).sumOf { plugin.itemService.readAffixValue(it, affixId) }
     }
 
-    private fun sourceDefensiveItems(player: Player): List<ItemStack> {
+    /** 获取所有生效的 SourceForge 装备（装甲槽+背包内 effective-slots 包含 inventory 的物品） */
+    private fun sourceItems(player: Player): List<ItemStack> {
         val armor = player.inventory.armorContents.filterNotNull().filter { plugin.itemService.isSourceEquipment(it) }
         val inventoryItems = player.inventory.contents
             .filterNotNull()
@@ -105,6 +118,4 @@ object SourceForgePapi : PlaceholderExpansion() {
         if (decimals <= 0) return value.toInt().toString()
         return DecimalFormat("0." + "0".repeat(decimals)).format(value)
     }
-
-    private val ELEMENTS = setOf("fire", "ice", "lightning", "water", "wood")
 }

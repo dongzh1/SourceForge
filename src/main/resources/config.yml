@@ -16,26 +16,19 @@ score:
     min-price: 1.0
   combat-weights:
     default: 5.0
-    damage: 10.0
-    physical_damage: 10.0
-    magic_damage: 10.0
-    element_damage: 10.0
-    true_damage: 18.0
-    pierce: 15.0
-    crit_chance: 250.0
-    crit_damage: 90.0
-    poison: 12.0
-    burn: 12.0
-    slow: 12.0
-    physical_resistance: 350.0
-    magic_resistance: 350.0
-    fire_resistance: 4.0
-    ice_resistance: 4.0
-    lightning_resistance: 4.0
-    dodge_chance: 500.0
-  affix-weights:
-    # 可选：按词条 ID 覆盖上面的 combat-weights。
-    # 例如 crit_damage: 100.0 表示破势每 1 点加 100 分。
+    base_damage: 10.0
+    critical_chance: 250.0
+    critical_damage: 90.0
+    status_chance: 5.0
+    armor: 15.0
+    health: 8.0
+    shield_capacity: 8.0
+    energy_max: 6.0
+    ability_strength: 12.0
+    ability_duration: 6.0
+    ability_efficiency: 8.0
+    ability_range: 8.0
+  affix-weights: {}
 
 blueprint-item:
   material: PAPER
@@ -357,42 +350,42 @@ equipment:
     base-lore:
       - "&8源质锻造成品"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.0
           max: 2.0
-        magic_damage:
+        critical_chance:
           chance: 0.30
-          min: 0.4
-          max: 0.8
+          min: 0.02
+          max: 0.05
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.0
           max: 3.5
-        magic_damage:
+        critical_chance:
           chance: 0.40
-          min: 0.7
-          max: 1.2
-        crit_damage:
+          min: 0.03
+          max: 0.07
+        critical_damage:
           chance: 0.20
           min: 0.10
           max: 0.22
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 3.0
           max: 5.0
-        magic_damage:
+        critical_chance:
           chance: 0.50
-          min: 1.0
-          max: 1.8
-        crit_damage:
+          min: 0.04
+          max: 0.10
+        critical_damage:
           chance: 0.35
           min: 0.15
           max: 0.35
@@ -409,34 +402,34 @@ equipment:
       - "&8源质远程武器"
       - "&7需要弹药与射击节奏"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.0
           max: 1.8
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.8
           max: 3.0
-        crit_damage:
+        critical_damage:
           chance: 0.20
           min: 0.10
           max: 0.20
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.6
           max: 4.2
-        magic_damage:
+        critical_chance:
           chance: 0.20
-          min: 0.5
-          max: 1.0
-        crit_damage:
+          min: 0.02
+          max: 0.06
+        critical_damage:
           chance: 0.40
           min: 0.18
           max: 0.40
@@ -451,40 +444,40 @@ equipment:
     pixelshop-price: 180.0
     base-lore:
       - "&8源质远程武器"
-      - "&7稳定射击，词条按远程规则结算"
+      - "&7稳定射击"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 0.8
           max: 1.6
-        magic_damage:
+        critical_chance:
           chance: 0.25
-          min: 0.4
-          max: 0.8
+          min: 0.02
+          max: 0.05
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.6
           max: 2.8
-        magic_damage:
+        critical_chance:
           chance: 0.35
-          min: 0.7
-          max: 1.2
+          min: 0.03
+          max: 0.07
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.4
           max: 4.0
-        magic_damage:
+        critical_chance:
           chance: 0.45
-          min: 1.0
-          max: 1.8
-        crit_damage:
+          min: 0.04
+          max: 0.09
+        critical_damage:
           chance: 0.25
           min: 0.12
           max: 0.28
@@ -499,40 +492,40 @@ equipment:
     pixelshop-price: 220.0
     base-lore:
       - "&8源质远程武器"
-      - "&7高穿透，词条按远程规则结算"
+      - "&7高穿透"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.0
           max: 1.8
-        magic_damage:
+        critical_chance:
           chance: 0.25
-          min: 0.4
-          max: 0.8
+          min: 0.02
+          max: 0.05
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.8
           max: 3.2
-        magic_damage:
+        critical_chance:
           chance: 0.35
-          min: 0.8
-          max: 1.4
+          min: 0.03
+          max: 0.07
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.8
           max: 4.6
-        magic_damage:
+        critical_chance:
           chance: 0.45
-          min: 1.1
-          max: 2.0
-        crit_damage:
+          min: 0.04
+          max: 0.09
+        critical_damage:
           chance: 0.35
           min: 0.14
           max: 0.34
@@ -548,34 +541,34 @@ equipment:
     base-lore:
       - "&8源质长柄兵器"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.4
           max: 2.4
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.2
           max: 3.8
-        crit_damage:
+        critical_damage:
           chance: 0.25
           min: 0.10
           max: 0.22
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 3.2
           max: 5.0
-        magic_damage:
+        critical_chance:
           chance: 0.20
-          min: 0.5
-          max: 1.0
-        crit_damage:
+          min: 0.02
+          max: 0.05
+        critical_damage:
           chance: 0.40
           min: 0.18
           max: 0.42
@@ -591,34 +584,34 @@ equipment:
     base-lore:
       - "&8源质穿刺武器"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.0
           max: 2.0
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.0
           max: 3.2
-        magic_damage:
+        critical_chance:
           chance: 0.25
-          min: 0.4
-          max: 0.8
+          min: 0.02
+          max: 0.05
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 3.0
           max: 4.8
-        magic_damage:
+        critical_chance:
           chance: 0.35
-          min: 0.7
-          max: 1.4
-        crit_damage:
+          min: 0.03
+          max: 0.07
+        critical_damage:
           chance: 0.20
           min: 0.10
           max: 0.25
@@ -634,42 +627,42 @@ equipment:
     base-lore:
       - "&8源质轻武器"
     affixes:
-      - physical_damage
-      - magic_damage
-      - crit_damage
+      - base_damage
+      - critical_chance
+      - critical_damage
     tier-affixes:
       1:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 0.8
           max: 1.6
-        magic_damage:
+        critical_chance:
           chance: 0.25
-          min: 0.3
-          max: 0.7
+          min: 0.02
+          max: 0.05
       2:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 1.6
           max: 2.8
-        magic_damage:
+        critical_chance:
           chance: 0.35
-          min: 0.5
-          max: 1.0
-        crit_damage:
+          min: 0.03
+          max: 0.07
+        critical_damage:
           chance: 0.20
           min: 0.08
           max: 0.18
       3:
-        physical_damage:
+        base_damage:
           chance: 1.0
           min: 2.4
           max: 4.0
-        magic_damage:
+        critical_chance:
           chance: 0.45
-          min: 0.8
-          max: 1.5
-        crit_damage:
+          min: 0.04
+          max: 0.09
+        critical_damage:
           chance: 0.30
           min: 0.12
           max: 0.28
@@ -681,50 +674,47 @@ equipment:
     weapon-category: armor_physical
     effective-slots:
       - head
-    vanilla-attributes:
-      physical-defense: 2.0
-      magic-defense: 0.7
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 220.0
     base-lore:
       - "&8源质物抗防具"
       - "&7玄铁守御套装部件"
     affixes:
-      - physical_resistance
-      - magic_resistance
-      - dodge_chance
+      - armor
+      - health
+      - shield_capacity
     tier-affixes: &bulwark_tier_affixes
       1:
-        physical_resistance:
+        armor:
           chance: 1.0
-          min: 0.03
-          max: 0.06
-        magic_resistance:
-          chance: 0.20
-          min: 0.01
-          max: 0.03
-      2:
-        physical_resistance:
-          chance: 1.0
-          min: 0.05
-          max: 0.08
-        magic_resistance:
-          chance: 0.25
-          min: 0.02
-          max: 0.04
-      3:
-        physical_resistance:
-          chance: 1.0
-          min: 0.07
-          max: 0.11
-        magic_resistance:
+          min: 2.0
+          max: 4.0
+        health:
           chance: 0.30
-          min: 0.02
-          max: 0.05
-        dodge_chance:
-          chance: 0.18
-          min: 0.02
-          max: 0.04
+          min: 2.0
+          max: 4.0
+      2:
+        armor:
+          chance: 1.0
+          min: 3.0
+          max: 6.0
+        health:
+          chance: 0.40
+          min: 3.0
+          max: 6.0
+      3:
+        armor:
+          chance: 1.0
+          min: 5.0
+          max: 9.0
+        health:
+          chance: 0.50
+          min: 4.0
+          max: 8.0
+        shield_capacity:
+          chance: 0.25
+          min: 3.0
+          max: 6.0
   bulwark_chestplate:
     display-name: "玄铁守御胸甲"
     material: IRON_CHESTPLATE
@@ -732,18 +722,15 @@ equipment:
     weapon-category: armor_physical
     effective-slots:
       - chest
-    vanilla-attributes:
-      physical-defense: 6.0
-      magic-defense: 2.1
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 360.0
     base-lore:
       - "&8源质物抗防具"
       - "&7玄铁守御套装部件"
     affixes:
-      - physical_resistance
-      - magic_resistance
-      - dodge_chance
+      - armor
+      - health
+      - shield_capacity
     tier-affixes: *bulwark_tier_affixes
   bulwark_leggings:
     display-name: "玄铁守御护腿"
@@ -752,18 +739,15 @@ equipment:
     weapon-category: armor_physical
     effective-slots:
       - legs
-    vanilla-attributes:
-      physical-defense: 5.0
-      magic-defense: 1.8
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 320.0
     base-lore:
       - "&8源质物抗防具"
       - "&7玄铁守御套装部件"
     affixes:
-      - physical_resistance
-      - magic_resistance
-      - dodge_chance
+      - armor
+      - health
+      - shield_capacity
     tier-affixes: *bulwark_tier_affixes
   bulwark_boots:
     display-name: "玄铁守御靴子"
@@ -772,18 +756,15 @@ equipment:
     weapon-category: armor_physical
     effective-slots:
       - feet
-    vanilla-attributes:
-      physical-defense: 2.0
-      magic-defense: 0.7
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 200.0
     base-lore:
       - "&8源质物抗防具"
       - "&7玄铁守御套装部件"
     affixes:
-      - physical_resistance
-      - magic_resistance
-      - dodge_chance
+      - armor
+      - health
+      - shield_capacity
     tier-affixes: *bulwark_tier_affixes
 
   ward_helmet:
@@ -793,50 +774,47 @@ equipment:
     weapon-category: armor_magic
     effective-slots:
       - head
-    vanilla-attributes:
-      physical-defense: 0.9
-      magic-defense: 2.0
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 240.0
     base-lore:
       - "&8源质法抗防具"
       - "&7织法秘纹套装部件"
     affixes:
-      - magic_resistance
-      - physical_resistance
-      - dodge_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
     tier-affixes: &ward_tier_affixes
       1:
-        magic_resistance:
+        energy_max:
           chance: 1.0
-          min: 0.03
-          max: 0.06
-        physical_resistance:
-          chance: 0.18
-          min: 0.01
-          max: 0.03
-      2:
-        magic_resistance:
-          chance: 1.0
-          min: 0.05
-          max: 0.08
-        physical_resistance:
-          chance: 0.22
-          min: 0.02
-          max: 0.04
-      3:
-        magic_resistance:
-          chance: 1.0
-          min: 0.07
-          max: 0.11
-        physical_resistance:
+          min: 5.0
+          max: 10.0
+        ability_strength:
           chance: 0.25
           min: 0.02
           max: 0.05
-        dodge_chance:
-          chance: 0.25
+      2:
+        energy_max:
+          chance: 1.0
+          min: 8.0
+          max: 15.0
+        ability_strength:
+          chance: 0.35
           min: 0.03
-          max: 0.06
+          max: 0.07
+      3:
+        energy_max:
+          chance: 1.0
+          min: 12.0
+          max: 20.0
+        ability_strength:
+          chance: 0.45
+          min: 0.04
+          max: 0.10
+        ability_duration:
+          chance: 0.30
+          min: 0.03
+          max: 0.08
   ward_chestplate:
     display-name: "织法秘纹长袍"
     material: LEATHER_CHESTPLATE
@@ -844,18 +822,15 @@ equipment:
     weapon-category: armor_magic
     effective-slots:
       - chest
-    vanilla-attributes:
-      physical-defense: 2.7
-      magic-defense: 6.0
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 380.0
     base-lore:
       - "&8源质法抗防具"
       - "&7织法秘纹套装部件"
     affixes:
-      - magic_resistance
-      - physical_resistance
-      - dodge_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
     tier-affixes: *ward_tier_affixes
   ward_leggings:
     display-name: "织法秘纹护腿"
@@ -864,18 +839,15 @@ equipment:
     weapon-category: armor_magic
     effective-slots:
       - legs
-    vanilla-attributes:
-      physical-defense: 2.3
-      magic-defense: 5.0
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 340.0
     base-lore:
       - "&8源质法抗防具"
       - "&7织法秘纹套装部件"
     affixes:
-      - magic_resistance
-      - physical_resistance
-      - dodge_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
     tier-affixes: *ward_tier_affixes
   ward_boots:
     display-name: "织法秘纹软靴"
@@ -884,16 +856,13 @@ equipment:
     weapon-category: armor_magic
     effective-slots:
       - feet
-    vanilla-attributes:
-      physical-defense: 0.9
-      magic-defense: 2.0
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 220.0
     base-lore:
       - "&8源质法抗防具"
       - "&7织法秘纹套装部件"
     affixes:
-      - magic_resistance
-      - physical_resistance
-      - dodge_chance
+      - energy_max
+      - ability_strength
+      - ability_duration
     tier-affixes: *ward_tier_affixes

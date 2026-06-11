@@ -1,8 +1,6 @@
 package com.dongzh1.sourceforge.command
 
 import com.dongzh1.sourceforge.SourceForge
-import com.dongzh1.sourceforge.enchant.SourceEnchantService.ApplyResult
-import com.dongzh1.sourceforge.enchant.SourceEnchantService.SlotApplyResult
 import com.dongzh1.sourceforge.forge.ForgeMenu
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -57,7 +55,7 @@ class SourceForgeCommand(
                 }
                 val tierRange = parseTierRange(args.getOrNull(3), blueprint.defaultTierRange())
                 val amount = args.getOrNull(4)?.toIntOrNull() ?: 1
-                target.inventory.addItem(plugin.itemService.createBlueprint(blueprint, tierRange, amount))
+                target.inventory.addItem(plugin.itemService.createBlueprint(blueprint, tierRange = tierRange, amount = amount))
                     .values.forEach { target.world.dropItemNaturally(target.location, it) }
                 sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 蓝图 ${blueprint.id}")
             }
@@ -164,29 +162,13 @@ class SourceForgeCommand(
                     return true
                 }
                 val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val type = args.getOrNull(2)?.lowercase()
-                val amount = args.getOrNull(3)?.toDoubleOrNull()
-                if (target == null || type == null || amount == null || amount <= 0.0) {
-                    sender.sendMessage("§e用法: /$label testdamage <玩家> <physical|magic|element|true> <伤害> [fire|ice|lightning]")
+                val amount = args.getOrNull(2)?.toDoubleOrNull()
+                if (target == null || amount == null || amount <= 0.0) {
+                    sender.sendMessage("§e用法: /$label testdamage <玩家> <伤害>")
                     return true
                 }
-                val damageType = testDamageType(type, args.getOrNull(4)?.lowercase())
-                if (damageType == null) {
-                    sender.sendMessage("§e用法: /$label testdamage <玩家> <physical|magic|element|true> <伤害> [fire|ice|lightning]")
-                    return true
-                }
-                val source = DamageSource.builder(damageType).withDamageLocation(target.location).build()
-                val element = args.getOrNull(4)?.lowercase()
-                val commandDamageType = type
-                val pdc = target.persistentDataContainer
-                pdc.set(NamespacedKey(plugin, "command_damage_type"), PersistentDataType.STRING, commandDamageType)
-                if (!element.isNullOrBlank()) {
-                    pdc.set(NamespacedKey(plugin, "command_damage_element"), PersistentDataType.STRING, element)
-                }
-                target.damage(amount, source)
-                pdc.remove(NamespacedKey(plugin, "command_damage_type"))
-                pdc.remove(NamespacedKey(plugin, "command_damage_element"))
-                sender.sendMessage("§a[SourceForge] §f已对 ${target.name} 施加测试伤害: $type ${args.getOrNull(4) ?: ""} $amount")
+                target.damage(amount)
+                sender.sendMessage("§a[SourceForge] §f已对 ${target.name} 施加测试伤害: $amount")
             }
             "reroll" -> {
                 if (!sender.hasPermission("sourceforge.admin")) {
@@ -222,19 +204,17 @@ class SourceForgeCommand(
                 }
                 sender.sendMessage("§a[SourceForge] §f手持装备已升级")
             }
-            "enchant" -> handleEnchant(sender, label, args)
-            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|enchant|debug>")
+            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|debug>")
         }
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "enchant", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
                 args[0].equals("giveblueprint", true) || args[0].equals("giveequipment", true) || args[0].equals("givematerial", true) || args[0].equals("give", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
                 args[0].equals("debug", true) -> listOf("combat").filter { it.startsWith(args[1], true) }
-                args[0].equals("enchant", true) -> listOf("book", "apply", "list", "slotitem", "slot").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
             }
             3 -> when {
@@ -242,18 +222,7 @@ class SourceForgeCommand(
                 args[0].equals("giveequipment", true) -> plugin.forgeConfig.equipment.keys.filter { it.startsWith(args[2], true) }
                 args[0].equals("givematerial", true) -> plugin.forgeConfig.forgeMaterials.map { it.id }.filter { it.startsWith(args[2], true) }
                 args[0].equals("give", true) -> expressionSuggestions().filter { it.startsWith(args[2], true) }
-                args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> listOf("physical", "magic", "element", "true").filter { it.startsWith(args[2], true) }
-                args[0].equals("enchant", true) && args[1].equals("book", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[2], true) }
-                args[0].equals("enchant", true) && args[1].equals("slotitem", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[2], true) }
                 args[0].equals("debug", true) -> listOf("on", "off").filter { it.startsWith(args[2], true) }
-                else -> emptyList()
-            }
-            4 -> when {
-                args[0].equals("enchant", true) && args[1].equals("book", true) -> plugin.enchantService.enchants().map { it.id }.filter { it.startsWith(args[3], true) }
-                else -> emptyList()
-            }
-            5 -> when {
-                args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> listOf("fire", "ice", "lightning", "water", "wood").filter { it.startsWith(args[4], true) }
                 else -> emptyList()
             }
             else -> emptyList()
@@ -281,113 +250,6 @@ class SourceForgeCommand(
             warnings.forEach { sender.sendMessage("§7- §f$it") }
         } else {
             sender.sendMessage("§7使用 /sf validate 查看详细列表")
-        }
-    }
-
-    private fun testDamageType(type: String, element: String?): DamageType? {
-        return when (type) {
-            "physical", "物理" -> DamageType.PLAYER_ATTACK
-            "magic", "法术", "魔法" -> DamageType.MAGIC
-            "true", "真实" -> DamageType.FALL
-            "element", "元素" -> when (element) {
-                "fire", "火" -> DamageType.IN_FIRE
-                "lightning", "雷" -> DamageType.LIGHTNING_BOLT
-                "ice", "冰" -> DamageType.FREEZE
-                "water", "水", "wood", "木" -> DamageType.MAGIC
-                else -> DamageType.IN_FIRE
-            }
-            else -> null
-        }
-    }
-
-    private fun handleEnchant(sender: CommandSender, label: String, args: Array<out String>) {
-        when (args.getOrNull(1)?.lowercase()) {
-            "book" -> {
-                if (!sender.hasPermission("sourceforge.admin")) {
-                    sender.sendMessage("§c你没有权限")
-                    return
-                }
-                val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
-                val enchantId = args.getOrNull(3)?.lowercase()
-                val level = args.getOrNull(4)?.toIntOrNull() ?: 1
-                val amount = args.getOrNull(5)?.toIntOrNull() ?: 1
-                if (target == null || enchantId == null) {
-                    sender.sendMessage("§e用法: /$label enchant book <玩家> <附魔ID> [等级] [数量]")
-                    return
-                }
-                val book = plugin.enchantService.createBook(enchantId, level)
-                if (book == null) {
-                    sender.sendMessage("§c[SourceForge] §f未知附魔: $enchantId")
-                    return
-                }
-                book.amount = amount.coerceAtLeast(1)
-                target.inventory.addItem(book).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 附魔书 $enchantId")
-            }
-            "apply" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以应用附魔")
-                    return
-                }
-                val result = plugin.enchantService.applyBook(player.inventory.itemInMainHand, player.inventory.itemInOffHand)
-                when (result) {
-                    ApplyResult.SUCCESS -> {
-                        player.sendMessage("§a[SourceForge] §f附魔已应用")
-                        player.updateInventory()
-                    }
-                    ApplyResult.NOT_BOOK ->
-                        player.sendMessage("§c[SourceForge] §f请把 SourceForge 附魔书放在副手")
-                    ApplyResult.NOT_EQUIPMENT ->
-                        player.sendMessage("§c[SourceForge] §f请主手持 SourceForge 装备")
-                    ApplyResult.MAX_LEVEL ->
-                        player.sendMessage("§c[SourceForge] §f该附魔已达到最高等级")
-                    ApplyResult.NO_SLOT ->
-                        player.sendMessage("§c[SourceForge] §f该装备附魔槽已满，请先使用附魔扩容晶核")
-                }
-            }
-            "slotitem" -> {
-                if (!sender.hasPermission("sourceforge.admin")) {
-                    sender.sendMessage("§c你没有权限")
-                    return
-                }
-                val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
-                val amount = args.getOrNull(3)?.toIntOrNull() ?: 1
-                if (target == null) {
-                    sender.sendMessage("§e用法: /$label enchant slotitem <玩家> [数量]")
-                    return
-                }
-                val item = plugin.enchantService.createSlotItem(amount)
-                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 附魔扩容晶核 x${amount.coerceAtLeast(1)}")
-            }
-            "slot" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以使用附魔扩容晶核")
-                    return
-                }
-                val result = plugin.enchantService.applySlotItem(player.inventory.itemInMainHand, player.inventory.itemInOffHand)
-                when (result) {
-                    SlotApplyResult.SUCCESS -> {
-                        player.sendMessage("§a[SourceForge] §f附魔槽已扩容")
-                        player.updateInventory()
-                    }
-                    SlotApplyResult.NOT_ITEM ->
-                        player.sendMessage("§c[SourceForge] §f请把附魔扩容晶核放在副手")
-                    SlotApplyResult.NOT_EQUIPMENT ->
-                        player.sendMessage("§c[SourceForge] §f请主手持 SourceForge 装备")
-                    SlotApplyResult.MAX_SLOT ->
-                        player.sendMessage("§c[SourceForge] §f该装备附魔槽已达到上限")
-                }
-            }
-            "list" -> {
-                sender.sendMessage("§d[SourceForge] §f可用附魔:")
-                plugin.enchantService.enchants().forEach {
-                    sender.sendMessage("§7- §f${it.id} §d${it.displayName} §7${it.typeName} Lv.${it.maxLevel} §8${it.description(1)}")
-                }
-            }
-            else -> sender.sendMessage("§e用法: /$label enchant <book|apply|list|slotitem|slot>")
         }
     }
 

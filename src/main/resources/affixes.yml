@@ -1,655 +1,164 @@
-# SourceForge 词条配置
+# SourceForge 属性配置 v2
+#
+# 12 属性系统
+# ============
+# 战斗属性:
+#   base_damage     - 基础伤害，提升所有类型伤害
+#   critical_chance - 暴击几率
+#   critical_damage - 暴击伤害倍率
+#   status_chance   - 触发几率，提升异常状态概率
+#   armor           - 护甲值，提升伤害减免
+#
+# 生存属性:
+#   health          - 生命值，增加生命上限
+#   shield_capacity - 护盾容量，常驻生命提升
+#
+# 能量/技能属性:
+#   energy_max        - 能量上限
+#   ability_strength  - 技能强度，提升技能伤害/治疗
+#   ability_duration  - 技能持续时间
+#   ability_efficiency - 技能效率，降低能量消耗
+#   ability_range     - 技能范围
 #
 # 字段说明:
-# display-name: 词条显示名
-# pdc-key: 写入装备 PDC 的键名，战斗结算会读取这些键
-# value-type: double / int / string
-# min/max: 词条默认数值范围，材料或等级词条没有写有效范围时会作为兜底
-# decimals: lore 中显示的小数位
-# chance: 预留字段；当前锻造概率主要写在 config.yml 的 tier-affixes 和 materials/*.yml
-# combat: 当前支持 damage / pierce / crit_chance / crit_damage / poison / burn / slow / true_damage / physical_resistance / magic_resistance / dodge_chance
-# damage-type: physical / magic / true。带 element 的 magic 伤害属于元素伤害，只读取对应元素抗性。
-# element: none / fire / ice / lightning / water / wood。none 表示非元素。
-# melee/ranged: 同一个词条在近战和远程下可以有不同锻造结果。scale 会在锻造时乘到最终写入装备的数值上，lore 和实战一致。
-# status-chance: 元素词条附带的原版状态概率。状态只是附加效果，主要伤害来自词条数值。
-# effects: 更细的武器覆盖，优先级为 武器ID_模式 > 武器ID > 武器分类_模式 > 武器分类 > melee/ranged。
-# 可用示例: dagger_melee、longsword_melee、spear_ranged、source_bow_ranged、source_crossbow_ranged、flintlock_ranged。
-# lore: 写入装备 lore 的显示文本，支持 %name% 和 %value%
+#   display-name: 词条显示名
+#   pdc-key: PDC 键名
+#   value-type: double / int
+#   min/max: 默认数值范围
+#   decimals: lore 小数位
+#   combat: 属性分类（用于评分和战斗系统）
+#   scale: 锻造缩放系数
+#   lore: 装备 lore 显示
 
 affixes:
-  # 直接增加基础伤害，适合前期和所有近战武器。
-  attack_damage:
-    display-name: "锐锋"
-    pdc-key: "attack_damage"
-    value-type: double
-    min: 1.0
-    max: 3.0
-    decimals: 1
-    chance: 5
-    combat: damage
-    melee:
-      combat: damage
-      damage-type: physical
-      element: none
-      scale: 1.0
-    ranged:
-      combat: damage
-      damage-type: physical
-      element: none
-      scale: 0.75
-    effects:
-      dagger_melee:
-        combat: damage
-        scale: 0.85
-      short_sword_melee:
-        combat: damage
-        scale: 1.0
-      longsword_melee:
-        combat: damage
-        scale: 1.15
-      spear_melee:
-        combat: damage
-        scale: 1.05
-      spear_ranged:
-        combat: damage
-        scale: 0.70
-      source_bow_ranged:
-        combat: damage
-        scale: 0.70
-      source_crossbow_ranged:
-        combat: damage
-        scale: 0.85
-      flintlock_ranged:
-        combat: damage
-        scale: 1.25
-    lore: "&7锐锋: &f攻击伤害 +%value%"
-  # 物理基础伤害，装备本体默认输出来源。
-  physical_damage:
+  base_damage:
     display-name: "武力"
-    pdc-key: "physical_damage"
+    pdc-key: "base_damage"
     value-type: double
     min: 1.0
     max: 3.0
     decimals: 1
-    chance: 5
-    combat: physical_damage
-    melee:
-      combat: physical_damage
-      damage-type: physical
-      element: none
-      scale: 1.0
-    ranged:
-      combat: physical_damage
-      damage-type: physical
-      element: none
-      scale: 0.75
-    effects:
-      dagger_melee:
-        combat: physical_damage
-        scale: 0.85
-      short_sword_melee:
-        combat: physical_damage
-        scale: 1.0
-      longsword_melee:
-        combat: physical_damage
-        scale: 1.18
-      spear_melee:
-        combat: physical_damage
-        scale: 1.05
-      spear_ranged:
-        combat: physical_damage
-        scale: 0.70
-      source_bow_ranged:
-        combat: physical_damage
-        scale: 0.70
-      source_crossbow_ranged:
-        combat: physical_damage
-        scale: 0.85
-      flintlock_ranged:
-        combat: physical_damage
-        scale: 1.25
-    lore: "&7武力: &f物理伤害 +%value%"
-  # 非元素法术基础伤害，装备本体默认输出来源。
-  magic_damage:
-    display-name: "咒力"
-    pdc-key: "magic_damage"
-    value-type: double
-    min: 1.0
-    max: 3.0
-    decimals: 1
-    chance: 5
-    combat: magic_damage
-    melee:
-      combat: magic_damage
-      damage-type: magic
-      element: none
-      scale: 1.0
-    ranged:
-      combat: magic_damage
-      damage-type: magic
-      element: none
-      scale: 0.90
-    effects:
-      dagger_melee:
-        combat: magic_damage
-        scale: 0.65
-      short_sword_melee:
-        combat: magic_damage
-        scale: 0.75
-      longsword_melee:
-        combat: magic_damage
-        scale: 0.55
-      spear_melee:
-        combat: magic_damage
-        scale: 0.70
-      source_bow_ranged:
-        combat: magic_damage
-        scale: 0.85
-      source_crossbow_ranged:
-        combat: magic_damage
-        scale: 1.0
-      flintlock_ranged:
-        combat: magic_damage
-        scale: 0.50
-    lore: "&7咒力: &f法术伤害 +%value%"
-  # 提升暴击触发率，和破势配套使用。
-  crit_chance:
+    combat: base_damage
+    scale: 1.0
+    lore: "&7武力: &f+%value%"
+
+  critical_chance:
     display-name: "会心"
-    pdc-key: "crit_chance"
+    pdc-key: "critical_chance"
     value-type: double
     min: 0.03
     max: 0.10
     decimals: 2
-    chance: 3
-    combat: crit_chance
-    melee:
-      combat: crit_chance
-      scale: 1.0
-    ranged:
-      combat: crit_chance
-      scale: 0.85
-    effects:
-      dagger_melee:
-        combat: crit_chance
-        scale: 1.25
-      short_sword_melee:
-        combat: crit_chance
-        scale: 1.0
-      longsword_melee:
-        combat: crit_chance
-        scale: 0.85
-      spear_melee:
-        combat: crit_chance
-        scale: 0.90
-      source_bow_ranged:
-        combat: crit_chance
-        scale: 1.05
-      source_crossbow_ranged:
-        combat: crit_chance
-        scale: 0.85
-      flintlock_ranged:
-        combat: crit_chance
-        scale: 0.70
-    lore: "&7会心: &f暴击率 +%value%"
-  # 提升暴击后的伤害倍率。
-  crit_damage:
+    combat: critical_chance
+    scale: 1.0
+    lore: "&7会心: &f+%value%"
+
+  critical_damage:
     display-name: "破势"
-    pdc-key: "crit_damage"
+    pdc-key: "critical_damage"
     value-type: double
     min: 0.20
     max: 0.60
     decimals: 2
-    chance: 2
-    combat: crit_damage
-    melee:
-      combat: crit_damage
-      scale: 1.0
-    ranged:
-      combat: crit_damage
-      scale: 0.75
-    effects:
-      dagger_melee:
-        combat: crit_damage
-        scale: 0.80
-      short_sword_melee:
-        combat: crit_damage
-        scale: 1.0
-      longsword_melee:
-        combat: crit_damage
-        scale: 1.15
-      spear_melee:
-        combat: crit_damage
-        scale: 1.0
-      source_bow_ranged:
-        combat: crit_damage
-        scale: 0.90
-      source_crossbow_ranged:
-        combat: crit_damage
-        scale: 1.05
-      flintlock_ranged:
-        combat: crit_damage
-        scale: 1.25
-    lore: "&7破势: &f暴击伤害 +%value%"
-  # 木元素魔法伤害，附带小概率中毒；适合克制高物抗或木弱点怪物。
-  poison_chance:
-    display-name: "蔓毒"
-    pdc-key: "poison_chance"
+    combat: critical_damage
+    scale: 1.0
+    lore: "&7破势: &f+%value%"
+
+  status_chance:
+    display-name: "触发"
+    pdc-key: "status_chance"
     value-type: double
-    min: 0.8
-    max: 2.4
-    decimals: 1
-    chance: 1
-    combat: poison
-    melee:
-      combat: poison
-      damage-type: magic
-      element: wood
-      scale: 1.0
-      status-chance: 0.25
-      duration-ticks: 100
-      amplifier: 0
-    ranged:
-      combat: poison
-      damage-type: magic
-      element: wood
-      scale: 0.55
-      status-chance: 0.16
-      duration-ticks: 60
-      amplifier: 0
-    effects:
-      dagger_melee:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 1.30
-        status-chance: 0.32
-        duration-ticks: 120
-        amplifier: 0
-      short_sword_melee:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 1.05
-        status-chance: 0.25
-        duration-ticks: 100
-        amplifier: 0
-      longsword_melee:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 0.75
-        status-chance: 0.18
-        duration-ticks: 80
-        amplifier: 0
-      source_bow_ranged:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 0.65
-        status-chance: 0.18
-        duration-ticks: 70
-        amplifier: 0
-      source_crossbow_ranged:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 0.45
-        status-chance: 0.12
-        duration-ticks: 60
-        amplifier: 0
-      flintlock_ranged:
-        combat: poison
-        damage-type: magic
-        element: wood
-        scale: 0.25
-        status-chance: 0.06
-        duration-ticks: 40
-        amplifier: 0
-    lore: "&7蔓毒: &f木元素伤害 +%value%"
-  # 提供额外破甲效果，适合打高防目标。
-  armor_pierce:
-    display-name: "破甲"
-    pdc-key: "armor_pierce"
-    value-type: double
-    min: 0.2
-    max: 2.0
-    decimals: 1
-    chance: 1
-    combat: pierce
-    melee:
-      combat: pierce
-      scale: 1.0
-    ranged:
-      combat: pierce
-      scale: 1.20
-    effects:
-      dagger_melee:
-        combat: pierce
-        scale: 0.55
-      short_sword_melee:
-        combat: pierce
-        scale: 0.80
-      longsword_melee:
-        combat: pierce
-        scale: 1.0
-      spear_melee:
-        combat: pierce
-        scale: 1.25
-      spear_ranged:
-        combat: pierce
-        scale: 1.35
-      source_bow_ranged:
-        combat: pierce
-        scale: 0.55
-      source_crossbow_ranged:
-        combat: pierce
-        scale: 1.25
-      flintlock_ranged:
-        combat: pierce
-        scale: 1.55
-    lore: "&7破甲: &f无视防御 +%value%"
-  # 防具词条，受到伤害前有概率闪避本次伤害。
-  dodge_chance:
-    display-name: "灵巧"
-    pdc-key: "dodge_chance"
-    value-type: double
-    min: 0.02
-    max: 0.06
+    min: 0.05
+    max: 0.20
     decimals: 2
-    chance: 1
-    combat: dodge_chance
-    melee:
-      combat: dodge_chance
-      scale: 1.0
-    ranged:
-      combat: dodge_chance
-      scale: 1.0
-    effects:
-      armor_physical:
-        combat: dodge_chance
-        scale: 0.75
-      armor_magic:
-        combat: dodge_chance
-        scale: 1.0
-    lore: "&7灵巧: &f闪避率 +%value%"
-  # 火元素魔法伤害，附带小概率点燃；适合克制木系和冰系怪物。
-  burn_chance:
-    display-name: "灼烧"
-    pdc-key: "burn_chance"
-    value-type: double
-    min: 0.8
-    max: 2.8
-    decimals: 1
-    chance: 1
-    combat: burn
-    melee:
-      combat: burn
-      damage-type: magic
-      element: fire
-      scale: 0.75
-      status-chance: 0.18
-      duration-ticks: 80
-    ranged:
-      combat: burn
-      damage-type: magic
-      element: fire
-      scale: 1.15
-      status-chance: 0.25
-      duration-ticks: 100
-    effects:
-      dagger_melee:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 0.55
-        status-chance: 0.10
-        duration-ticks: 60
-      short_sword_melee:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 0.75
-        status-chance: 0.18
-        duration-ticks: 80
-      longsword_melee:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 0.90
-        status-chance: 0.20
-        duration-ticks: 90
-      source_bow_ranged:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 0.90
-        status-chance: 0.20
-        duration-ticks: 80
-      source_crossbow_ranged:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 1.0
-        status-chance: 0.22
-        duration-ticks: 100
-      flintlock_ranged:
-        combat: burn
-        damage-type: magic
-        element: fire
-        scale: 1.45
-        status-chance: 0.32
-        duration-ticks: 120
-    lore: "&7灼烧: &f火元素伤害 +%value%"
-  # 冰元素魔法伤害，附带小概率缓慢；适合控场和克制水系怪物。
-  slow_chance:
-    display-name: "寒缓"
-    pdc-key: "slow_chance"
-    value-type: double
-    min: 0.6
-    max: 2.0
-    decimals: 1
-    chance: 1
-    combat: slow
-    melee:
-      combat: slow
-      damage-type: magic
-      element: ice
-      scale: 0.85
-      status-chance: 0.18
-      duration-ticks: 60
-      amplifier: 0
-    ranged:
-      combat: slow
-      damage-type: magic
-      element: ice
-      scale: 1.0
-      status-chance: 0.24
-      duration-ticks: 80
-      amplifier: 0
-    effects:
-      dagger_melee:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 0.55
-        status-chance: 0.10
-        duration-ticks: 40
-        amplifier: 0
-      short_sword_melee:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 0.75
-        status-chance: 0.16
-        duration-ticks: 60
-        amplifier: 0
-      spear_melee:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 0.90
-        status-chance: 0.20
-        duration-ticks: 70
-        amplifier: 0
-      source_bow_ranged:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 1.15
-        status-chance: 0.28
-        duration-ticks: 90
-        amplifier: 0
-      source_crossbow_ranged:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 0.80
-        status-chance: 0.18
-        duration-ticks: 70
-        amplifier: 0
-      flintlock_ranged:
-        combat: slow
-        damage-type: magic
-        element: ice
-        scale: 0.60
-        status-chance: 0.12
-        duration-ticks: 50
-        amplifier: 0
-    lore: "&7寒缓: &f冰元素伤害 +%value%"
+    combat: status_chance
+    scale: 1.0
+    lore: "&7触发: &f+%value%"
 
-  # 真实伤害不吃物理/魔法/元素抗性，但会受到 combat.yml 的 true-damage-scale 全局削弱。
-  true_damage:
-    display-name: "贯魂"
-    pdc-key: "true_damage"
+  armor:
+    display-name: "护甲"
+    pdc-key: "armor"
     value-type: double
-    min: 0.3
-    max: 1.2
-    decimals: 1
-    chance: 1
-    combat: true_damage
-    melee:
-      combat: true_damage
-      damage-type: true
-      element: none
-      scale: 1.0
-    ranged:
-      combat: true_damage
-      damage-type: true
-      element: none
-      scale: 0.65
-    effects:
-      dagger_melee:
-        combat: true_damage
-        damage-type: true
-        element: none
-        scale: 1.10
-      flintlock_ranged:
-        combat: true_damage
-        damage-type: true
-        element: none
-        scale: 0.50
-    lore: "&7贯魂: &f真实伤害 +%value%"
+    min: 2.0
+    max: 8.0
+    decimals: 0
+    combat: armor
+    scale: 1.0
+    lore: "&7护甲: &f+%value%"
 
-  # 防具词条，降低受到的物理伤害。四件防具会累加，但最终有上限，避免免伤过高。
-  physical_resistance:
-    display-name: "铁壁"
-    pdc-key: "physical_resistance"
+  health:
+    display-name: "生命"
+    pdc-key: "health"
+    value-type: double
+    min: 2.0
+    max: 8.0
+    decimals: 0
+    combat: health
+    scale: 1.0
+    lore: "&7生命: &f+%value%"
+
+  shield_capacity:
+    display-name: "护盾"
+    pdc-key: "shield_capacity"
+    value-type: double
+    min: 2.0
+    max: 8.0
+    decimals: 0
+    combat: shield_capacity
+    scale: 1.0
+    lore: "&7护盾: &f+%value%"
+
+  energy_max:
+    display-name: "能量"
+    pdc-key: "energy_max"
+    value-type: double
+    min: 5.0
+    max: 20.0
+    decimals: 0
+    combat: energy_max
+    scale: 1.0
+    lore: "&7能量: &f+%value%"
+
+  ability_strength:
+    display-name: "强度"
+    pdc-key: "ability_strength"
     value-type: double
     min: 0.03
-    max: 0.08
+    max: 0.12
     decimals: 2
-    chance: 1
-    combat: physical_resistance
-    melee:
-      combat: physical_resistance
-      scale: 1.0
-    ranged:
-      combat: physical_resistance
-      scale: 1.0
-    effects:
-      armor_physical:
-        combat: physical_resistance
-        scale: 1.15
-      armor_magic:
-        combat: physical_resistance
-        scale: 0.55
-    lore: "&7铁壁: &f物理抗性 +%value%"
+    combat: ability_strength
+    scale: 1.0
+    lore: "&7强度: &f+%value%"
 
-  # 防具词条，降低受到的非元素魔法伤害。四件防具会累加，但最终有上限。
-  magic_resistance:
-    display-name: "秘护"
-    pdc-key: "magic_resistance"
+  ability_duration:
+    display-name: "持续"
+    pdc-key: "ability_duration"
     value-type: double
     min: 0.03
-    max: 0.08
+    max: 0.12
     decimals: 2
-    chance: 1
-    combat: magic_resistance
-    melee:
-      combat: magic_resistance
-      scale: 1.0
-    ranged:
-      combat: magic_resistance
-      scale: 1.0
-    effects:
-      armor_physical:
-        combat: magic_resistance
-        scale: 0.55
-      armor_magic:
-        combat: magic_resistance
-        scale: 1.15
-    lore: "&7秘护: &f法术抗性 +%value%"
+    combat: ability_duration
+    scale: 1.0
+    lore: "&7持续: &f+%value%"
 
-  # 防具词条，少量降低火元素伤害。
-  fire_resistance:
-    display-name: "避火"
-    pdc-key: "fire_resistance"
+  ability_efficiency:
+    display-name: "效率"
+    pdc-key: "ability_efficiency"
     value-type: double
-    min: 2.0
-    max: 6.0
-    decimals: 1
-    chance: 1
-    combat: fire_resistance
-    melee:
-      combat: fire_resistance
-      scale: 1.0
-    ranged:
-      combat: fire_resistance
-      scale: 1.0
-    lore: "&7避火: &f火元素抗性 +%value%%"
+    min: 0.03
+    max: 0.12
+    decimals: 2
+    combat: ability_efficiency
+    scale: 1.0
+    lore: "&7效率: &f+%value%"
 
-  # 防具词条，少量降低冰元素伤害。
-  ice_resistance:
-    display-name: "御寒"
-    pdc-key: "ice_resistance"
+  ability_range:
+    display-name: "范围"
+    pdc-key: "ability_range"
     value-type: double
-    min: 2.0
-    max: 6.0
-    decimals: 1
-    chance: 1
-    combat: ice_resistance
-    melee:
-      combat: ice_resistance
-      scale: 1.0
-    ranged:
-      combat: ice_resistance
-      scale: 1.0
-    lore: "&7御寒: &f冰元素抗性 +%value%%"
-
-  # 防具词条，少量降低雷元素伤害。
-  lightning_resistance:
-    display-name: "绝雷"
-    pdc-key: "lightning_resistance"
-    value-type: double
-    min: 2.0
-    max: 6.0
-    decimals: 1
-    chance: 1
-    combat: lightning_resistance
-    melee:
-      combat: lightning_resistance
-      scale: 1.0
-    ranged:
-      combat: lightning_resistance
-      scale: 1.0
-    lore: "&7绝雷: &f雷元素抗性 +%value%%"
+    min: 0.03
+    max: 0.12
+    decimals: 2
+    combat: ability_range
+    scale: 1.0
+    lore: "&7范围: &f+%value%"

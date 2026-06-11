@@ -3,25 +3,11 @@ display-name: "会心晶片"
 item: "sourceforge:focus_crystal"
 amount: 1
 affixes:
-  crit_chance:
+  critical_chance:
     chance: 0.75
     min: 0.03
     max: 0.10
-    category-scales:
-      melee_light: 1.20
-      melee_heavy: 0.95
-      polearm: 0.90
-      bow: 0.90
-      crossbow: 0.80
-      firearm: 0.65
-  crit_damage:
+  critical_damage:
     chance: 0.45
     min: 0.18
     max: 0.55
-    category-scales:
-      melee_light: 0.85
-      melee_heavy: 1.10
-      polearm: 1.0
-      bow: 0.95
-      crossbow: 1.05
-      firearm: 1.25

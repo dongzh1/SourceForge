@@ -3,14 +3,11 @@ display-name: "血髓"
 item: "sourceforge:blood_essence"
 amount: 1
 affixes:
-  crit_damage:
-    chance: 0.25
-    min: 0.12
+  critical_damage:
+    chance: 0.30
+    min: 0.10
     max: 0.28
-  true_damage:
-    chance: 0.12
-    min: 0.3
-    max: 0.9
-    weapon-categories:
-      - melee_light
-      - melee_heavy
+  health:
+    chance: 0.40
+    min: 1.0
+    max: 4.0

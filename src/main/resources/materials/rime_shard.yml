@@ -3,14 +3,11 @@ display-name: "霜片"
 item: "sourceforge:rime_shard"
 amount: 1
 affixes:
-  slow_chance:
+  status_chance:
     chance: 0.85
-    min: 0.6
-    max: 1.9
-    category-scales:
-      melee_light: 0.70
-      melee_heavy: 0.85
-      polearm: 1.0
-      bow: 1.20
-      crossbow: 0.90
-      firearm: 0.55
+    min: 0.04
+    max: 0.12
+  critical_chance:
+    chance: 0.40
+    min: 0.01
+    max: 0.05
