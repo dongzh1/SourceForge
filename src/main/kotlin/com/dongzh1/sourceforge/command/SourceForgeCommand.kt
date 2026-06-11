@@ -409,7 +409,6 @@ class SourceForgeCommand(
         val skillBaseAffixes = setOf(
             "ability_strength",
             "ability_duration",
-            "ability_efficiency",
             "ability_range"
         )
     }

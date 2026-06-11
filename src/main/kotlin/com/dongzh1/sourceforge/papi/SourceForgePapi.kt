@@ -75,7 +75,7 @@ object SourceForgePapi : PlaceholderExpansion() {
             key == "total_status_chance" -> format(totalAffix(player, "status_chance"), 4)
             key == "total_ability_strength" -> format(1.0 + totalAffix(player, "ability_strength"), 4)
             key == "total_ability_duration" -> format(1.0 + totalAffix(player, "ability_duration"), 4)
-            key == "total_ability_efficiency" -> format(1.0 + totalAffix(player, "ability_efficiency"), 4)
+            key == "total_ability_efficiency" -> format(totalAffix(player, "ability_efficiency"), 4)
             key == "total_ability_range" -> format(1.0 + totalAffix(player, "ability_range"), 4)
 
             // 原版属性
