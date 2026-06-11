@@ -12,6 +12,12 @@ import java.text.DecimalFormat
 object SourceForgePapi : PlaceholderExpansion() {
     private lateinit var plugin: SourceForge
 
+    private val skillTotalKeys = setOf(
+        "total_ability_strength",
+        "total_ability_duration",
+        "total_ability_range"
+    )
+
     override val identifier: String
         get() = "sourceforge"
 
@@ -126,7 +132,7 @@ object SourceForgePapi : PlaceholderExpansion() {
             val affixId = key.removePrefix("attr_")
             return affixValue(affixId) { totalAffix(player, affixId) }
         }
-        if (key != "total_health" && key.startsWith("total_")) {
+        if (key != "total_health" && key.startsWith("total_") && key !in skillTotalKeys) {
             val affixId = key.removePrefix("total_")
             return affixValue(affixId) { totalAffix(player, affixId) }
         }
