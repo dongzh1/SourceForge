@@ -580,6 +580,19 @@ class ForgeItemService(
         return readAffixValue(item, "critical_damage")
     }
 
+    fun readTotalAffix(player: org.bukkit.entity.Player, affixId: String): Double {
+        return sourceItems(player).sumOf { readAffixValue(it, affixId) }
+    }
+
+    private fun sourceItems(player: org.bukkit.entity.Player): List<ItemStack> {
+        val armor = player.inventory.armorContents.filterNotNull().filter { isSourceEquipment(it) }
+        val mainHand = player.inventory.itemInMainHand.takeIf { isSourceEquipment(it) }
+        val backpack = player.inventory.contents.filterNotNull().filter {
+            isSourceEquipment(it) && (equipmentConfig(it)?.effectiveSlots?.any { s -> s == "inventory" || s == "backpack" } == true)
+        }
+        return armor + listOfNotNull(mainHand) + backpack
+    }
+
     private fun format(value: Double, decimals: Int): String {
         if (decimals <= 0) return value.toInt().toString()
         return DecimalFormat("0." + "0".repeat(decimals)).format(value)

@@ -207,7 +207,7 @@ class ForgeListener(
         val configuredBaseDamage = readValue("base_damage")
         val critChance = readValue("critical_chance")
         val critDamageBonus = readValue("critical_damage")
-        val abilityStrength = readValue("ability_strength")
+        val abilityStrength = plugin.itemService.readTotalAffix(player, "ability_strength")
 
         // 基础伤害：优先用词条值，否则用原版基础
         var totalDamage = if (configuredBaseDamage > 0.0) {
