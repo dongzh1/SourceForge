@@ -156,6 +156,13 @@ class ForgeListener(
                         weapon = weapon,
                         baseDamage = event.damage
                     ) { event.damage = it }
+                } else if (plugin.itemService.hasSourceArmor(damager)) {
+                    val strengthTotal = plugin.itemService.readTotalAffix(damager, "ability_strength")
+                    val multiplier = 1.0 + strengthTotal
+                    event.damage = event.damage * multiplier
+                    if (plugin.forgeConfig.debugCombat) {
+                        damager.sendMessage("§8[SourceForge Debug] §7非SF武器 + SF防具: 强度=${"%.2f".format(strengthTotal)}, 倍率=${"%.2f".format(multiplier)}, 伤害=${"%.2f".format(event.damage)}")
+                    }
                 }
             }
             is Projectile -> {

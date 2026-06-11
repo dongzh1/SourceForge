@@ -584,6 +584,10 @@ class ForgeItemService(
         return sourceItems(player).sumOf { readAffixValue(it, affixId) }
     }
 
+    fun hasSourceArmor(player: org.bukkit.entity.Player): Boolean {
+        return player.inventory.armorContents.any { isSourceEquipment(it) }
+    }
+
     private fun sourceItems(player: org.bukkit.entity.Player): List<ItemStack> {
         val armor = player.inventory.armorContents.filterNotNull().filter { isSourceEquipment(it) }
         val mainHand = player.inventory.itemInMainHand.takeIf { isSourceEquipment(it) }
