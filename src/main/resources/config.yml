@@ -1,5 +1,5 @@
 gui:
-  title: "&0婧愯川閿婚€?
+  title: "&0源质锻造"
 
 debug:
   combat: false
@@ -34,44 +34,44 @@ blueprint-item:
   material: PAPER
   ce-id: "sourceforge:blueprint_short_sword"
   custom-model-data: 0
-  name-format: "&9钃濆浘: %name%"
+  name-format: "&9蓝图: %name%"
   lore:
-    - "&7钃濆浘绛夌骇: &e%tier%"
-    - "&7瑁呭绫诲瀷: &f%equipment_type%"
-    - "&7鎵€闇€鏉愭枡: &f%materials%"
+    - "&7蓝图等级: &e%tier%"
+    - "&7装备类型: &f%equipment_type%"
+    - "&7所需材料: &f%materials%"
 
 item-display-names:
-  "minecraft:iron_ingot": "閾侀敪"
-  "minecraft:stick": "鏈ㄦ"
-  "minecraft:potion": "鑽按"
-  "minecraft:flint": "閿愬寲鐭?
-  "minecraft:amethyst_shard": "浼氬績鏅剁墖"
-  "minecraft:blaze_powder": "鎴樻剰浣欑儸"
-  "minecraft:ghast_tear": "琛€楂?
-  "minecraft:packed_ice": "闇滄牳"
-  "minecraft:gold_ingot": "鏋満閾滅墖"
-  "minecraft:gunpowder": "鐏嵂"
-  "minecraft:copper_ingot": "閾滈敪"
-  "minecraft:leather": "鐨潻"
-  "minecraft:string": "寮︾嚎"
-  "minecraft:diamond": "閽荤煶"
-  "minecraft:lapis_lazuli": "闈掗噾鐭?
-  "yuanzhi:yuanzhi1": "婧愯川鏍稿績锛堚厾绾э級"
-  "sourceforge:sharp_stone": "閿愬寲鐭?
-  "sourceforge:focus_crystal": "浼氬績鏅剁墖"
-  "sourceforge:venom_vial": "娣瘨鑽墏"
-  "sourceforge:war_ember": "鎴樻剰浣欑儸"
-  "sourceforge:blood_essence": "琛€楂?
-  "sourceforge:frost_core": "闇滄牳"
-  "sourceforge:metal_spring": "閲戝睘寮圭哀"
-  "sourceforge:gunpowder_charge": "鐏嵂瑁呰嵂"
-  "sourceforge:rime_shard": "闇滅墖"
-  "sourceforge:bulwark_plate": "鐜勯搧鐢茬墖"
-  "sourceforge:rune_thread": "绉樼汗涓濈嚎"
+  "minecraft:iron_ingot": "铁锭"
+  "minecraft:stick": "木棍"
+  "minecraft:potion": "药水"
+  "minecraft:flint": "锐化石"
+  "minecraft:amethyst_shard": "会心晶片"
+  "minecraft:blaze_powder": "战意余烬"
+  "minecraft:ghast_tear": "血髓"
+  "minecraft:packed_ice": "霜核"
+  "minecraft:gold_ingot": "枪机铜片"
+  "minecraft:gunpowder": "火药"
+  "minecraft:copper_ingot": "铜锭"
+  "minecraft:leather": "皮革"
+  "minecraft:string": "弦线"
+  "minecraft:diamond": "钻石"
+  "minecraft:lapis_lazuli": "青金石"
+  "yuanzhi:yuanzhi1": "源质核心（Ⅰ级）"
+  "sourceforge:sharp_stone": "锐化石"
+  "sourceforge:focus_crystal": "会心晶片"
+  "sourceforge:venom_vial": "淬毒药剂"
+  "sourceforge:war_ember": "战意余烬"
+  "sourceforge:blood_essence": "血髓"
+  "sourceforge:frost_core": "霜核"
+  "sourceforge:metal_spring": "金属弹簧"
+  "sourceforge:gunpowder_charge": "火药装药"
+  "sourceforge:rime_shard": "霜片"
+  "sourceforge:bulwark_plate": "玄铁甲片"
+  "sourceforge:rune_thread": "秘纹丝线"
 
 blueprints:
   short_sword:
-    display-name: "鐭墤"
+    display-name: "短剑"
     equipment-type: short_sword
     tier:
       min: 1
@@ -89,7 +89,7 @@ blueprints:
       - id: "minecraft:stick"
         amount: 1
   flintlock:
-    display-name: "鐕у彂鏋?
+    display-name: "燧发枪"
     equipment-type: flintlock
     tier:
       min: 1
@@ -109,7 +109,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   source_bow:
-    display-name: "婧愯川寮?
+    display-name: "源质弓"
     equipment-type: source_bow
     tier:
       min: 1
@@ -127,7 +127,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   source_crossbow:
-    display-name: "婧愯川寮?
+    display-name: "源质弩"
     equipment-type: source_crossbow
     tier:
       min: 1
@@ -147,7 +147,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   longsword:
-    display-name: "闀垮墤"
+    display-name: "长剑"
     equipment-type: longsword
     tier:
       min: 1
@@ -165,7 +165,7 @@ blueprints:
       - id: "minecraft:stick"
         amount: 1
   spear:
-    display-name: "闀挎灙"
+    display-name: "长枪"
     equipment-type: spear
     tier:
       min: 1
@@ -183,7 +183,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   dagger:
-    display-name: "鐭寱"
+    display-name: "短匕"
     equipment-type: dagger
     tier:
       min: 1
@@ -201,7 +201,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   bulwark_helmet:
-    display-name: "鐜勯搧瀹堝尽澶寸洈"
+    display-name: "玄铁守御头盔"
     equipment-type: bulwark_helmet
     tier:
       min: 1
@@ -217,7 +217,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   bulwark_chestplate:
-    display-name: "鐜勯搧瀹堝尽鑳哥敳"
+    display-name: "玄铁守御胸甲"
     equipment-type: bulwark_chestplate
     tier:
       min: 1
@@ -233,7 +233,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   bulwark_leggings:
-    display-name: "鐜勯搧瀹堝尽鎶よ吙"
+    display-name: "玄铁守御护腿"
     equipment-type: bulwark_leggings
     tier:
       min: 1
@@ -249,7 +249,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   bulwark_boots:
-    display-name: "鐜勯搧瀹堝尽闈村瓙"
+    display-name: "玄铁守御靴子"
     equipment-type: bulwark_boots
     tier:
       min: 1
@@ -265,7 +265,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   ward_helmet:
-    display-name: "缁囨硶绉樼汗鍏滃附"
+    display-name: "织法秘纹兜帽"
     equipment-type: ward_helmet
     tier:
       min: 1
@@ -283,7 +283,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   ward_chestplate:
-    display-name: "缁囨硶绉樼汗闀胯"
+    display-name: "织法秘纹长袍"
     equipment-type: ward_chestplate
     tier:
       min: 1
@@ -301,7 +301,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   ward_leggings:
-    display-name: "缁囨硶绉樼汗鎶よ吙"
+    display-name: "织法秘纹护腿"
     equipment-type: ward_leggings
     tier:
       min: 1
@@ -319,7 +319,7 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
   ward_boots:
-    display-name: "缁囨硶绉樼汗杞澊"
+    display-name: "织法秘纹软靴"
     equipment-type: ward_boots
     tier:
       min: 1
@@ -337,15 +337,9 @@ blueprints:
       - id: "yuanzhi:yuanzhi1"
         amount: 1
 
-# ============================================================
-# 瑁呭 鈥?鍏?2灞炴€ц鐩栫ず渚?
-# 姣忎欢瑁呭鍙寜閮ㄤ綅渚ч噸瑕嗙洊鍏ㄩ儴12绉嶅熀纭€灞炴€?
-# ============================================================
-
 equipment:
-  # ===== 鐭墤锛氬潎琛″瀷杞昏繎鎴?=====
   short_sword:
-    display-name: "鐭墤"
+    display-name: "短剑"
     material: IRON_SWORD
     ce-id: "sourceforge:short_sword"
     weapon-category: melee_light
@@ -354,289 +348,49 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 100.0
     base-lore:
-      - "&8婧愯川杞绘鍣?路 鍧囪　鍨?
+      - "&8源质锻造成品"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
-      - status_chance
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
     tier-affixes:
       1:
-        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
-        critical_chance: { chance: 0.35, min: 0.02, max: 0.05 }
-        status_chance:   { chance: 0.20, min: 0.02, max: 0.06 }
-        ability_strength:   { chance: 0.12, min: 0.01, max: 0.03 }
-        ability_duration:   { chance: 0.08, min: 0.01, max: 0.02 }
+        base_damage:
+          chance: 1.0
+          min: 1.0
+          max: 2.0
+        critical_chance:
+          chance: 0.30
+          min: 0.02
+          max: 0.05
       2:
-        base_damage:     { chance: 1.0, min: 2.0, max: 3.5 }
-        critical_chance: { chance: 0.45, min: 0.03, max: 0.08 }
-        critical_damage: { chance: 0.25, min: 0.10, max: 0.22 }
-        status_chance:   { chance: 0.30, min: 0.03, max: 0.10 }
-        ability_strength:   { chance: 0.20, min: 0.02, max: 0.05 }
-        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
-        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
+        base_damage:
+          chance: 1.0
+          min: 2.0
+          max: 3.5
+        critical_chance:
+          chance: 0.40
+          min: 0.03
+          max: 0.07
+        critical_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.22
       3:
-        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
-        critical_chance: { chance: 0.55, min: 0.04, max: 0.10 }
-        critical_damage: { chance: 0.40, min: 0.15, max: 0.35 }
-        status_chance:   { chance: 0.40, min: 0.05, max: 0.14 }
-        ability_strength:   { chance: 0.30, min: 0.03, max: 0.08 }
-        ability_duration:   { chance: 0.25, min: 0.03, max: 0.06 }
-        ability_efficiency: { chance: 0.20, min: 0.02, max: 0.05 }
-        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
-        energy_max:         { chance: 0.10, min: 3.0, max: 8.0 }
-
-  # ===== 闀垮墤锛氶噸鍨嬭繎鎴?=====
-  longsword:
-    display-name: "闀垮墤"
-    material: IRON_SWORD
-    ce-id: "sourceforge:longsword"
-    weapon-category: melee_heavy
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 180.0
-    base-lore:
-      - "&8婧愯川閲嶆鍣?路 鍔涚牬鍨?
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - armor
-      - health
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - energy_max
-    tier-affixes:
-      1:
-        base_damage:     { chance: 1.0, min: 1.4, max: 2.4 }
-        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
-        armor:           { chance: 0.15, min: 1.0, max: 2.0 }
-        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
-      2:
-        base_damage:     { chance: 1.0, min: 2.4, max: 4.0 }
-        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
-        critical_damage: { chance: 0.35, min: 0.12, max: 0.28 }
-        armor:           { chance: 0.25, min: 1.5, max: 3.0 }
-        health:          { chance: 0.20, min: 2.0, max: 5.0 }
-        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_duration:   { chance: 0.12, min: 0.01, max: 0.03 }
-      3:
-        base_damage:     { chance: 1.0, min: 3.5, max: 5.5 }
-        critical_chance: { chance: 0.35, min: 0.03, max: 0.08 }
-        critical_damage: { chance: 0.50, min: 0.18, max: 0.45 }
-        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
-        armor:           { chance: 0.35, min: 2.0, max: 5.0 }
-        health:          { chance: 0.30, min: 3.0, max: 8.0 }
-        ability_strength:   { chance: 0.25, min: 0.03, max: 0.08 }
-        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
-        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
-
-  # ===== 闀挎灙锛氱┛鍒哄瀷 =====
-  spear:
-    display-name: "闀挎灙"
-    material: TRIDENT
-    ce-id: "sourceforge:spear"
-    weapon-category: polearm
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 220.0
-    base-lore:
-      - "&8婧愯川绌垮埡姝﹀櫒 路 鐮撮樀鍨?
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - armor
-      - health
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
-    tier-affixes:
-      1:
-        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
-        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
-        status_chance:   { chance: 0.20, min: 0.02, max: 0.06 }
-        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
-      2:
-        base_damage:     { chance: 1.0, min: 2.0, max: 3.4 }
-        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
-        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
-        status_chance:   { chance: 0.30, min: 0.03, max: 0.10 }
-        ability_range:      { chance: 0.25, min: 0.03, max: 0.06 }
-        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
-        energy_max:         { chance: 0.12, min: 3.0, max: 8.0 }
-      3:
-        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
-        critical_chance: { chance: 0.45, min: 0.04, max: 0.09 }
-        critical_damage: { chance: 0.30, min: 0.12, max: 0.30 }
-        status_chance:   { chance: 0.40, min: 0.05, max: 0.14 }
-        health:          { chance: 0.25, min: 3.0, max: 6.0 }
-        ability_strength:   { chance: 0.20, min: 0.02, max: 0.06 }
-        ability_range:      { chance: 0.35, min: 0.04, max: 0.08 }
-        ability_duration:   { chance: 0.22, min: 0.03, max: 0.06 }
-        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.04 }
-        energy_max:         { chance: 0.20, min: 5.0, max: 12.0 }
-
-  # ===== 鐭寱锛氭毚鍑诲瀷杞昏繎鎴?=====
-  dagger:
-    display-name: "鐭寱"
-    material: GOLDEN_SWORD
-    ce-id: "sourceforge:dagger"
-    weapon-category: melee_light
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 140.0
-    base-lore:
-      - "&8婧愯川杞绘鍣?路 浼氬績鍨?
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
-    tier-affixes:
-      1:
-        base_damage:     { chance: 1.0, min: 0.8, max: 1.6 }
-        critical_chance: { chance: 0.30, min: 0.03, max: 0.06 }
-        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
-        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
-      2:
-        base_damage:     { chance: 1.0, min: 1.6, max: 2.8 }
-        critical_chance: { chance: 0.40, min: 0.04, max: 0.08 }
-        critical_damage: { chance: 0.30, min: 0.12, max: 0.28 }
-        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
-        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.12, min: 0.01, max: 0.03 }
-        energy_max:         { chance: 0.10, min: 3.0, max: 6.0 }
-      3:
-        base_damage:     { chance: 1.0, min: 2.4, max: 4.2 }
-        critical_chance: { chance: 0.50, min: 0.05, max: 0.12 }
-        critical_damage: { chance: 0.45, min: 0.18, max: 0.45 }
-        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
-        ability_strength:   { chance: 0.28, min: 0.03, max: 0.08 }
-        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_range:      { chance: 0.12, min: 0.02, max: 0.04 }
-        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
-
-  # ===== 婧愯川寮擄細绮惧噯杩滅▼ =====
-  source_bow:
-    display-name: "婧愯川寮?
-    material: BOW
-    ce-id: "sourceforge:source_bow"
-    weapon-category: bow
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 180.0
-    base-lore:
-      - "&8婧愯川杩滅▼姝﹀櫒 路 绮惧噯鍨?
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
-    tier-affixes:
-      1:
-        base_damage:     { chance: 1.0, min: 0.8, max: 1.6 }
-        critical_chance: { chance: 0.30, min: 0.02, max: 0.06 }
-        status_chance:   { chance: 0.25, min: 0.02, max: 0.07 }
-        ability_range:      { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_duration:   { chance: 0.10, min: 0.01, max: 0.03 }
-      2:
-        base_damage:     { chance: 1.0, min: 1.6, max: 3.0 }
-        critical_chance: { chance: 0.40, min: 0.03, max: 0.08 }
-        critical_damage: { chance: 0.20, min: 0.10, max: 0.22 }
-        status_chance:   { chance: 0.35, min: 0.04, max: 0.10 }
-        ability_range:      { chance: 0.28, min: 0.03, max: 0.08 }
-        ability_duration:   { chance: 0.20, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.15, min: 0.01, max: 0.03 }
-      3:
-        base_damage:     { chance: 1.0, min: 2.6, max: 4.4 }
-        critical_chance: { chance: 0.50, min: 0.04, max: 0.10 }
-        critical_damage: { chance: 0.35, min: 0.14, max: 0.32 }
-        status_chance:   { chance: 0.45, min: 0.05, max: 0.14 }
-        ability_strength:   { chance: 0.20, min: 0.02, max: 0.05 }
-        ability_range:      { chance: 0.38, min: 0.04, max: 0.10 }
-        ability_duration:   { chance: 0.30, min: 0.03, max: 0.08 }
-        ability_efficiency: { chance: 0.22, min: 0.02, max: 0.06 }
-        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
-
-  # ===== 婧愯川寮╋細绌块€忚繙绋?=====
-  source_crossbow:
-    display-name: "婧愯川寮?
-    material: CROSSBOW
-    ce-id: "sourceforge:source_crossbow"
-    weapon-category: crossbow
-    effective-slots:
-      - mainhand
-    chunkworld-level: "blueprint-tier"
-    pixelshop-price: 220.0
-    base-lore:
-      - "&8婧愯川杩滅▼姝﹀櫒 路 绌块€忓瀷"
-    affixes:
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - armor
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
-    tier-affixes:
-      1:
-        base_damage:     { chance: 1.0, min: 1.0, max: 1.8 }
-        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
-        armor:           { chance: 0.15, min: 1.0, max: 2.0 }
-        ability_strength:   { chance: 0.10, min: 0.01, max: 0.03 }
-      2:
-        base_damage:     { chance: 1.0, min: 1.8, max: 3.2 }
-        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
-        critical_damage: { chance: 0.25, min: 0.10, max: 0.24 }
-        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
-        armor:           { chance: 0.25, min: 1.5, max: 3.0 }
-        ability_strength:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.10, min: 0.01, max: 0.03 }
-      3:
-        base_damage:     { chance: 1.0, min: 2.8, max: 4.6 }
-        critical_chance: { chance: 0.45, min: 0.04, max: 0.09 }
-        critical_damage: { chance: 0.40, min: 0.14, max: 0.34 }
-        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
-        armor:           { chance: 0.35, min: 2.0, max: 5.0 }
-        ability_strength:   { chance: 0.25, min: 0.03, max: 0.08 }
-        ability_range:      { chance: 0.20, min: 0.03, max: 0.06 }
-        ability_duration:   { chance: 0.15, min: 0.02, max: 0.04 }
-        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.05 }
-        energy_max:         { chance: 0.12, min: 4.0, max: 8.0 }
-
-  # ===== 鐕у彂鏋細鐖嗗彂鐏櫒 =====
+        base_damage:
+          chance: 1.0
+          min: 3.0
+          max: 5.0
+        critical_chance:
+          chance: 0.50
+          min: 0.04
+          max: 0.10
+        critical_damage:
+          chance: 0.35
+          min: 0.15
+          max: 0.35
   flintlock:
-    display-name: "鐕у彂鏋?
+    display-name: "燧发枪"
     material: CROSSBOW
     ce-id: "sourceforge:flintlock"
     weapon-category: firearm
@@ -645,46 +399,276 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 260.0
     base-lore:
-      - "&8婧愯川鐏櫒 路 鐖嗗彂鍨?
+      - "&8源质远程武器"
+      - "&7需要弹药与射击节奏"
     affixes:
       - base_damage
       - critical_chance
       - critical_damage
-      - status_chance
-      - health
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-      - energy_max
     tier-affixes:
       1:
-        base_damage:     { chance: 1.0, min: 1.0, max: 2.0 }
-        critical_damage: { chance: 0.20, min: 0.08, max: 0.18 }
-        ability_strength:   { chance: 0.15, min: 0.02, max: 0.04 }
+        base_damage:
+          chance: 1.0
+          min: 1.0
+          max: 1.8
       2:
-        base_damage:     { chance: 1.0, min: 2.0, max: 3.4 }
-        critical_chance: { chance: 0.25, min: 0.02, max: 0.05 }
-        critical_damage: { chance: 0.35, min: 0.14, max: 0.30 }
-        status_chance:   { chance: 0.25, min: 0.03, max: 0.08 }
-        ability_strength:   { chance: 0.25, min: 0.03, max: 0.06 }
-        ability_range:      { chance: 0.15, min: 0.02, max: 0.04 }
-        health:          { chance: 0.15, min: 2.0, max: 5.0 }
+        base_damage:
+          chance: 1.0
+          min: 1.8
+          max: 3.0
+        critical_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.20
       3:
-        base_damage:     { chance: 1.0, min: 3.0, max: 5.0 }
-        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
-        critical_damage: { chance: 0.50, min: 0.20, max: 0.45 }
-        status_chance:   { chance: 0.35, min: 0.04, max: 0.12 }
-        ability_strength:   { chance: 0.35, min: 0.04, max: 0.10 }
-        ability_range:      { chance: 0.22, min: 0.03, max: 0.06 }
-        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
-        ability_efficiency: { chance: 0.15, min: 0.02, max: 0.04 }
-        health:          { chance: 0.25, min: 3.0, max: 7.0 }
-        energy_max:         { chance: 0.15, min: 4.0, max: 10.0 }
+        base_damage:
+          chance: 1.0
+          min: 2.6
+          max: 4.2
+        critical_chance:
+          chance: 0.20
+          min: 0.02
+          max: 0.06
+        critical_damage:
+          chance: 0.40
+          min: 0.18
+          max: 0.40
+  source_bow:
+    display-name: "源质弓"
+    material: BOW
+    ce-id: "sourceforge:source_bow"
+    weapon-category: bow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 180.0
+    base-lore:
+      - "&8源质远程武器"
+      - "&7稳定射击"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+    tier-affixes:
+      1:
+        base_damage:
+          chance: 1.0
+          min: 0.8
+          max: 1.6
+        critical_chance:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
+      2:
+        base_damage:
+          chance: 1.0
+          min: 1.6
+          max: 2.8
+        critical_chance:
+          chance: 0.35
+          min: 0.03
+          max: 0.07
+      3:
+        base_damage:
+          chance: 1.0
+          min: 2.4
+          max: 4.0
+        critical_chance:
+          chance: 0.45
+          min: 0.04
+          max: 0.09
+        critical_damage:
+          chance: 0.25
+          min: 0.12
+          max: 0.28
+  source_crossbow:
+    display-name: "源质弩"
+    material: CROSSBOW
+    ce-id: "sourceforge:source_crossbow"
+    weapon-category: crossbow
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质远程武器"
+      - "&7高穿透"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+    tier-affixes:
+      1:
+        base_damage:
+          chance: 1.0
+          min: 1.0
+          max: 1.8
+        critical_chance:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
+      2:
+        base_damage:
+          chance: 1.0
+          min: 1.8
+          max: 3.2
+        critical_chance:
+          chance: 0.35
+          min: 0.03
+          max: 0.07
+      3:
+        base_damage:
+          chance: 1.0
+          min: 2.8
+          max: 4.6
+        critical_chance:
+          chance: 0.45
+          min: 0.04
+          max: 0.09
+        critical_damage:
+          chance: 0.35
+          min: 0.14
+          max: 0.34
+  longsword:
+    display-name: "长剑"
+    material: IRON_SWORD
+    ce-id: "sourceforge:longsword"
+    weapon-category: melee_heavy
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 180.0
+    base-lore:
+      - "&8源质长柄兵器"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+    tier-affixes:
+      1:
+        base_damage:
+          chance: 1.0
+          min: 1.4
+          max: 2.4
+      2:
+        base_damage:
+          chance: 1.0
+          min: 2.2
+          max: 3.8
+        critical_damage:
+          chance: 0.25
+          min: 0.10
+          max: 0.22
+      3:
+        base_damage:
+          chance: 1.0
+          min: 3.2
+          max: 5.0
+        critical_chance:
+          chance: 0.20
+          min: 0.02
+          max: 0.05
+        critical_damage:
+          chance: 0.40
+          min: 0.18
+          max: 0.42
+  spear:
+    display-name: "长枪"
+    material: TRIDENT
+    ce-id: "sourceforge:spear"
+    weapon-category: polearm
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 220.0
+    base-lore:
+      - "&8源质穿刺武器"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+    tier-affixes:
+      1:
+        base_damage:
+          chance: 1.0
+          min: 1.0
+          max: 2.0
+      2:
+        base_damage:
+          chance: 1.0
+          min: 2.0
+          max: 3.2
+        critical_chance:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
+      3:
+        base_damage:
+          chance: 1.0
+          min: 3.0
+          max: 4.8
+        critical_chance:
+          chance: 0.35
+          min: 0.03
+          max: 0.07
+        critical_damage:
+          chance: 0.20
+          min: 0.10
+          max: 0.25
+  dagger:
+    display-name: "短匕"
+    material: GOLDEN_SWORD
+    ce-id: "sourceforge:dagger"
+    weapon-category: melee_light
+    effective-slots:
+      - mainhand
+    chunkworld-level: "blueprint-tier"
+    pixelshop-price: 140.0
+    base-lore:
+      - "&8源质轻武器"
+    affixes:
+      - base_damage
+      - critical_chance
+      - critical_damage
+    tier-affixes:
+      1:
+        base_damage:
+          chance: 1.0
+          min: 0.8
+          max: 1.6
+        critical_chance:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
+      2:
+        base_damage:
+          chance: 1.0
+          min: 1.6
+          max: 2.8
+        critical_chance:
+          chance: 0.35
+          min: 0.03
+          max: 0.07
+        critical_damage:
+          chance: 0.20
+          min: 0.08
+          max: 0.18
+      3:
+        base_damage:
+          chance: 1.0
+          min: 2.4
+          max: 4.0
+        critical_chance:
+          chance: 0.45
+          min: 0.04
+          max: 0.09
+        critical_damage:
+          chance: 0.30
+          min: 0.12
+          max: 0.28
 
-  # ===== 鐜勯搧瀹堝尽闃插叿锛氱敓瀛樺睘鎬т负涓伙紝鍏?2灞炴€у彲鍑?=====
   bulwark_helmet:
-    display-name: "鐜勯搧瀹堝尽澶寸洈"
+    display-name: "玄铁守御头盔"
     material: IRON_HELMET
     ce-id: "sourceforge:bulwark_helmet"
     weapon-category: armor_physical
@@ -693,54 +677,46 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 220.0
     base-lore:
-      - "&8婧愯川鐗╂姉闃插叿"
-      - "&7鐜勯搧瀹堝尽濂楄閮ㄤ欢"
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
     affixes:
       - armor
       - health
       - shield_capacity
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - energy_max
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-    tier-affixes: &bulwark
+    tier-affixes: &bulwark_tier_affixes
       1:
-        armor:           { chance: 1.0, min: 2.0, max: 4.0 }
-        health:          { chance: 0.35, min: 2.0, max: 4.0 }
-        shield_capacity: { chance: 0.20, min: 2.0, max: 4.0 }
-        base_damage:     { chance: 0.10, min: 0.5, max: 1.5 }
-        energy_max:      { chance: 0.10, min: 3.0, max: 6.0 }
-        ability_efficiency: { chance: 0.08, min: 0.01, max: 0.02 }
+        armor:
+          chance: 1.0
+          min: 2.0
+          max: 4.0
+        health:
+          chance: 0.30
+          min: 2.0
+          max: 4.0
       2:
-        armor:           { chance: 1.0, min: 3.0, max: 6.0 }
-        health:          { chance: 0.50, min: 3.0, max: 6.0 }
-        shield_capacity: { chance: 0.35, min: 2.0, max: 5.0 }
-        base_damage:     { chance: 0.18, min: 0.5, max: 2.0 }
-        energy_max:      { chance: 0.18, min: 4.0, max: 8.0 }
-        ability_efficiency: { chance: 0.15, min: 0.01, max: 0.03 }
-        ability_duration:   { chance: 0.12, min: 0.01, max: 0.03 }
-        critical_chance: { chance: 0.12, min: 0.01, max: 0.03 }
-        status_chance:   { chance: 0.10, min: 0.01, max: 0.04 }
+        armor:
+          chance: 1.0
+          min: 3.0
+          max: 6.0
+        health:
+          chance: 0.40
+          min: 3.0
+          max: 6.0
       3:
-        armor:           { chance: 1.0, min: 5.0, max: 9.0 }
-        health:          { chance: 0.65, min: 4.0, max: 8.0 }
-        shield_capacity: { chance: 0.50, min: 3.0, max: 7.0 }
-        base_damage:     { chance: 0.28, min: 1.0, max: 3.0 }
-        energy_max:      { chance: 0.28, min: 5.0, max: 12.0 }
-        ability_efficiency: { chance: 0.22, min: 0.02, max: 0.06 }
-        ability_duration:   { chance: 0.18, min: 0.02, max: 0.05 }
-        critical_chance: { chance: 0.18, min: 0.02, max: 0.05 }
-        critical_damage: { chance: 0.12, min: 0.05, max: 0.15 }
-        status_chance:   { chance: 0.15, min: 0.02, max: 0.06 }
-        ability_strength:   { chance: 0.12, min: 0.01, max: 0.04 }
-        ability_range:      { chance: 0.12, min: 0.01, max: 0.03 }
+        armor:
+          chance: 1.0
+          min: 5.0
+          max: 9.0
+        health:
+          chance: 0.50
+          min: 4.0
+          max: 8.0
+        shield_capacity:
+          chance: 0.25
+          min: 3.0
+          max: 6.0
   bulwark_chestplate:
-    display-name: "鐜勯搧瀹堝尽鑳哥敳"
+    display-name: "玄铁守御胸甲"
     material: IRON_CHESTPLATE
     ce-id: "sourceforge:bulwark_chestplate"
     weapon-category: armor_physical
@@ -749,24 +725,15 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 360.0
     base-lore:
-      - "&8婧愯川鐗╂姉闃插叿"
-      - "&7鐜勯搧瀹堝尽濂楄閮ㄤ欢"
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
     affixes:
       - armor
       - health
       - shield_capacity
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - energy_max
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-    tier-affixes: *bulwark
+    tier-affixes: *bulwark_tier_affixes
   bulwark_leggings:
-    display-name: "鐜勯搧瀹堝尽鎶よ吙"
+    display-name: "玄铁守御护腿"
     material: IRON_LEGGINGS
     ce-id: "sourceforge:bulwark_leggings"
     weapon-category: armor_physical
@@ -775,24 +742,15 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 320.0
     base-lore:
-      - "&8婧愯川鐗╂姉闃插叿"
-      - "&7鐜勯搧瀹堝尽濂楄閮ㄤ欢"
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
     affixes:
       - armor
       - health
       - shield_capacity
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - energy_max
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-    tier-affixes: *bulwark
+    tier-affixes: *bulwark_tier_affixes
   bulwark_boots:
-    display-name: "鐜勯搧瀹堝尽闈村瓙"
+    display-name: "玄铁守御靴子"
     material: IRON_BOOTS
     ce-id: "sourceforge:bulwark_boots"
     weapon-category: armor_physical
@@ -801,26 +759,16 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 200.0
     base-lore:
-      - "&8婧愯川鐗╂姉闃插叿"
-      - "&7鐜勯搧瀹堝尽濂楄閮ㄤ欢"
+      - "&8源质物抗防具"
+      - "&7玄铁守御套装部件"
     affixes:
       - armor
       - health
       - shield_capacity
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-      - energy_max
-      - ability_strength
-      - ability_duration
-      - ability_efficiency
-      - ability_range
-    tier-affixes: *bulwark
+    tier-affixes: *bulwark_tier_affixes
 
-  # ===== 缁囨硶绉樼汗闃插叿锛氭妧鑳藉睘鎬т负涓伙紝鍏?2灞炴€у彲鍑?=====
   ward_helmet:
-    display-name: "缁囨硶绉樼汗鍏滃附"
+    display-name: "织法秘纹兜帽"
     material: LEATHER_HELMET
     ce-id: "sourceforge:ward_helmet"
     weapon-category: armor_magic
@@ -829,55 +777,46 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 240.0
     base-lore:
-      - "&8婧愯川娉曟姉闃插叿"
-      - "&7缁囨硶绉樼汗濂楄閮ㄤ欢"
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
     affixes:
       - energy_max
       - ability_strength
       - ability_duration
-      - ability_efficiency
-      - ability_range
-      - health
-      - shield_capacity
-      - armor
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-    tier-affixes: &ward
+    tier-affixes: &ward_tier_affixes
       1:
-        energy_max:         { chance: 1.0, min: 5.0, max: 10.0 }
-        ability_strength:   { chance: 0.35, min: 0.02, max: 0.05 }
-        ability_duration:   { chance: 0.25, min: 0.02, max: 0.04 }
-        ability_efficiency: { chance: 0.25, min: 0.02, max: 0.04 }
-        ability_range:      { chance: 0.25, min: 0.02, max: 0.04 }
-        health:             { chance: 0.15, min: 1.0, max: 3.0 }
-        shield_capacity:    { chance: 0.10, min: 1.0, max: 2.0 }
+        energy_max:
+          chance: 1.0
+          min: 5.0
+          max: 10.0
+        ability_strength:
+          chance: 0.25
+          min: 0.02
+          max: 0.05
       2:
-        energy_max:         { chance: 1.0, min: 8.0, max: 15.0 }
-        ability_strength:   { chance: 0.50, min: 0.03, max: 0.07 }
-        ability_duration:   { chance: 0.40, min: 0.03, max: 0.06 }
-        ability_efficiency: { chance: 0.40, min: 0.03, max: 0.06 }
-        ability_range:      { chance: 0.40, min: 0.03, max: 0.06 }
-        health:             { chance: 0.25, min: 2.0, max: 5.0 }
-        shield_capacity:    { chance: 0.18, min: 1.0, max: 3.0 }
-        armor:              { chance: 0.15, min: 1.0, max: 3.0 }
-        base_damage:        { chance: 0.10, min: 0.5, max: 1.5 }
+        energy_max:
+          chance: 1.0
+          min: 8.0
+          max: 15.0
+        ability_strength:
+          chance: 0.35
+          min: 0.03
+          max: 0.07
       3:
-        energy_max:         { chance: 1.0, min: 12.0, max: 20.0 }
-        ability_strength:   { chance: 0.65, min: 0.04, max: 0.10 }
-        ability_duration:   { chance: 0.55, min: 0.04, max: 0.09 }
-        ability_efficiency: { chance: 0.55, min: 0.04, max: 0.09 }
-        ability_range:      { chance: 0.55, min: 0.04, max: 0.09 }
-        health:             { chance: 0.35, min: 3.0, max: 7.0 }
-        shield_capacity:    { chance: 0.28, min: 2.0, max: 5.0 }
-        armor:              { chance: 0.22, min: 2.0, max: 5.0 }
-        base_damage:        { chance: 0.18, min: 1.0, max: 2.5 }
-        critical_chance:    { chance: 0.15, min: 0.01, max: 0.04 }
-        critical_damage:    { chance: 0.10, min: 0.05, max: 0.12 }
-        status_chance:      { chance: 0.12, min: 0.01, max: 0.04 }
+        energy_max:
+          chance: 1.0
+          min: 12.0
+          max: 20.0
+        ability_strength:
+          chance: 0.45
+          min: 0.04
+          max: 0.10
+        ability_duration:
+          chance: 0.30
+          min: 0.03
+          max: 0.08
   ward_chestplate:
-    display-name: "缁囨硶绉樼汗闀胯"
+    display-name: "织法秘纹长袍"
     material: LEATHER_CHESTPLATE
     ce-id: "sourceforge:ward_chestplate"
     weapon-category: armor_magic
@@ -886,24 +825,15 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 380.0
     base-lore:
-      - "&8婧愯川娉曟姉闃插叿"
-      - "&7缁囨硶绉樼汗濂楄閮ㄤ欢"
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
     affixes:
       - energy_max
       - ability_strength
       - ability_duration
-      - ability_efficiency
-      - ability_range
-      - health
-      - shield_capacity
-      - armor
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-    tier-affixes: *ward
+    tier-affixes: *ward_tier_affixes
   ward_leggings:
-    display-name: "缁囨硶绉樼汗鎶よ吙"
+    display-name: "织法秘纹护腿"
     material: LEATHER_LEGGINGS
     ce-id: "sourceforge:ward_leggings"
     weapon-category: armor_magic
@@ -912,24 +842,15 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 340.0
     base-lore:
-      - "&8婧愯川娉曟姉闃插叿"
-      - "&7缁囨硶绉樼汗濂楄閮ㄤ欢"
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
     affixes:
       - energy_max
       - ability_strength
       - ability_duration
-      - ability_efficiency
-      - ability_range
-      - health
-      - shield_capacity
-      - armor
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-    tier-affixes: *ward
+    tier-affixes: *ward_tier_affixes
   ward_boots:
-    display-name: "缁囨硶绉樼汗杞澊"
+    display-name: "织法秘纹软靴"
     material: LEATHER_BOOTS
     ce-id: "sourceforge:ward_boots"
     weapon-category: armor_magic
@@ -938,505 +859,10 @@ equipment:
     chunkworld-level: "blueprint-tier"
     pixelshop-price: 220.0
     base-lore:
-      - "&8婧愯川娉曟姉闃插叿"
-      - "&7缁囨硶绉樼汗濂楄閮ㄤ欢"
+      - "&8源质法抗防具"
+      - "&7织法秘纹套装部件"
     affixes:
       - energy_max
       - ability_strength
       - ability_duration
-      - ability_efficiency
-      - ability_range
-      - health
-      - shield_capacity
-      - armor
-      - base_damage
-      - critical_chance
-      - critical_damage
-      - status_chance
-    tier-affixes: *ward
-
-  # ===== 娴嬭瘯瑁呭 =====
-  test_range_helm:
-    display-name: "娴嬭瘯鑼冨洿鐩?
-    material: CHAINMAIL_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?50%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_chest:
-    display-name: "娴嬭瘯鑼冨洿鐢?
-    material: CHAINMAIL_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?100%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 1.0, max: 1.0 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_legs:
-    display-name: "娴嬭瘯鑼冨洿瑁?
-    material: CHAINMAIL_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?100%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 1.0, max: 1.0 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_boots:
-    display-name: "娴嬭瘯鑼冨洿闈?
-    material: CHAINMAIL_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?50%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_strength_helm:
-    display-name: "娴嬭瘯鍔涢噺鐩?
-    material: GOLDEN_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?50%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_chest:
-    display-name: "娴嬭瘯鍔涢噺鐢?
-    material: GOLDEN_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?20%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.2, max: 0.2 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_legs:
-    display-name: "娴嬭瘯鍔涢噺瑁?
-    material: GOLDEN_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?20%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.2, max: 0.2 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_boots:
-    display-name: "娴嬭瘯鍔涢噺闈?
-    material: GOLDEN_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?10%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.1, max: 0.1 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_duration_helm:
-    display-name: "娴嬭瘯鎸佺画鐩?
-    material: TURTLE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&b娴嬭瘯 - 鎶€鑳芥寔缁?50%" ]
-    affixes: [ ability_duration, energy_max ]
-    tier-affixes:
-      3:
-        ability_duration: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_duration_chest:
-    display-name: "娴嬭瘯鎸佺画鐢?
-    material: TURTLE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&b娴嬭瘯 - 鎶€鑳芥寔缁?50%" ]
-    affixes: [ ability_duration, energy_max ]
-    tier-affixes:
-      3:
-        ability_duration: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_efficiency_helm:
-    display-name: "娴嬭瘯鏁堢巼鐩?
-    material: NETHERITE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&a娴嬭瘯 - 鎶€鑳芥晥鐜?50%" ]
-    affixes: [ ability_efficiency, energy_max ]
-    tier-affixes:
-      3:
-        ability_efficiency: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:         { chance: 1.0, min: 20.0, max: 20.0 }
-  test_efficiency_chest:
-    display-name: "娴嬭瘯鏁堢巼鐢?
-    material: NETHERITE_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&a娴嬭瘯 - 鎶€鑳芥晥鐜?50%" ]
-    affixes: [ ability_efficiency, energy_max ]
-    tier-affixes:
-      3:
-        ability_efficiency: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:         { chance: 1.0, min: 20.0, max: 20.0 }
-
-  # ===== 娴嬭瘯瑁呭 =====
-  test_range_helm:
-    display-name: "娴嬭瘯鑼冨洿鐩?
-    material: CHAINMAIL_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?50%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_chest:
-    display-name: "娴嬭瘯鑼冨洿鐢?
-    material: CHAINMAIL_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?100%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 1.0, max: 1.0 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_legs:
-    display-name: "娴嬭瘯鑼冨洿瑁?
-    material: CHAINMAIL_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?100%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 1.0, max: 1.0 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-  test_range_boots:
-    display-name: "娴嬭瘯鑼冨洿闈?
-    material: CHAINMAIL_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&d娴嬭瘯 - 鎶€鑳借寖鍥?50%" ]
-    affixes: [ ability_range, energy_max ]
-    tier-affixes:
-      3:
-        ability_range: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:    { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_strength_helm:
-    display-name: "娴嬭瘯鍔涢噺鐩?
-    material: GOLDEN_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?50%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_chest:
-    display-name: "娴嬭瘯鍔涢噺鐢?
-    material: GOLDEN_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?20%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.2, max: 0.2 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_legs:
-    display-name: "娴嬭瘯鍔涢噺瑁?
-    material: GOLDEN_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?20%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.2, max: 0.2 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_strength_boots:
-    display-name: "娴嬭瘯鍔涢噺闈?
-    material: GOLDEN_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&c娴嬭瘯 - 鎶€鑳藉己搴?10%" ]
-    affixes: [ ability_strength, energy_max ]
-    tier-affixes:
-      3:
-        ability_strength: { chance: 1.0, min: 0.1, max: 0.1 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_duration_helm:
-    display-name: "娴嬭瘯鎸佺画鐩?
-    material: TURTLE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&b娴嬭瘯 - 鎶€鑳芥寔缁?50%" ]
-    affixes: [ ability_duration, energy_max ]
-    tier-affixes:
-      3:
-        ability_duration: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-  test_duration_chest:
-    display-name: "娴嬭瘯鎸佺画鐢?
-    material: TURTLE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&b娴嬭瘯 - 鎶€鑳芥寔缁?50%" ]
-    affixes: [ ability_duration, energy_max ]
-    tier-affixes:
-      3:
-        ability_duration: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:       { chance: 1.0, min: 20.0, max: 20.0 }
-
-  test_efficiency_helm:
-    display-name: "娴嬭瘯鏁堢巼鐩?
-    material: NETHERITE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&a娴嬭瘯 - 鎶€鑳芥晥鐜?50%" ]
-    affixes: [ ability_efficiency, energy_max ]
-    tier-affixes:
-      3:
-        ability_efficiency: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:         { chance: 1.0, min: 20.0, max: 20.0 }
-  test_efficiency_chest:
-    display-name: "娴嬭瘯鏁堢巼鐢?
-    material: NETHERITE_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&a娴嬭瘯 - 鎶€鑳芥晥鐜?50%" ]
-    affixes: [ ability_efficiency, energy_max ]
-    tier-affixes:
-      3:
-        ability_efficiency: { chance: 1.0, min: 0.5, max: 0.5 }
-        energy_max:         { chance: 1.0, min: 20.0, max: 20.0 }
-  test_god_helm:
-    display-name: "绁炶祼澶寸洈"
-    material: NETHERITE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鍏ㄥ睘鎬?0鍊嶆祴璇? ]
-    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
-        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
-        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
-        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
-        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
-        health:              { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_chest:
-    display-name: "绁炶祼鑳哥敳"
-    material: NETHERITE_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鍏ㄥ睘鎬?0鍊嶆祴璇? ]
-    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        base_damage:         { chance: 1.0, min: 10.0, max: 10.0 }
-        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
-        critical_damage:     { chance: 1.0, min: 3.0, max: 3.0 }
-        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
-        armor:               { chance: 1.0, min: 20.0, max: 20.0 }
-        health:              { chance: 1.0, min: 20.0, max: 20.0 }
-        shield:              { chance: 1.0, min: 20.0, max: 20.0 }
-        shield_capacity:     { chance: 1.0, min: 20.0, max: 20.0 }
-        energy_max:          { chance: 1.0, min: 100.0, max: 100.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_legs:
-    display-name: "绁炶祼鎶よ吙"
-    material: NETHERITE_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鍏ㄥ睘鎬?0鍊嶆祴璇? ]
-    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
-        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
-        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
-        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
-        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
-        health:              { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_boots:
-    display-name: "绁炶祼闈村瓙"
-    material: NETHERITE_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鍏ㄥ睘鎬?0鍊嶆祴璇? ]
-    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
-        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
-        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
-        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
-        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
-        health:              { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_helm:
-    display-name: "绁炶祼澶寸洈"
-    material: NETHERITE_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鎶€鑳藉叏灞炴€ф祴璇? ]
-    affixes: [ shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_chest:
-    display-name: "绁炶祼鑳哥敳"
-    material: NETHERITE_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鎶€鑳藉叏灞炴€ф祴璇? ]
-    affixes: [ shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_legs:
-    display-name: "绁炶祼鎶よ吙"
-    material: NETHERITE_LEGGINGS
-    weapon-category: armor_magic
-    effective-slots: [ legs ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鎶€鑳藉叏灞炴€ф祴璇? ]
-    affixes: [ shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
-  test_god_boots:
-    display-name: "绁炶祼闈村瓙"
-    material: NETHERITE_BOOTS
-    weapon-category: armor_magic
-    effective-slots: [ feet ]
-    chunkworld-level: "0"
-    pixelshop-price: 0.0
-    base-lore: [ "&6&l绁炶祼濂楄 - 鎶€鑳藉叏灞炴€ф祴璇? ]
-    affixes: [ shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
-    tier-affixes:
-      3:
-        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
-        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
-        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
-        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
-        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
+    tier-affixes: *ward_tier_affixes
