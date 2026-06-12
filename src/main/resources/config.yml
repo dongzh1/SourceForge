@@ -1277,3 +1277,99 @@ equipment:
       3:
         ability_efficiency: { chance: 1.0, min: 0.5, max: 0.5 }
         energy_max:         { chance: 1.0, min: 20.0, max: 20.0 }
+  test_god_helm:
+    display-name: "神赐头盔"
+    material: NETHERITE_HELMET
+    weapon-category: armor_magic
+    effective-slots: [ head ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&6&l神赐套装 - 全属性10倍测试" ]
+    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
+    tier-affixes:
+      3:
+        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
+        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
+        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
+        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
+        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
+        health:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
+        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
+        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
+        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
+  test_god_chest:
+    display-name: "神赐胸甲"
+    material: NETHERITE_CHESTPLATE
+    weapon-category: armor_magic
+    effective-slots: [ chest ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&6&l神赐套装 - 全属性10倍测试" ]
+    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
+    tier-affixes:
+      3:
+        base_damage:         { chance: 1.0, min: 10.0, max: 10.0 }
+        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
+        critical_damage:     { chance: 1.0, min: 3.0, max: 3.0 }
+        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
+        armor:               { chance: 1.0, min: 20.0, max: 20.0 }
+        health:              { chance: 1.0, min: 20.0, max: 20.0 }
+        shield:              { chance: 1.0, min: 20.0, max: 20.0 }
+        shield_capacity:     { chance: 1.0, min: 20.0, max: 20.0 }
+        energy_max:          { chance: 1.0, min: 100.0, max: 100.0 }
+        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
+        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
+  test_god_legs:
+    display-name: "神赐护腿"
+    material: NETHERITE_LEGGINGS
+    weapon-category: armor_magic
+    effective-slots: [ legs ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&6&l神赐套装 - 全属性10倍测试" ]
+    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
+    tier-affixes:
+      3:
+        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
+        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
+        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
+        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
+        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
+        health:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
+        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
+        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
+        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
+  test_god_boots:
+    display-name: "神赐靴子"
+    material: NETHERITE_BOOTS
+    weapon-category: armor_magic
+    effective-slots: [ feet ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&6&l神赐套装 - 全属性10倍测试" ]
+    affixes: [ base_damage, critical_chance, critical_damage, status_chance, armor, health, shield, shield_capacity, energy_max, ability_strength, ability_duration, ability_efficiency, ability_range ]
+    tier-affixes:
+      3:
+        base_damage:         { chance: 1.0, min: 5.0, max: 5.0 }
+        critical_chance:     { chance: 1.0, min: 0.5, max: 0.5 }
+        critical_damage:     { chance: 1.0, min: 2.0, max: 2.0 }
+        status_chance:       { chance: 1.0, min: 0.3, max: 0.3 }
+        armor:               { chance: 1.0, min: 10.0, max: 10.0 }
+        health:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield:              { chance: 1.0, min: 10.0, max: 10.0 }
+        shield_capacity:     { chance: 1.0, min: 10.0, max: 10.0 }
+        energy_max:          { chance: 1.0, min: 50.0, max: 50.0 }
+        ability_strength:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_duration:    { chance: 1.0, min: 5.0, max: 5.0 }
+        ability_efficiency:  { chance: 1.0, min: 0.5, max: 0.5 }
+        ability_range:       { chance: 1.0, min: 5.0, max: 5.0 }
