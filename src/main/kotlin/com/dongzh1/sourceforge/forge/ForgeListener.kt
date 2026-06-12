@@ -12,6 +12,7 @@ import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
@@ -141,7 +142,7 @@ class ForgeListener(
 
     // ==================== 伤害事件 ====================
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     fun onDamage(event: EntityDamageByEntityEvent) {
         val target = event.entity as? LivingEntity ?: return
         var sourceDamage: Float? = null
@@ -178,7 +179,7 @@ class ForgeListener(
         applyDefense(target, event)
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     fun onGenericDamage(event: EntityDamageEvent) {
         if (event is EntityDamageByEntityEvent) return
         val target = event.entity as? LivingEntity ?: return
