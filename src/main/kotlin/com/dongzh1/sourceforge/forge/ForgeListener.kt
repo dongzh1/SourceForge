@@ -352,7 +352,7 @@ class ForgeListener(
 
     private fun startShieldRegen() {
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
-            for (player in Bukkit.getOnlinePlayers()) {
+            for (player in plugin.server.onlinePlayers) {
                 tickShieldRegen(player)
             }
         }, 20L, 20L) // 每秒一次
@@ -365,9 +365,12 @@ class ForgeListener(
         val lastDamage = player.persistentDataContainer.get(shieldLastDamageKey, PersistentDataType.LONG) ?: 0L
         val elapsed = System.currentTimeMillis() - lastDamage
         if (elapsed < 5000) return // 受伤后 5 秒内不回复
-        val regen = maxShield * 0.10 // 每秒回复 10% 最大护盾
+        val regen = maxShield / 3.0 // 每秒回复 1/3，3 秒回满
         val newValue = minOf(maxShield, current + regen)
         setCurrentShield(player, newValue, maxShield)
+        if (plugin.forgeConfig.debugCombat) {
+            player.sendMessage("§8[SourceForge Debug] §7护盾回复: +${"%.1f".format(regen)}, ${"%.1f".format(newValue)}/${"%.1f".format(maxShield)}")
+        }
     }
 
     // ==================== 锻造逻辑 ====================
