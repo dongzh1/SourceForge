@@ -30,7 +30,6 @@ class ForgeListener(
     private val plugin: SourceForge
 ) : Listener {
     private val skillDamageKey = NamespacedKey(plugin, "skill_damage")
-    private val commandDamageTypeKey = NamespacedKey(plugin, "command_damage_type")
 
     // ==================== GUI 事件 ====================
 

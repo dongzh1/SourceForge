@@ -1004,9 +1004,10 @@ PlaceholderAPI 占位符：
 
 - 装备类型、等级、评分、价格读取玩家主手 SourceForge 装备。
 - 不带 `total_` 的战斗/技能属性读取玩家主手 SourceForge 装备。
-- `health`、`shield_capacity`、`armor`、`energy_max` 和 `total_` 系列读取玩家全身生效 SF 装备：防具栏，以及 `effective-slots` 包含 `inventory` 或 `backpack` 的物品。
+- `health`、`shield_capacity`、`armor`、`energy_max` 和 `total_` 系列读取玩家当前生效 SF 装备：防具栏、主手、副手，以及背包内 `effective-slots` 包含 `inventory` 或 `backpack` 的物品。
 - `%sourceforge_hand_<属性ID>%` 固定读取主手属性，例如 `%sourceforge_hand_base_damage%`。
 - `%sourceforge_attr_<属性ID>%` 固定读取全身属性，例如 `%sourceforge_attr_ability_efficiency%`。
 - `%sourceforge_cooldown_multiplier%` 返回 `1 - 全身 ability_efficiency`，例如效率 `0.2` 时返回 `0.8000`。
 - `%sourceforge_cooldown_10%` 返回 `10 * (1 - 全身 ability_efficiency)`，可直接用于 MythicMobs 技能参数；主手版本使用 `%sourceforge_hand_cooldown_10%`。
 - `%sourceforge_strength_multiplier%`、`%sourceforge_duration_multiplier%`、`%sourceforge_range_multiplier%` 分别返回 `1 + 全身 ability_strength/duration/range`。
+- `%sourceforge_total_ability_strength%` 和 `%sourceforge_total_ability_duration%` 包含基础 `1.0`，`%sourceforge_total_ability_range%` 包含基础 `3.0` 格范围。

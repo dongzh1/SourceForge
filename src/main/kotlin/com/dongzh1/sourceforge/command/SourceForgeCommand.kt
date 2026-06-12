@@ -7,11 +7,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.damage.DamageSource
-import org.bukkit.damage.DamageType
 import org.bukkit.entity.Player
-import org.bukkit.NamespacedKey
-import org.bukkit.persistence.PersistentDataType
 import java.text.DecimalFormat
 
 class SourceForgeCommand(
@@ -295,11 +291,8 @@ class SourceForgeCommand(
         val pieces = slots.mapNotNull { (slotName, item) ->
             if (plugin.itemService.isSourceEquipment(item)) slotName to item else null
         }
-        val backpackItems = player.inventory.contents.filterNotNull().filter {
-            plugin.itemService.isSourceEquipment(it) &&
-                (plugin.itemService.equipmentConfig(it)?.effectiveSlots?.any { s -> s == "inventory" || s == "backpack" } == true)
-        }
-        val allItems = pieces.map { it.second } + backpackItems
+        val backpackItems = plugin.itemService.backpackSourceItems(player)
+        val allItems = plugin.itemService.effectiveSourceItems(player)
 
         player.sendMessage("§6========== SourceForge 属性总览 ==========")
 
@@ -320,14 +313,8 @@ class SourceForgeCommand(
         }
 
         val totals = plugin.forgeConfig.affixes.values.associate { affix ->
-            affix.id to allItems.sumOf { plugin.itemService.readAffixValue(it, affix.id) }
-        }.toMutableMap()
-        // 技能属性基础值
-        for (id in skillBaseAffixes) {
-            totals[id] = (totals[id] ?: 0.0) + 1.0
+            affix.id to plugin.itemService.readDisplayTotalAffix(player, affix.id)
         }
-        // ability_range 基础 3 格
-        totals["ability_range"] = (totals["ability_range"] ?: 0.0) + 2.0
 
         player.sendMessage("")
         sendAffixGroup(
@@ -405,13 +392,7 @@ class SourceForgeCommand(
             "status_chance",
             "ability_strength",
             "ability_duration",
-            "ability_efficiency",
-            "ability_range"
-        )
-        val skillBaseAffixes = setOf(
-            "ability_strength",
-            "ability_duration",
-            "ability_range"
+            "ability_efficiency"
         )
     }
 }

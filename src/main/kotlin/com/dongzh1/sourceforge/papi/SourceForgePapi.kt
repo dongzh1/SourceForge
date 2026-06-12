@@ -79,10 +79,10 @@ object SourceForgePapi : PlaceholderExpansion() {
             key == "total_critical_chance" -> format(totalAffix(player, "critical_chance"), 4)
             key == "total_critical_damage" -> format(totalAffix(player, "critical_damage"), 4)
             key == "total_status_chance" -> format(totalAffix(player, "status_chance"), 4)
-            key == "total_ability_strength" -> format(1.0 + totalAffix(player, "ability_strength"), 4)
-            key == "total_ability_duration" -> format(1.0 + totalAffix(player, "ability_duration"), 4)
+            key == "total_ability_strength" -> format(plugin.itemService.readDisplayTotalAffix(player, "ability_strength"), 4)
+            key == "total_ability_duration" -> format(plugin.itemService.readDisplayTotalAffix(player, "ability_duration"), 4)
             key == "total_ability_efficiency" -> format(totalAffix(player, "ability_efficiency"), 4)
-            key == "total_ability_range" -> format(3.0 + totalAffix(player, "ability_range"), 4)
+            key == "total_ability_range" -> format(plugin.itemService.readDisplayTotalAffix(player, "ability_range"), 4)
 
             // 原版属性
             key == "vanilla_attack_damage" -> format(attribute(player, Attribute.ATTACK_DAMAGE), 2)
@@ -146,20 +146,7 @@ object SourceForgePapi : PlaceholderExpansion() {
 
     /** 获取玩家全身 SourceForge 装备某属性总和 */
     private fun totalAffix(player: Player, affixId: String): Double {
-        return sourceItems(player).sumOf { plugin.itemService.readAffixValue(it, affixId) }
-    }
-
-    /** 获取所有生效的 SourceForge 装备（装甲槽+背包内 effective-slots 包含 inventory 的物品） */
-    private fun sourceItems(player: Player): List<ItemStack> {
-        val armor = player.inventory.armorContents.filterNotNull().filter { plugin.itemService.isSourceEquipment(it) }
-        val inventoryItems = player.inventory.contents
-            .filterNotNull()
-            .filter { plugin.itemService.isSourceEquipment(it) }
-            .filter {
-                val equipment = plugin.itemService.equipmentConfig(it) ?: return@filter false
-                "inventory" in equipment.effectiveSlots || "backpack" in equipment.effectiveSlots
-            }
-        return armor + inventoryItems
+        return plugin.itemService.readTotalAffix(player, affixId)
     }
 
     private fun attribute(player: Player, attribute: Attribute): Double {

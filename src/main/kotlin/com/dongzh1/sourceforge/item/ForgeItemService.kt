@@ -580,21 +580,57 @@ class ForgeItemService(
         return readAffixValue(item, "critical_damage")
     }
 
-    fun readTotalAffix(player: org.bukkit.entity.Player, affixId: String): Double {
-        return sourceItems(player).sumOf { readAffixValue(it, affixId) }
+    fun readTotalAffix(player: Player, affixId: String): Double {
+        return effectiveSourceItems(player).sumOf { readAffixValue(it, affixId) }
     }
 
-    fun hasSourceArmor(player: org.bukkit.entity.Player): Boolean {
+    fun readDisplayTotalAffix(player: Player, affixId: String): Double {
+        val total = readTotalAffix(player, affixId)
+        return when (affixId) {
+            "ability_strength", "ability_duration" -> 1.0 + total
+            "ability_range" -> 3.0 + total
+            else -> total
+        }
+    }
+
+    fun hasSourceArmor(player: Player): Boolean {
         return player.inventory.armorContents.any { isSourceEquipment(it) }
     }
 
-    private fun sourceItems(player: org.bukkit.entity.Player): List<ItemStack> {
-        val armor = player.inventory.armorContents.filterNotNull().filter { isSourceEquipment(it) }
-        val mainHand = player.inventory.itemInMainHand.takeIf { isSourceEquipment(it) }
-        val backpack = player.inventory.contents.filterNotNull().filter {
-            isSourceEquipment(it) && (equipmentConfig(it)?.effectiveSlots?.any { s -> s == "inventory" || s == "backpack" } == true)
+    fun effectiveSourceItems(player: Player): List<ItemStack> {
+        val inventory = player.inventory
+        val items = mutableListOf<ItemStack>()
+        addSourceItem(items, inventory.helmet)
+        addSourceItem(items, inventory.chestplate)
+        addSourceItem(items, inventory.leggings)
+        addSourceItem(items, inventory.boots)
+        addSourceItem(items, inventory.itemInMainHand)
+        addSourceItem(items, inventory.itemInOffHand)
+        for ((slot, item) in inventory.storageContents.withIndex()) {
+            if (slot == inventory.heldItemSlot) continue
+            if (isBackpackEffectiveSource(item)) {
+                addSourceItem(items, item)
+            }
         }
-        return armor + listOfNotNull(mainHand) + backpack
+        return items
+    }
+
+    fun backpackSourceItems(player: Player): List<ItemStack> {
+        val inventory = player.inventory
+        return inventory.storageContents
+            .filterIndexed { slot, item -> slot != inventory.heldItemSlot && isBackpackEffectiveSource(item) }
+            .filterNotNull()
+    }
+
+    private fun addSourceItem(items: MutableList<ItemStack>, item: ItemStack?) {
+        if (!isSourceEquipment(item)) return
+        if (items.any { it === item }) return
+        items += item!!
+    }
+
+    private fun isBackpackEffectiveSource(item: ItemStack?): Boolean {
+        if (!isSourceEquipment(item)) return false
+        return equipmentConfig(item)?.effectiveSlots?.any { it == "inventory" || it == "backpack" } == true
     }
 
     private fun format(value: Double, decimals: Int): String {
