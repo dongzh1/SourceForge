@@ -32,7 +32,7 @@
 
 affixes:
   base_damage:
-    display-name: "武力"
+    display-name: "基础伤害"
     pdc-key: "base_damage"
     value-type: double
     min: 1.0
@@ -43,7 +43,7 @@ affixes:
     lore: "&7武力: &f+%value%"
 
   critical_chance:
-    display-name: "会心"
+    display-name: "暴击几率"
     pdc-key: "critical_chance"
     value-type: double
     min: 0.03
@@ -54,7 +54,7 @@ affixes:
     lore: "&7会心: &f+%value%"
 
   critical_damage:
-    display-name: "破势"
+    display-name: "暴击伤害"
     pdc-key: "critical_damage"
     value-type: double
     min: 0.20
