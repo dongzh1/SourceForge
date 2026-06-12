@@ -31,9 +31,9 @@
 | `<sourceforge.ability_strength>` | 技能强度 | **1.0 (100%)** | `1.5` |
 | `<sourceforge.ability_duration>` | 技能持续时间 | **1.0 (100%)** | `1.3` |
 | `<sourceforge.ability_efficiency>` | 技能效率（减CD） | **0.0 (0%)** | `0.5` |
-| `<sourceforge.ability_range>` | 技能范围（格） | **3.0 (3格)** | `4.5` |
+| `<sourceforge.ability_range>` | 技能范围 | **1.0 (100%)** | `1.5` |
 
-> 基础值说明：裸装时 `ability_strength` 和 `ability_duration` 返回 `1.0`（100%），`ability_range` 返回 `3.0`（3格），`ability_efficiency` 返回 `0.0`。穿装备后在此基础上叠加。
+> 基础值说明：裸装时 `ability_strength`、`ability_duration`、`ability_range` 返回 `1.0`（100%），`ability_efficiency` 返回 `0.0`（0%）。穿装备后在此基础上叠加。所有占位符输出原始浮点数（如 `0.5`），不包含百分号。
 
 ---
 
