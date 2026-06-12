@@ -867,19 +867,18 @@ equipment:
       - ability_duration
     tier-affixes: *ward_tier_affixes
 
-
   test_shield_helm:
-    display-name: "护盾测试盔"
+    display-name: "鎶ょ浘娴嬭瘯鐩?
     material: DIAMOND_HELMET
     weapon-category: armor_magic
     effective-slots: [ head ]
     chunkworld-level: "0"
     pixelshop-price: 0.0
-    base-lore: [ "&b测试装备 - 护盾+100" ]
+    base-lore: [ "&b娴嬭瘯瑁呭 - 鎶ょ浘+50" ]
     affixes: [ shield_capacity, energy_max ]
     tier-affixes:
       3:
-        shield_capacity: { chance: 1.0, min: 100.0, max: 100.0 }
+        shield_capacity: { chance: 1.0, min: 200.0, max: 200.0 }
         energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }
   test_shield_chest:
     display-name: "鎶ょ浘娴嬭瘯鐢?
@@ -892,5 +891,5 @@ equipment:
     affixes: [ shield_capacity, energy_max ]
     tier-affixes:
       3:
-        shield_capacity: { chance: 1.0, min: 50.0, max: 50.0 }
+        shield_capacity: { chance: 1.0, min: 200.0, max: 200.0 }
         energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }
