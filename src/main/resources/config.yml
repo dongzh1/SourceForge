@@ -866,3 +866,30 @@ equipment:
       - ability_strength
       - ability_duration
     tier-affixes: *ward_tier_affixes
+
+  test_shield_helm:
+    display-name: "护盾测试盔"
+    material: DIAMOND_HELMET
+    weapon-category: armor_magic
+    effective-slots: [ head ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&b测试装备 - 护盾+50" ]
+    affixes: [ shield_capacity, energy_max ]
+    tier-affixes:
+      3:
+        shield_capacity: { chance: 1.0, min: 50.0, max: 50.0 }
+        energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }
+  test_shield_chest:
+    display-name: "护盾测试甲"
+    material: DIAMOND_CHESTPLATE
+    weapon-category: armor_magic
+    effective-slots: [ chest ]
+    chunkworld-level: "0"
+    pixelshop-price: 0.0
+    base-lore: [ "&b测试装备 - 护盾+50" ]
+    affixes: [ shield_capacity, energy_max ]
+    tier-affixes:
+      3:
+        shield_capacity: { chance: 1.0, min: 50.0, max: 50.0 }
+        energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }

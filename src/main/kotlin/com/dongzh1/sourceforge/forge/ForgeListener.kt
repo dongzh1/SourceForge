@@ -32,6 +32,11 @@ class ForgeListener(
 ) : Listener {
     private val skillDamageKey = NamespacedKey(plugin, "skill_damage")
     private val shieldCurrentKey = NamespacedKey(plugin, "shield_current")
+    private val shieldLastDamageKey = NamespacedKey(plugin, "shield_last_damage")
+
+    init {
+        startShieldRegen()
+    }
 
     // ==================== GUI 事件 ====================
 
@@ -318,6 +323,8 @@ class ForgeListener(
         val player = target as? Player ?: return
         val maxShield = 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity")
         val currentShield = getCurrentShield(player, maxShield)
+        // 记录受伤时间（用于脱战回复）
+        player.persistentDataContainer.set(shieldLastDamageKey, PersistentDataType.LONG, System.currentTimeMillis())
         if (currentShield <= 0.0) return
         val absorbed = minOf(event.damage, currentShield)
         val remaining = event.damage - absorbed
@@ -341,6 +348,26 @@ class ForgeListener(
 
     private fun setCurrentShield(player: Player, value: Double, maxShield: Double) {
         player.persistentDataContainer.set(shieldCurrentKey, PersistentDataType.DOUBLE, value.coerceIn(0.0, maxShield))
+    }
+
+    private fun startShieldRegen() {
+        plugin.server.scheduler.runTaskTimer(plugin, Runnable {
+            for (player in Bukkit.getOnlinePlayers()) {
+                tickShieldRegen(player)
+            }
+        }, 20L, 20L) // 每秒一次
+    }
+
+    private fun tickShieldRegen(player: Player) {
+        val maxShield = 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity")
+        val current = getCurrentShield(player, maxShield)
+        if (current >= maxShield) return
+        val lastDamage = player.persistentDataContainer.get(shieldLastDamageKey, PersistentDataType.LONG) ?: 0L
+        val elapsed = System.currentTimeMillis() - lastDamage
+        if (elapsed < 5000) return // 受伤后 5 秒内不回复
+        val regen = maxShield * 0.10 // 每秒回复 10% 最大护盾
+        val newValue = minOf(maxShield, current + regen)
+        setCurrentShield(player, newValue, maxShield)
     }
 
     // ==================== 锻造逻辑 ====================
