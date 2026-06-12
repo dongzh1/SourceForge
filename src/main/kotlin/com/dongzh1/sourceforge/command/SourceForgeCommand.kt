@@ -354,7 +354,7 @@ class SourceForgeCommand(
     }
 
     private fun sendAffixGroup(player: Player, title: String, totals: Map<String, Double>, ids: List<String>) {
-        val affixes = ids.mapNotNull { plugin.forgeConfig.affixes[it] }
+        val affixes = ids.mapNotNull { plugin.forgeConfig.affixes[it] }.filter { (totals[it.id] ?: 0.0) != 0.0 }
         if (affixes.isEmpty()) return
         player.sendMessage("§e▎$title")
         for (affix in affixes) {
