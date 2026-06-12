@@ -316,7 +316,7 @@ class ForgeListener(
 
     private fun applyShield(target: LivingEntity, event: EntityDamageEvent) {
         val player = target as? Player ?: return
-        val maxShield = plugin.itemService.readDisplayTotalAffix(player, "shield")
+        val maxShield = 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity")
         val currentShield = getCurrentShield(player, maxShield)
         if (currentShield <= 0.0) return
         val absorbed = minOf(event.damage, currentShield)

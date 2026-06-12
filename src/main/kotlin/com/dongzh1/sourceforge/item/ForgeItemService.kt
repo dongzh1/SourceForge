@@ -588,7 +588,6 @@ class ForgeItemService(
         val total = readTotalAffix(player, affixId)
         return when (affixId) {
             "ability_strength", "ability_duration", "ability_range" -> 1.0 + total
-            "shield" -> 10.0 + total
             else -> total
         }
     }

@@ -162,14 +162,3 @@ affixes:
     combat: ability_range
     scale: 1.0
     lore: "&7范围: &f+%value%"
-
-  shield:
-    display-name: "护盾"
-    pdc-key: "shield"
-    value-type: double
-    min: 2.0
-    max: 10.0
-    decimals: 0
-    combat: shield
-    scale: 1.0
-    lore: "&7护盾: &f+%value%"
