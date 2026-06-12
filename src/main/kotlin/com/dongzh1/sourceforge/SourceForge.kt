@@ -4,6 +4,7 @@ import com.dongzh1.sourceforge.command.SourceForgeCommand
 import com.dongzh1.sourceforge.config.ForgeConfig
 import com.dongzh1.sourceforge.enchant.SourceEnchantListener
 import com.dongzh1.sourceforge.enchant.SourceEnchantService
+import com.dongzh1.sourceforge.enchant.SourceForgeMMPlaceholders
 import com.dongzh1.sourceforge.forge.ForgeListener
 import com.dongzh1.sourceforge.forge.InventoryAttributeListener
 import com.dongzh1.sourceforge.item.ForgeItemService
@@ -51,6 +52,7 @@ class SourceForge : EasyPlugin() {
         Bukkit.getPluginManager().registerEvents(InventoryAttributeListener(this), this)
         Bukkit.getPluginManager().registerEvents(SourceEnchantListener(this), this)
         SourceForgePapi.register(this)
+        SourceForgeMMPlaceholders(this).registerIfAvailable()
 
         logger.info("SourceForge 已启动")
     }
