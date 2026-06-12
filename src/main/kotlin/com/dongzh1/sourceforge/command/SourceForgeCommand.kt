@@ -327,7 +327,7 @@ class SourceForgeCommand(
             player,
             "生存属性",
             totals,
-            listOf("health", "shield_capacity")
+            listOf("health", "shield", "shield_capacity")
         )
         sendAffixGroup(
             player,
@@ -378,6 +378,7 @@ class SourceForgeCommand(
             "critical_damage",
             "status_chance",
             "armor",
+            "shield",
             "health",
             "shield_capacity",
             "energy_max",

@@ -30,6 +30,7 @@ class ForgeListener(
     private val plugin: SourceForge
 ) : Listener {
     private val skillDamageKey = NamespacedKey(plugin, "skill_damage")
+    private val shieldCurrentKey = NamespacedKey(plugin, "shield_current")
 
     // ==================== GUI 事件 ====================
 
@@ -147,21 +148,16 @@ class ForgeListener(
         when (val damager = event.damager) {
             is Player -> {
                 val weapon = damager.inventory.itemInMainHand
-                if (plugin.itemService.isSourceEquipment(weapon)) {
-                    plugin.itemService.stripVanillaEnchantments(weapon)
+                val isSfWeapon = plugin.itemService.isSourceEquipment(weapon)
+                val hasSfArmor = plugin.itemService.hasSourceArmor(damager)
+                if (isSfWeapon || hasSfArmor) {
+                    if (isSfWeapon) plugin.itemService.stripVanillaEnchantments(weapon)
                     sourceDamage = applyCombat(
                         player = damager,
                         target = target,
-                        weapon = weapon,
+                        weapon = weapon.takeIf { isSfWeapon },
                         baseDamage = event.damage
                     ) { event.damage = it }
-                } else if (plugin.itemService.hasSourceArmor(damager)) {
-                    val strengthTotal = plugin.itemService.readTotalAffix(damager, "ability_strength")
-                    val multiplier = 1.0 + strengthTotal
-                    event.damage = event.damage * multiplier
-                    if (plugin.forgeConfig.debugCombat) {
-                        damager.sendMessage("§8[SourceForge Debug] §7非SF武器 + SF防具: 强度=${"%.2f".format(strengthTotal)}, 倍率=${"%.2f".format(multiplier)}, 伤害=${"%.2f".format(event.damage)}")
-                    }
                 }
             }
             is Projectile -> {
@@ -178,6 +174,7 @@ class ForgeListener(
             }
             else -> Unit
         }
+        applyShield(target, event)
         applyDefense(target, event)
     }
 
@@ -185,6 +182,7 @@ class ForgeListener(
     fun onGenericDamage(event: EntityDamageEvent) {
         if (event is EntityDamageByEntityEvent) return
         val target = event.entity as? LivingEntity ?: return
+        applyShield(target, event)
         applyDefense(target, event)
     }
 
@@ -206,8 +204,11 @@ class ForgeListener(
         // 读取词条值
         val readValue: (String) -> Double = if (projectilePdc != null) {
             { affixId -> plugin.itemService.readAffixValue(projectilePdc, affixId) }
-        } else {
+        } else if (weapon != null) {
             { affixId -> plugin.itemService.readAffixValue(weapon, affixId) }
+        } else {
+            // 无SF武器但有SF防具 — 从全身读取
+            { affixId -> plugin.itemService.readTotalAffix(player, affixId) }
         }
 
         val configuredBaseDamage = readValue("base_damage")
@@ -308,6 +309,37 @@ class ForgeListener(
             } catch (_: UnsupportedOperationException) {
             }
         }
+    }
+
+    // ==================== 护盾系统 ====================
+
+    private fun applyShield(target: LivingEntity, event: EntityDamageEvent) {
+        val player = target as? Player ?: return
+        val maxShield = plugin.itemService.readDisplayTotalAffix(player, "shield")
+        val currentShield = getCurrentShield(player, maxShield)
+        if (currentShield <= 0.0) return
+        val absorbed = minOf(event.damage, currentShield)
+        val remaining = event.damage - absorbed
+        setCurrentShield(player, currentShield - absorbed, maxShield)
+        event.damage = remaining
+        if (plugin.forgeConfig.debugCombat) {
+            player.sendMessage("§8[SourceForge Debug] §7护盾: ${"%.1f".format(absorbed)} 吸收, 剩余=${"%.1f".format(currentShield - absorbed)}/${"%.1f".format(maxShield)}, 穿透=${"%.1f".format(remaining)}")
+        }
+    }
+
+    private fun getCurrentShield(player: Player, maxShield: Double): Double {
+        val pdc = player.persistentDataContainer
+        val stored = pdc.get(shieldCurrentKey, PersistentDataType.DOUBLE)
+        return if (stored == null) {
+            setCurrentShield(player, maxShield, maxShield)
+            maxShield
+        } else {
+            stored.coerceAtMost(maxShield)
+        }
+    }
+
+    private fun setCurrentShield(player: Player, value: Double, maxShield: Double) {
+        player.persistentDataContainer.set(shieldCurrentKey, PersistentDataType.DOUBLE, value.coerceIn(0.0, maxShield))
     }
 
     // ==================== 锻造逻辑 ====================
