@@ -321,7 +321,7 @@ class ForgeListener(
 
     private fun applyShield(target: LivingEntity, event: EntityDamageEvent) {
         val player = target as? Player ?: return
-        val maxShield = 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity")
+        val maxShield = plugin.itemService.readDisplayTotalAffix(player, "shield_capacity")
         val currentShield = getCurrentShield(player, maxShield)
         // 记录受伤时间（用于脱战回复）
         player.persistentDataContainer.set(shieldLastDamageKey, PersistentDataType.LONG, System.currentTimeMillis())
@@ -359,7 +359,7 @@ class ForgeListener(
     }
 
     private fun tickShieldRegen(player: Player) {
-        val maxShield = 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity")
+        val maxShield = plugin.itemService.readDisplayTotalAffix(player, "shield_capacity")
         val current = getCurrentShield(player, maxShield)
         if (current >= maxShield) return
         val lastDamage = player.persistentDataContainer.get(shieldLastDamageKey, PersistentDataType.LONG) ?: 0L
