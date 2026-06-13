@@ -1,6 +1,7 @@
 package com.dongzh1.sourceforge.enchant
 
 import com.dongzh1.sourceforge.SourceForge
+import com.dongzh1.sourceforge.hud.BetterHudHook
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
@@ -57,17 +58,23 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
             val originalCd = skillCooldown(skill, caster) ?: return
             if (originalCd <= 0.0) return
             val skillName = skillName(skill)
+            val rawName = (callNoArg(skill, "getInternalName") as? String).orEmpty()
 
             val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
             val multiplier = (1.0 - efficiency).coerceAtLeast(0.0)
             val afterCd = originalCd * multiplier
+            val cdTicks = (afterCd * 20).toLong()
 
             plugin.server.scheduler.runTask(plugin, Runnable {
                 setSkillCooldown(skill, caster, afterCd)
+                val betterHud = plugin.forgeConfig.betterHud
+                if (betterHud.enabled) {
+                    BetterHudHook.showSkillCd(plugin, player, betterHud.skillCdPopup, rawName, afterCd, cdTicks)
+                }
             })
 
             // 记录 CD 到 PDC
-            recordSkillCd(player, skillName, (afterCd * 20).toLong())
+            recordSkillCd(player, skillName, cdTicks)
 
             if (plugin.forgeConfig.debugCombat) {
                 player.sendMessage(

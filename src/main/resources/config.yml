@@ -4,6 +4,16 @@ gui:
 debug:
   combat: false
 
+# BetterHud 集成：每次 MM 技能进入冷却时弹出一个 popup（按技能名堆叠，最多由
+# BetterHud 端 max-stack 控制）。CD 结束时由本插件主动移除。
+# popup 布局里可用的条目变量（通过 BetterHud 的 (custom_variable:键) 读取）：
+#   skill          技能内部名（建议配合自定义字体显示）
+#   cooldown       冷却秒数（一位小数）
+#   cooldown_ticks 冷却总 tick（用于自定义进度条）
+betterhud:
+  enabled: true
+  skill-cd-popup: "sourceforge_skill_cd"
+
 forge:
   guarantee-material-affix: true
 
@@ -867,29 +877,199 @@ equipment:
       - ability_duration
     tier-affixes: *ward_tier_affixes
 
-  test_shield_helm:
-    display-name: "护盾测试盔"
-    material: DIAMOND_HELMET
-    weapon-category: armor_magic
-    effective-slots: [ head ]
-    chunkworld-level: "0"
+  # ============================================================
+  # 属性测试装备（CraftEngine 物品库，每件隔离单一属性，数值夸张）
+  # 发放: /sf giveequipment <玩家> <装备ID> 1 1 12
+  # 全部用 tier '1'，chance=1.0，min=max 固定值，保证每次结果一致
+  # ============================================================
+
+  # ---------- 武器（手持攻击；debug.combat=true 时聊天栏打印战斗数值）----------
+  test_base_damage:
+    display-name: '&c① 武力测试剑'
+    material: NETHERITE_SWORD
+    ce-id: sourceforge:test_base_damage
+    weapon-category: melee_light
+    effective-slots:
+    - mainhand
+    chunkworld-level: '0'
     pixelshop-price: 0.0
-    base-lore: [ "&b测试装备 - 护盾+50" ]
-    affixes: [ shield_capacity, energy_max ]
+    base-lore:
+    - '&7测试: base_damage = 50（每次命中约 50）'
+    affixes:
+    - base_damage
     tier-affixes:
-      3:
-        shield_capacity: { chance: 1.0, min: 50.0, max: 50.0 }
-        energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }
-  test_shield_chest:
-    display-name: "护盾测试甲"
+      '1':
+        base_damage: { chance: 1.0, min: 50.0, max: 50.0 }
+  test_critical:
+    display-name: '&6② 暴击测试剑'
+    material: GOLDEN_SWORD
+    ce-id: sourceforge:test_critical
+    weapon-category: melee_light
+    effective-slots:
+    - mainhand
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 暴击几率 100% + 暴击伤害 +200%'
+    - '&7每次必暴, 20 x 3 = 60'
+    affixes:
+    - base_damage
+    - critical_chance
+    - critical_damage
+    tier-affixes:
+      '1':
+        base_damage: { chance: 1.0, min: 20.0, max: 20.0 }
+        critical_chance: { chance: 1.0, min: 1.0, max: 1.0 }
+        critical_damage: { chance: 1.0, min: 2.0, max: 2.0 }
+  test_strength:
+    display-name: '&d③ 强度测试剑'
+    material: DIAMOND_SWORD
+    ce-id: sourceforge:test_strength
+    weapon-category: melee_light
+    effective-slots:
+    - mainhand
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 技能强度 +200%（伤害 x3）'
+    - '&720 x (1+2) = 60, debug 强度=2.00'
+    affixes:
+    - base_damage
+    - ability_strength
+    tier-affixes:
+      '1':
+        base_damage: { chance: 1.0, min: 20.0, max: 20.0 }
+        ability_strength: { chance: 1.0, min: 2.0, max: 2.0 }
+  test_status:
+    display-name: '&a④ 触发测试剑'
+    material: IRON_SWORD
+    ce-id: sourceforge:test_status
+    weapon-category: melee_light
+    effective-slots:
+    - mainhand
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 触发几率 80%（用 /sf stats 验证）'
+    affixes:
+    - base_damage
+    - status_chance
+    tier-affixes:
+      '1':
+        base_damage: { chance: 1.0, min: 10.0, max: 10.0 }
+        status_chance: { chance: 1.0, min: 0.8, max: 0.8 }
+
+  # ---------- 防具（穿戴后观察 / 用 /sf stats、/sf energy get 验证）----------
+  test_armor:
+    display-name: '&7⑤ 护甲测试甲'
+    material: NETHERITE_CHESTPLATE
+    ce-id: sourceforge:test_armor
+    weapon-category: armor_physical
+    effective-slots:
+    - chest
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 护甲 = 100（受击伤害大幅降低）'
+    affixes:
+    - armor
+    tier-affixes:
+      '1':
+        armor: { chance: 1.0, min: 100.0, max: 100.0 }
+  test_health:
+    display-name: '&c⑥ 生命测试甲'
     material: DIAMOND_CHESTPLATE
-    weapon-category: armor_magic
-    effective-slots: [ chest ]
-    chunkworld-level: "0"
+    ce-id: sourceforge:test_health
+    weapon-category: armor_physical
+    effective-slots:
+    - chest
+    chunkworld-level: '0'
     pixelshop-price: 0.0
-    base-lore: [ "&b测试装备 - 护盾+50" ]
-    affixes: [ shield_capacity, energy_max ]
+    base-lore:
+    - '&7测试: 生命 = 100（+50 颗心）'
+    affixes:
+    - health
     tier-affixes:
-      3:
-        shield_capacity: { chance: 1.0, min: 50.0, max: 50.0 }
-        energy_max:      { chance: 1.0, min: 20.0, max: 20.0 }
+      '1':
+        health: { chance: 1.0, min: 100.0, max: 100.0 }
+  test_shield:
+    display-name: '&b⑦ 护盾测试盔'
+    material: DIAMOND_HELMET
+    ce-id: sourceforge:test_shield
+    weapon-category: armor_magic
+    effective-slots:
+    - head
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 护盾 = 100（/sf stats 护盾 110, 受击先扣盾）'
+    affixes:
+    - shield_capacity
+    tier-affixes:
+      '1':
+        shield_capacity: { chance: 1.0, min: 100.0, max: 100.0 }
+  test_energy:
+    display-name: '&e⑧ 能量测试盔'
+    material: GOLDEN_HELMET
+    ce-id: sourceforge:test_energy
+    weapon-category: armor_magic
+    effective-slots:
+    - head
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 能量 = 100（/sf energy get 显示 /100）'
+    affixes:
+    - energy_max
+    tier-affixes:
+      '1':
+        energy_max: { chance: 1.0, min: 100.0, max: 100.0 }
+  test_efficiency:
+    display-name: '&a⑨ 效率测试腿'
+    material: NETHERITE_LEGGINGS
+    ce-id: sourceforge:test_efficiency
+    weapon-category: armor_magic
+    effective-slots:
+    - legs
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 技能效率 90%（MM 技能 CD x0.1）'
+    - '&7PAPI %sourceforge_cooldown_multiplier% = 0.1'
+    affixes:
+    - ability_efficiency
+    tier-affixes:
+      '1':
+        ability_efficiency: { chance: 1.0, min: 0.9, max: 0.9 }
+  test_duration:
+    display-name: '&9⑩ 持续测试靴'
+    material: DIAMOND_BOOTS
+    ce-id: sourceforge:test_duration
+    weapon-category: armor_magic
+    effective-slots:
+    - feet
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 技能持续 +200%（/sf stats 持续 300%）'
+    affixes:
+    - ability_duration
+    tier-affixes:
+      '1':
+        ability_duration: { chance: 1.0, min: 2.0, max: 2.0 }
+  test_range:
+    display-name: '&3⑪ 范围测试盔'
+    material: CHAINMAIL_HELMET
+    ce-id: sourceforge:test_range
+    weapon-category: armor_magic
+    effective-slots:
+    - head
+    chunkworld-level: '0'
+    pixelshop-price: 0.0
+    base-lore:
+    - '&7测试: 技能范围 +200%（/sf stats 范围 300%）'
+    affixes:
+    - ability_range
+    tier-affixes:
+      '1':
+        ability_range: { chance: 1.0, min: 2.0, max: 2.0 }

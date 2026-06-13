@@ -1,6 +1,7 @@
 package com.dongzh1.sourceforge.forge
 
 import com.dongzh1.sourceforge.SourceForge
+import com.dongzh1.sourceforge.hud.BetterHudHook
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
@@ -36,6 +37,7 @@ class InventoryAttributeListener(
     fun onQuit(event: PlayerQuitEvent) {
         clear(event.player)
         plugin.itemService.invalidateStatCache(event.player)
+        BetterHudHook.clear(event.player)
     }
 
     @EventHandler

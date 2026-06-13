@@ -73,6 +73,9 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("net.momirealms:craft-engine-core:0.0.66")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.66")
+    // 仅取 API 接口；isTransitive=false 避免带入更高版本 kotlin-stdlib 覆盖本项目 1.9
+    compileOnly("io.github.toxicity188:BetterHud-standard-api:1.14.1") { isTransitive = false }
+    compileOnly("io.github.toxicity188:BetterHud-bukkit-api:1.14.1") { isTransitive = false }
     compileOnly(fileTree("libs"))
 }
 

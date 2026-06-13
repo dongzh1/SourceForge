@@ -1,0 +1,93 @@
+items:
+  # ============================================================
+  # SourceForge 属性测试物品（CraftEngine 物品库）
+  # 每件物品只承载 1 个属性，数值刻意夸张，便于逐项验证效果
+  # 发放：/sf giveequipment <玩家> <装备ID> 1 1 12
+  # 装备ID 与下方 ce-id 同名（去掉 sourceforge: 前缀），见 config.yml
+  # ============================================================
+
+  # ---------- 武器类（手持攻击，配合 debug.combat 看聊天栏数值）----------
+  sourceforge:test_base_damage:
+    material: netherite_sword
+    data:
+      item-name: "<!i><red>① 武力测试剑 (base_damage=50)"
+      unbreakable: true
+
+  sourceforge:test_critical:
+    material: golden_sword
+    data:
+      item-name: "<!i><gold>② 暴击测试剑 (crit 100% x3)"
+      unbreakable: true
+
+  sourceforge:test_strength:
+    material: diamond_sword
+    data:
+      item-name: "<!i><light_purple>③ 强度测试剑 (strength +200%)"
+      unbreakable: true
+
+  sourceforge:test_status:
+    material: iron_sword
+    data:
+      item-name: "<!i><green>④ 触发测试剑 (status 80%)"
+      unbreakable: true
+
+  # ---------- 防具类（穿戴后观察 / 用 /sf stats、/sf energy get 验证）----------
+  sourceforge:test_armor:
+    material: netherite_chestplate
+    data:
+      item-name: "<!i><gray>⑤ 护甲测试甲 (armor=100)"
+      unbreakable: true
+
+  sourceforge:test_health:
+    material: diamond_chestplate
+    data:
+      item-name: "<!i><red>⑥ 生命测试甲 (health=100)"
+      unbreakable: true
+
+  sourceforge:test_shield:
+    material: diamond_helmet
+    data:
+      item-name: "<!i><aqua>⑦ 护盾测试盔 (shield=100)"
+      unbreakable: true
+
+  sourceforge:test_energy:
+    material: golden_helmet
+    data:
+      item-name: "<!i><yellow>⑧ 能量测试盔 (energy=100)"
+      unbreakable: true
+
+  sourceforge:test_efficiency:
+    material: netherite_leggings
+    data:
+      item-name: "<!i><green>⑨ 效率测试腿 (efficiency 90%)"
+      unbreakable: true
+
+  sourceforge:test_duration:
+    material: diamond_boots
+    data:
+      item-name: "<!i><blue>⑩ 持续测试靴 (duration +200%)"
+      unbreakable: true
+
+  sourceforge:test_range:
+    material: chainmail_helmet
+    data:
+      item-name: "<!i><dark_aqua>⑪ 范围测试盔 (range +200%)"
+      unbreakable: true
+
+categories:
+  sourceforge:test:
+    name: <!i><white>SourceForge Test</white>
+    hidden: true
+    icon: sourceforge:test_base_damage
+    list:
+      - sourceforge:test_base_damage
+      - sourceforge:test_critical
+      - sourceforge:test_strength
+      - sourceforge:test_status
+      - sourceforge:test_armor
+      - sourceforge:test_health
+      - sourceforge:test_shield
+      - sourceforge:test_energy
+      - sourceforge:test_efficiency
+      - sourceforge:test_duration
+      - sourceforge:test_range

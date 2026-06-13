@@ -7,6 +7,7 @@ import java.io.File
 data class ForgeConfig(
     val guiTitle: String,
     val debugCombat: Boolean,
+    val betterHud: BetterHudConfig,
     val forge: ForgeSystemConfig,
     val score: ScoreConfig,
     val combat: CombatConfig,
@@ -110,6 +111,10 @@ data class ForgeConfig(
             return ForgeConfig(
                 guiTitle = config.getString("gui.title", "&0源质锻造")!!,
                 debugCombat = config.getBoolean("debug.combat", false),
+                betterHud = BetterHudConfig(
+                    enabled = config.getBoolean("betterhud.enabled", true),
+                    skillCdPopup = config.getString("betterhud.skill-cd-popup", "sourceforge_skill_cd")!!
+                ),
                 forge = loadForgeSystem(config),
                 score = loadScore(config),
                 combat = loadCombat(combatConfig),
@@ -297,6 +302,11 @@ data class ForgeConfig(
 
 data class ForgeSystemConfig(
     val guaranteeMaterialAffix: Boolean
+)
+
+data class BetterHudConfig(
+    val enabled: Boolean,
+    val skillCdPopup: String
 )
 
 data class ScoreConfig(

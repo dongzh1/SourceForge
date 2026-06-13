@@ -14,6 +14,7 @@ softdepend:
   - ChunkWorld
   - EasyLevels
   - PlaceholderAPI
+  - BetterHud
 commands:
   sourceforge:
     description: SourceForge main command
