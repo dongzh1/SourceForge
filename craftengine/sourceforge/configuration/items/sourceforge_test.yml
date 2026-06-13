@@ -1,9 +1,14 @@
 items:
   # ============================================================
   # SourceForge 属性测试物品（CraftEngine 物品库）
-  # 每件物品只承载 1 个属性，数值刻意夸张，便于逐项验证效果
-  # 发放：/sf giveequipment <玩家> <装备ID> 1 1 12
-  # 装备ID 与下方 ce-id 同名（去掉 sourceforge: 前缀），见 config.yml
+  # 直接用 CE 的 pdc 字段把 SourceForge 属性烤进物品：
+  #   - "sourceforge:type"  = 装备id(字符串) → isSourceEquipment 通过
+  #   - "sourceforge:<属性>" = 属性值(必须写成小数 X.0 → DoubleTag，SF 全部属性都是 double)
+  # 拿物品：/ce item get sourceforge:test_xxx  （拿到就带属性，无需 /sf giveequipment）
+  # 验证：穿上/手持后 /sf stats
+  # 注意：armor/health 的"实战减伤/加血"走原版属性(由 SF 锻造时写)；这里只烤 PDC，
+  #       所以 /sf stats 能显示 armor/health 数值，但纯 PDC 不会自动加原版护甲/血上限。
+  #       其余 10 个属性的战斗效果由 SF 直接读 PDC，烤进去即生效。
   # ============================================================
 
   # ---------- 武器类（手持攻击，配合 debug.combat 看聊天栏数值）----------
@@ -12,67 +17,104 @@ items:
     data:
       item-name: "<!i><red>① 武力测试剑 (base_damage=50)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_base_damage"
+        "sourceforge:base_damage": 50.0
 
   sourceforge:test_critical:
     material: golden_sword
     data:
       item-name: "<!i><gold>② 暴击测试剑 (crit 100% x3)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_critical"
+        "sourceforge:base_damage": 20.0
+        "sourceforge:critical_chance": 1.0
+        "sourceforge:critical_damage": 2.0
 
   sourceforge:test_strength:
     material: diamond_sword
     data:
       item-name: "<!i><light_purple>③ 强度测试剑 (strength +200%)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_strength"
+        "sourceforge:base_damage": 20.0
+        "sourceforge:ability_strength": 2.0
 
   sourceforge:test_status:
     material: iron_sword
     data:
       item-name: "<!i><green>④ 触发测试剑 (status 80%)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_status"
+        "sourceforge:base_damage": 10.0
+        "sourceforge:status_chance": 0.8
 
-  # ---------- 防具类（穿戴后观察 / 用 /sf stats、/sf energy get 验证）----------
+  # ---------- 防具类（穿戴后 /sf stats 验证）----------
   sourceforge:test_armor:
     material: netherite_chestplate
     data:
       item-name: "<!i><gray>⑤ 护甲测试甲 (armor=100)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_armor"
+        "sourceforge:armor": 100.0
 
   sourceforge:test_health:
     material: diamond_chestplate
     data:
       item-name: "<!i><red>⑥ 生命测试甲 (health=100)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_health"
+        "sourceforge:health": 100.0
 
   sourceforge:test_shield:
     material: diamond_helmet
     data:
       item-name: "<!i><aqua>⑦ 护盾测试盔 (shield=100)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_shield"
+        "sourceforge:shield_capacity": 100.0
 
   sourceforge:test_energy:
     material: golden_helmet
     data:
       item-name: "<!i><yellow>⑧ 能量测试盔 (energy=100)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_energy"
+        "sourceforge:energy_max": 100.0
 
   sourceforge:test_efficiency:
     material: netherite_leggings
     data:
       item-name: "<!i><green>⑨ 效率测试腿 (efficiency 90%)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_efficiency"
+        "sourceforge:ability_efficiency": 0.9
 
   sourceforge:test_duration:
     material: diamond_boots
     data:
       item-name: "<!i><blue>⑩ 持续测试靴 (duration +200%)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_duration"
+        "sourceforge:ability_duration": 2.0
 
   sourceforge:test_range:
     material: chainmail_helmet
     data:
       item-name: "<!i><dark_aqua>⑪ 范围测试盔 (range +200%)"
       unbreakable: true
+      pdc:
+        "sourceforge:type": "test_range"
+        "sourceforge:ability_range": 2.0
 
 categories:
   sourceforge:test:

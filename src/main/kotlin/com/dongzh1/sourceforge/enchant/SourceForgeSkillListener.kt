@@ -56,22 +56,26 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
             val caster = callNoArg(metadata, "getCaster") ?: return
             val player = casterPlayer(caster) ?: return
 
-            // 效率在事件触发时（主线程）即可安全读取（缓存已预热）
+            // 效率在事件触发时（主线程）即可安全读取（缓存已预热）。可能为 0。
             val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
-            if (efficiency <= 0.0) return // 无效率则不干预，保留 MM 原版冷却
             val multiplier = (1.0 - efficiency).coerceAtLeast(0.0)
             val skillName = skillName(skill)
             val rawName = (callNoArg(skill, "getInternalName") as? String).orEmpty()
 
             // MM 在技能执行期间（本 tick 稍后）才把冷却应用到 caster，事件触发时
-            // getCooldown(caster) 仍为 0。因此推迟到下一 tick 读取"已应用的剩余冷却"，
-            // 再按 ×(1-效率) 缩减回写。这样无需技能基础 CD 配置，对 MM 时序健壮。
+            // getCooldown(caster) 仍为 0。因此推迟到下一 tick 读取"已应用的剩余冷却"。
+            // 弹窗与 CD 记录对所有有冷却的技能生效（不依赖效率）；效率仅决定是否缩减回写。
             plugin.server.scheduler.runTask(plugin, Runnable {
                 val applied = skillCooldown(skill, caster) ?: return@Runnable
                 if (applied <= 0.0) return@Runnable // 该(子)技能无冷却，跳过
-                val afterCd = applied * multiplier
+                val afterCd = if (efficiency > 0.0) {
+                    val reduced = applied * multiplier
+                    setSkillCooldown(skill, caster, reduced) // 仅有效率时才回写缩减
+                    reduced
+                } else {
+                    applied // 无效率：不改动 MM 原版冷却，仅显示
+                }
                 val cdTicks = (afterCd * 20).toLong()
-                setSkillCooldown(skill, caster, afterCd)
                 recordSkillCd(player, skillName, cdTicks)
                 val betterHud = plugin.forgeConfig.betterHud
                 if (betterHud.enabled) {
@@ -79,8 +83,8 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
                 }
                 if (plugin.forgeConfig.debugCombat) {
                     plugin.logger.info(
-                        "[SF-DBG] CD缩减 ${player.name} $skillName: " +
-                            "${"%.2f".format(applied)}s -> ${"%.2f".format(afterCd)}s " +
+                        "[SF-DBG] 技能CD ${player.name} $skillName: " +
+                            "应用=${"%.2f".format(applied)}s -> 最终=${"%.2f".format(afterCd)}s " +
                             "(效率=${"%.0f".format(efficiency * 100)}%)"
                     )
                 }

@@ -113,7 +113,8 @@ data class ForgeConfig(
                 debugCombat = config.getBoolean("debug.combat", false),
                 betterHud = BetterHudConfig(
                     enabled = config.getBoolean("betterhud.enabled", true),
-                    skillCdPopup = config.getString("betterhud.skill-cd-popup", "sourceforge_skill_cd")!!
+                    skillCdPopup = config.getString("betterhud.skill-cd-popup", "sourceforge_skill_cd")!!,
+                    debug = config.getBoolean("betterhud.debug", false)
                 ),
                 forge = loadForgeSystem(config),
                 score = loadScore(config),
@@ -306,7 +307,8 @@ data class ForgeSystemConfig(
 
 data class BetterHudConfig(
     val enabled: Boolean,
-    val skillCdPopup: String
+    val skillCdPopup: String,
+    val debug: Boolean
 )
 
 data class ScoreConfig(

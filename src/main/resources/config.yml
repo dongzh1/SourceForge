@@ -13,6 +13,9 @@ debug:
 betterhud:
   enabled: true
   skill-cd-popup: "sourceforge_skill_cd"
+  # 推送 popup 的全链路诊断日志（getPopup/getHudPlayer/show 各步骤打到控制台）。
+  # 也可用 /sf debug betterhud on 临时开启。
+  debug: false
 
 forge:
   guarantee-material-affix: true

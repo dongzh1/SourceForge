@@ -89,15 +89,17 @@ class SourceForgeCommand(
                 }
                 val target = args.getOrNull(1)?.lowercase()
                 val value = args.getOrNull(2)?.lowercase()
-                if (target != "combat" || value !in setOf("on", "off", "true", "false")) {
-                    sender.sendMessage("§e用法: /$label debug combat <on|off>")
+                if (target !in setOf("combat", "betterhud") || value !in setOf("on", "off", "true", "false")) {
+                    sender.sendMessage("§e用法: /$label debug <combat|betterhud> <on|off>")
                     return true
                 }
                 val enabled = value == "on" || value == "true"
-                plugin.config.set("debug.combat", enabled)
+                val path = if (target == "combat") "debug.combat" else "betterhud.debug"
+                plugin.config.set(path, enabled)
                 plugin.saveConfig()
                 plugin.reloadAll()
-                sender.sendMessage("§a[SourceForge] §f战斗调试已${if (enabled) "开启" else "关闭"}")
+                val label2 = if (target == "combat") "战斗" else "BetterHud"
+                sender.sendMessage("§a[SourceForge] §f${label2}调试已${if (enabled) "开启" else "关闭"}")
             }
             "energy" -> {
                 val sub = args.getOrNull(1)?.lowercase()
@@ -260,7 +262,7 @@ class SourceForgeCommand(
             1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
                 args[0].equals("giveblueprint", true) || args[0].equals("giveequipment", true) || args[0].equals("givematerial", true) || args[0].equals("give", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
-                args[0].equals("debug", true) -> listOf("combat").filter { it.startsWith(args[1], true) }
+                args[0].equals("debug", true) -> listOf("combat", "betterhud").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
             }
             3 -> when {
