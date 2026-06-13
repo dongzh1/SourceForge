@@ -27,7 +27,7 @@ score:
   combat-weights:
     default: 5.0
     base_damage: 10.0
-    critical_chance: 250.0
+    critical_chance: 120.0
     critical_damage: 90.0
     status_chance: 5.0
     armor: 15.0

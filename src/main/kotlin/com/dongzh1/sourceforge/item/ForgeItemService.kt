@@ -45,8 +45,15 @@ class ForgeItemService(
     private val affixKeys: Map<String, NamespacedKey> =
         config.affixes.values.associate { it.id to NamespacedKey(plugin, it.pdcKey) }
 
-    /** 每玩家全身词条总和缓存；装备变化时由监听器失效，避免每次战斗/回盾都扫全背包。 */
-    private val statCache = ConcurrentHashMap<UUID, Map<String, Double>>()
+    /**
+     * 每玩家全身词条总和缓存；装备变化时由监听器失效，避免每次战斗/回盾都扫全背包。
+     * 同时带一个很短的 TTL 作为兜底：即使某条装备变更路径（命令塞装备、漏斗/发射器装甲、
+     * 重生重装等）漏掉了显式失效，陈旧读取也会在 ~250ms 内自愈，不会让 ability_efficiency
+     * 之类词条长时间读到 0。
+     */
+    private val statCache = ConcurrentHashMap<UUID, CachedStats>()
+
+    private class CachedStats(val totals: Map<String, Double>, val expireAt: Long)
 
     private fun affixKey(affix: AffixConfig): NamespacedKey =
         affixKeys[affix.id] ?: NamespacedKey(plugin, affix.pdcKey)
@@ -147,11 +154,40 @@ class ForgeItemService(
         val maxTier = blueprint?.tierMax ?: 5
         val current = equipmentTier(item)
         if (current >= maxTier) return false
-        val maxAffixes = blueprint?.maxAffixes ?: maxOf(1, readAffixIds(item).size)
-        val selected = rollAffixes(equipment, current + 1, maxAffixes, emptyList())
+        val nextTier = current + 1
+        // 升级保留玩家已 roll 出的词条组成（build 不被洗掉），仅把数值提升到新 tier，且永不降低。
+        // 若是无词条的旧物品（理论上不会发生），回退到按新 tier 重新 roll。
+        val preserved = upgradeExistingAffixes(item, equipment, nextTier)
+        val selected = if (preserved.isNotEmpty()) {
+            preserved
+        } else {
+            val maxAffixes = blueprint?.maxAffixes ?: maxOf(1, readAffixIds(item).size)
+            rollAffixes(equipment, nextTier, maxAffixes, emptyList())
+        }
         clearAffixes(item)
-        writeEquipment(item, equipment, current + 1, selected)
+        writeEquipment(item, equipment, nextTier, selected)
         return true
+    }
+
+    /**
+     * 读取装备现有词条，按新 tier 提升其数值。保留词条组成不变；
+     * 每条数值取 max(原值, 新 tier 的一次 roll)，保证升级只增不减，不会洗掉玩家辛苦 roll 的好词条。
+     */
+    private fun upgradeExistingAffixes(
+        item: ItemStack,
+        equipment: EquipmentConfig,
+        nextTier: Int
+    ): List<Pair<AffixConfig, Double>> {
+        val tierRolls = equipment.tierAffixes[nextTier]
+            ?: equipment.tierAffixes.filterKeys { it <= nextTier }.maxByOrNull { it.key }?.value
+            ?: emptyList()
+        return readAffixIds(item).mapNotNull { id ->
+            val affix = config.affixes[id] ?: return@mapNotNull null
+            val currentValue = readAffixValue(item, id)
+            val roll = tierRolls.firstOrNull { it.affixId == id }
+            val candidate = if (roll != null) randomValue(roll, affix) * affix.scale else currentValue
+            affix to maxOf(currentValue, candidate)
+        }
     }
 
     private fun writeEquipment(
@@ -606,7 +642,19 @@ class ForgeItemService(
     }
 
     private fun statTotals(player: Player): Map<String, Double> {
-        return statCache.computeIfAbsent(player.uniqueId) { computeStatTotals(player) }
+        // 仅在主线程访问 Bukkit 背包；异步触发（如非主线程的技能事件）时跳过缓存，直接安全重算，
+        // 避免在异步线程克隆 itemMeta 抛异常被上层 try/catch 静默吞掉导致词条读到 0。
+        if (!plugin.server.isPrimaryThread) {
+            return runCatching { computeStatTotals(player) }.getOrDefault(emptyMap())
+        }
+        val now = System.currentTimeMillis()
+        val cached = statCache[player.uniqueId]
+        if (cached != null && now < cached.expireAt) {
+            return cached.totals
+        }
+        val totals = computeStatTotals(player)
+        statCache[player.uniqueId] = CachedStats(totals, now + STAT_CACHE_TTL_MS)
+        return totals
     }
 
     private fun computeStatTotals(player: Player): Map<String, Double> {
@@ -718,6 +766,11 @@ class ForgeItemService(
 
     private fun formatTierRange(range: IntRange): String {
         return if (range.first == range.last) range.first.toString() else "${range.first}-${range.last}"
+    }
+
+    private companion object {
+        /** 词条总和缓存兜底 TTL（毫秒）。约 5 tick，足够保留热路径性能，又能让漏失效的陈旧读取快速自愈。 */
+        const val STAT_CACHE_TTL_MS = 250L
     }
 }
 

@@ -11,9 +11,12 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryDragEvent
+import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerRespawnEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlotGroup
 
 /**
@@ -61,6 +64,26 @@ class InventoryAttributeListener(
     fun onClose(event: InventoryCloseEvent) {
         val player = event.player as? Player ?: return
         syncLater(player)
+    }
+
+    /**
+     * 盔甲任何方式变更（右键穿戴/脱下、命令、漏斗/发射器装备、死亡重生重装、其他插件）都触发，
+     * 正好覆盖 ability_efficiency/ability_strength/ability_duration/ability_range 等盔甲词条，
+     * 修复 CDR 因缓存未失效而读到 0 的回归。
+     */
+    @EventHandler
+    fun onArmorChange(event: PlayerArmorChangeEvent) {
+        syncLater(event.player)
+    }
+
+    @EventHandler
+    fun onSwapHands(event: PlayerSwapHandItemsEvent) {
+        syncLater(event.player)
+    }
+
+    @EventHandler
+    fun onRespawn(event: PlayerRespawnEvent) {
+        syncLater(event.player)
     }
 
     private fun syncLater(player: Player) {

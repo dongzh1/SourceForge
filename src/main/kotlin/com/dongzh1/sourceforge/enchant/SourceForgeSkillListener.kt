@@ -55,34 +55,36 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
             val skill = callNoArg(event, "getSkill") ?: return
             val caster = callNoArg(metadata, "getCaster") ?: return
             val player = casterPlayer(caster) ?: return
-            val originalCd = skillCooldown(skill, caster) ?: return
-            if (originalCd <= 0.0) return
+
+            // 效率在事件触发时（主线程）即可安全读取（缓存已预热）
+            val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
+            if (efficiency <= 0.0) return // 无效率则不干预，保留 MM 原版冷却
+            val multiplier = (1.0 - efficiency).coerceAtLeast(0.0)
             val skillName = skillName(skill)
             val rawName = (callNoArg(skill, "getInternalName") as? String).orEmpty()
 
-            val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
-            val multiplier = (1.0 - efficiency).coerceAtLeast(0.0)
-            val afterCd = originalCd * multiplier
-            val cdTicks = (afterCd * 20).toLong()
-
+            // MM 在技能执行期间（本 tick 稍后）才把冷却应用到 caster，事件触发时
+            // getCooldown(caster) 仍为 0。因此推迟到下一 tick 读取"已应用的剩余冷却"，
+            // 再按 ×(1-效率) 缩减回写。这样无需技能基础 CD 配置，对 MM 时序健壮。
             plugin.server.scheduler.runTask(plugin, Runnable {
+                val applied = skillCooldown(skill, caster) ?: return@Runnable
+                if (applied <= 0.0) return@Runnable // 该(子)技能无冷却，跳过
+                val afterCd = applied * multiplier
+                val cdTicks = (afterCd * 20).toLong()
                 setSkillCooldown(skill, caster, afterCd)
+                recordSkillCd(player, skillName, cdTicks)
                 val betterHud = plugin.forgeConfig.betterHud
                 if (betterHud.enabled) {
                     BetterHudHook.showSkillCd(plugin, player, betterHud.skillCdPopup, rawName, afterCd, cdTicks)
                 }
+                if (plugin.forgeConfig.debugCombat) {
+                    plugin.logger.info(
+                        "[SF-DBG] CD缩减 ${player.name} $skillName: " +
+                            "${"%.2f".format(applied)}s -> ${"%.2f".format(afterCd)}s " +
+                            "(效率=${"%.0f".format(efficiency * 100)}%)"
+                    )
+                }
             })
-
-            // 记录 CD 到 PDC
-            recordSkillCd(player, skillName, cdTicks)
-
-            if (plugin.forgeConfig.debugCombat) {
-                player.sendMessage(
-                    "§8[SourceForge Debug] §7MM CD$skillName: " +
-                        "${"%.2f".format(originalCd)}s -> ${"%.2f".format(afterCd)}s " +
-                        "(效率=${"%.0f".format(efficiency * 100)}%)"
-                )
-            }
         } catch (e: Exception) {
             warnOnce("skill:${e.javaClass.name}:${e.message}", "MM 技能效率处理失败: ${e.message}")
         }
