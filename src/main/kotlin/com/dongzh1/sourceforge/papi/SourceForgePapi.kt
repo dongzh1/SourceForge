@@ -1,6 +1,7 @@
 package com.dongzh1.sourceforge.papi
 
 import com.dongzh1.sourceforge.SourceForge
+import com.dongzh1.sourceforge.enchant.SourceForgeSkillListener
 import com.xbaimiao.easylib.bridge.PlaceholderExpansion
 import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
@@ -76,6 +77,12 @@ object SourceForgePapi : PlaceholderExpansion() {
             key == "energy_max" -> format(totalAffix(player, "energy_max"), 0)
             key == "energy_current" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
 
+            // 技能 CD
+            key == "cd_count" -> plugin.skillListener.getActiveCds(player).size.toString()
+            key.startsWith("cd_name_") -> cdSlot(player, key.removePrefix("cd_name_"))?.name ?: ""
+            key.startsWith("cd_left_") -> cdSlot(player, key.removePrefix("cd_left_"))?.remainingTicks?.toString() ?: "0"
+            key.startsWith("cd_max_") -> cdSlot(player, key.removePrefix("cd_max_"))?.maxTicks?.toString() ?: "0"
+
             // 总属性 (全身)
             key == "total_base_damage" -> format(totalAffix(player, "base_damage"), 1)
             key == "total_critical_chance" -> format(totalAffix(player, "critical_chance"), 4)
@@ -144,6 +151,12 @@ object SourceForgePapi : PlaceholderExpansion() {
     private fun affixValue(affixId: String, read: () -> Double): String? {
         val affix = plugin.forgeConfig.affixes[affixId] ?: return null
         return format(read(), affix.decimals)
+    }
+
+    private fun cdSlot(player: Player, indexStr: String): SourceForgeSkillListener.ActiveCd? {
+        val index = indexStr.toIntOrNull() ?: return null
+        if (index < 1 || index > 4) return null
+        return plugin.skillListener.getActiveCds(player).getOrNull(index - 1)
     }
 
     /** 获取玩家全身 SourceForge 装备某属性总和 */

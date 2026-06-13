@@ -208,14 +208,15 @@ class ForgeListener(
         baseDamage: Double,
         applyDamage: (Double) -> Unit
     ): Float {
-        // 读取词条值
-        val readValue: (String) -> Double = if (projectilePdc != null) {
-            { affixId -> plugin.itemService.readAffixValue(projectilePdc, affixId) }
-        } else if (weapon != null) {
-            { affixId -> plugin.itemService.readAffixValue(weapon, affixId) }
-        } else {
-            // 无SF武器但有SF防具 — 从全身读取
-            { affixId -> plugin.itemService.readTotalAffix(player, affixId) }
+        // 读取词条值。武器路径只克隆一次 itemMeta，避免每个词条都克隆。
+        val weaponPdc = weapon?.itemMeta?.persistentDataContainer
+        val readValue: (String) -> Double = when {
+            projectilePdc != null -> { affixId -> plugin.itemService.readAffixValue(projectilePdc, affixId) }
+            weaponPdc != null -> { affixId -> plugin.itemService.readAffixValue(weaponPdc, affixId) }
+            else -> {
+                // 无SF武器但有SF防具 — 从全身读取（走缓存）
+                { affixId -> plugin.itemService.readTotalAffix(player, affixId) }
+            }
         }
 
         val configuredBaseDamage = readValue("base_damage")
@@ -264,6 +265,8 @@ class ForgeListener(
      * - 所有原版减伤阶段归零
      */
     private fun applyDefense(target: LivingEntity, event: EntityDamageEvent) {
+        // 自定义护甲减伤公式只对玩家生效；非玩家实体保持原版减伤
+        if (target !is Player) return
         // 技能伤害直接跳过
         if (target.persistentDataContainer.has(skillDamageKey, PersistentDataType.INTEGER)) {
             setCustomDamage(event, event.damage)

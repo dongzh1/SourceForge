@@ -3,7 +3,6 @@ package com.dongzh1.sourceforge
 import com.dongzh1.sourceforge.command.SourceForgeCommand
 import com.dongzh1.sourceforge.config.ForgeConfig
 import com.dongzh1.sourceforge.enchant.SourceEnchantListener
-import com.dongzh1.sourceforge.enchant.SourceEnchantService
 import com.dongzh1.sourceforge.enchant.SourceForgeMMPlaceholders
 import com.dongzh1.sourceforge.enchant.SourceForgeSkillListener
 import com.dongzh1.sourceforge.forge.ForgeListener
@@ -24,9 +23,9 @@ class SourceForge : EasyPlugin() {
         private set
     lateinit var itemService: ForgeItemService
         private set
-    lateinit var enchantService: SourceEnchantService
-        private set
     lateinit var forgeListener: ForgeListener
+        private set
+    lateinit var skillListener: SourceForgeSkillListener
         private set
 
     override fun enable() {
@@ -34,7 +33,6 @@ class SourceForge : EasyPlugin() {
         saveDefaultConfig()
         saveBundledResource("affixes.yml")
         saveBundledResource("combat.yml")
-        saveBundledResource("enchants.yml")
         saveBundledResource("materials/sharp_stone.yml")
         saveBundledResource("materials/focus_crystal.yml")
         saveBundledResource("materials/venom_vial.yml")
@@ -58,7 +56,9 @@ class SourceForge : EasyPlugin() {
         Bukkit.getPluginManager().registerEvents(SourceEnchantListener(this), this)
         SourceForgePapi.register(this)
         SourceForgeMMPlaceholders(this).registerIfAvailable()
-        SourceForgeSkillListener(this).registerIfAvailable()
+        val sl = SourceForgeSkillListener(this)
+        sl.registerIfAvailable()
+        skillListener = sl
 
         logger.info("SourceForge 已启动")
     }
@@ -67,10 +67,8 @@ class SourceForge : EasyPlugin() {
         reloadConfig()
         val affixesConfig = YamlConfiguration.loadConfiguration(File(dataFolder, "affixes.yml"))
         val combatConfig = YamlConfiguration.loadConfiguration(File(dataFolder, "combat.yml"))
-        val enchantsConfig = YamlConfiguration.loadConfiguration(File(dataFolder, "enchants.yml"))
         forgeConfig = ForgeConfig.load(config, affixesConfig, File(dataFolder, "materials"), combatConfig)
         itemService = ForgeItemService(this, forgeConfig)
-        enchantService = SourceEnchantService(this, enchantsConfig)
         if (forgeConfig.validationWarnings.isNotEmpty()) {
             logger.warning("SourceForge 配置校验发现 ${forgeConfig.validationWarnings.size} 个问题:")
             forgeConfig.validationWarnings.forEach { logger.warning(" - $it") }

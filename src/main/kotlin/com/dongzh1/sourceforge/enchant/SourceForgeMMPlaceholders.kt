@@ -3,9 +3,21 @@ package com.dongzh1.sourceforge.enchant
 import com.dongzh1.sourceforge.SourceForge
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import java.lang.reflect.Method
 import java.text.DecimalFormat
+import java.util.concurrent.ConcurrentHashMap
 
 class SourceForgeMMPlaceholders(private val plugin: SourceForge) {
+
+    // 缓存每个 MM 实体类的 getBukkitEntity 方法，避免每次占位符请求都反射查找
+    private val bukkitEntityMethods = ConcurrentHashMap<Class<*>, Method>()
+
+    private fun bukkitEntity(entity: Any): Any? {
+        val method = bukkitEntityMethods.getOrPut(entity.javaClass) {
+            entity.javaClass.getMethod("getBukkitEntity")
+        }
+        return method.invoke(entity)
+    }
 
     fun registerIfAvailable() {
         if (!Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) return
@@ -22,7 +34,7 @@ class SourceForgeMMPlaceholders(private val plugin: SourceForge) {
                 val names = arrayOf("sourceforge.${affix.id}", "sf.${affix.id}")
                 val placeholder = entityMethod.invoke(null, java.util.function.BiFunction { entity: Any, _: String? ->
                     try {
-                        val be = entity.javaClass.getMethod("getBukkitEntity").invoke(entity)
+                        val be = bukkitEntity(entity)
                         if (be is Player) {
                             val value = plugin.itemService.readDisplayTotalAffix(be, affix.id)
                             formatAffix(value, affix.decimals)
@@ -37,7 +49,7 @@ class SourceForgeMMPlaceholders(private val plugin: SourceForge) {
             // 额外注册运行时属性
             val runtime = java.util.function.BiFunction { entity: Any, _: String? ->
                 try {
-                    val be = entity.javaClass.getMethod("getBukkitEntity").invoke(entity)
+                    val be = bukkitEntity(entity)
                     if (be is Player) {
                         "%.0f".format(plugin.forgeListener.getEnergyCurrent(be))
                     } else "0"

@@ -35,6 +35,7 @@ class InventoryAttributeListener(
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         clear(event.player)
+        plugin.itemService.invalidateStatCache(event.player)
     }
 
     @EventHandler
@@ -65,6 +66,8 @@ class InventoryAttributeListener(
     }
 
     private fun sync(player: Player) {
+        // 装备可能已变化，失效属性缓存，使下次读取按最新背包重算
+        plugin.itemService.invalidateStatCache(player)
         clear(player)
         var attackDamage = 0.0
         var attackSpeed = 0.0

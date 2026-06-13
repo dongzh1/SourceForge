@@ -2,16 +2,27 @@ package com.dongzh1.sourceforge.enchant
 
 import com.dongzh1.sourceforge.SourceForge
 import org.bukkit.Bukkit
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.EventExecutor
 import java.lang.reflect.Method
 import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
     private val warnedRuntimeFailures = Collections.synchronizedSet(mutableSetOf<String>())
+    private val cdNameKeys = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_name") }
+    private val cdMaxKeys  = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_max") }
+    private val cdStartKeys = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_start") }
+
+    // 反射 Method 缓存，避免每次技能事件都全量扫描方法列表
+    private val noArgMethodCache = ConcurrentHashMap<String, Method>()
+    private val cdGetMethodCache = ConcurrentHashMap<String, Method>()
+    private val cdSetMethodCache = ConcurrentHashMap<String, Method>()
 
     fun registerIfAvailable() {
         if (!Bukkit.getPluginManager().isPluginEnabled("MythicMobs")) return
@@ -43,32 +54,30 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
             val skill = callNoArg(event, "getSkill") ?: return
             val caster = callNoArg(metadata, "getCaster") ?: return
             val player = casterPlayer(caster) ?: return
-            val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
-            if (efficiency <= 0.0) return
+            val originalCd = skillCooldown(skill, caster) ?: return
+            if (originalCd <= 0.0) return
+            val skillName = skillName(skill)
 
+            val efficiency = plugin.itemService.readTotalAffix(player, "ability_efficiency").coerceAtLeast(0.0)
             val multiplier = (1.0 - efficiency).coerceAtLeast(0.0)
+            val afterCd = originalCd * multiplier
+
             plugin.server.scheduler.runTask(plugin, Runnable {
-                adjustCooldown(player, caster, skill, multiplier, efficiency)
+                setSkillCooldown(skill, caster, afterCd)
             })
+
+            // 记录 CD 到 PDC
+            recordSkillCd(player, skillName, (afterCd * 20).toLong())
+
+            if (plugin.forgeConfig.debugCombat) {
+                player.sendMessage(
+                    "§8[SourceForge Debug] §7MM CD$skillName: " +
+                        "${"%.2f".format(originalCd)}s -> ${"%.2f".format(afterCd)}s " +
+                        "(效率=${"%.0f".format(efficiency * 100)}%)"
+                )
+            }
         } catch (e: Exception) {
             warnOnce("skill:${e.javaClass.name}:${e.message}", "MM 技能效率处理失败: ${e.message}")
-        }
-    }
-
-    private fun adjustCooldown(player: Player, caster: Any, skill: Any, multiplier: Double, efficiency: Double) {
-        val before = skillCooldown(skill, caster) ?: return
-        if (before <= 0.0) return
-
-        val after = before * multiplier
-        setSkillCooldown(skill, caster, after)
-
-        if (plugin.forgeConfig.debugCombat) {
-            val name = skillName(skill)
-            player.sendMessage(
-                "§8[SourceForge Debug] §7MM CD${name}: " +
-                    "${"%.2f".format(before)}s -> ${"%.2f".format(after)}s " +
-                    "(效率=${"%.0f".format(efficiency * 100)}%)"
-            )
         }
     }
 
@@ -98,20 +107,28 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
     }
 
     private fun skillCooldownMethod(skill: Any, caster: Any): Method? {
-        return skill.javaClass.methods.firstOrNull {
+        val cacheKey = skill.javaClass.name + ":" + caster.javaClass.name
+        cdGetMethodCache[cacheKey]?.let { return it }
+        val method = skill.javaClass.methods.firstOrNull {
             it.name == "getCooldown" &&
                 it.parameterTypes.size == 1 &&
                 it.parameterTypes[0].isAssignableFrom(caster.javaClass)
-        }
+        } ?: return null
+        cdGetMethodCache[cacheKey] = method
+        return method
     }
 
     private fun setSkillCooldownMethod(skill: Any, caster: Any): Method? {
-        return skill.javaClass.methods.firstOrNull {
+        val cacheKey = skill.javaClass.name + ":" + caster.javaClass.name
+        cdSetMethodCache[cacheKey]?.let { return it }
+        val method = skill.javaClass.methods.firstOrNull {
             it.name == "setCooldown" &&
                 it.parameterTypes.size == 2 &&
                 it.parameterTypes[0].isAssignableFrom(caster.javaClass) &&
                 it.parameterTypes[1] in cooldownNumberTypes
-        }
+        } ?: return null
+        cdSetMethodCache[cacheKey] = method
+        return method
     }
 
     private fun casterPlayer(caster: Any): Player? {
@@ -124,12 +141,63 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
         return if (name.isNullOrBlank()) "" else "[$name]"
     }
 
+    // ==================== CD 追踪 ====================
+
+    data class ActiveCd(val name: String, val maxTicks: Long, val startTime: Long) {
+        val remainingTicks: Long
+            get() = (maxTicks - (System.currentTimeMillis() - startTime) / 50).coerceAtLeast(0)
+    }
+
+    fun getActiveCds(player: Player): List<ActiveCd> {
+        val pdc = player.persistentDataContainer
+        val result = mutableListOf<ActiveCd>()
+        for (i in 0 until 4) {
+            val name = pdc.get(cdNameKeys[i], PersistentDataType.STRING) ?: continue
+            val max = pdc.get(cdMaxKeys[i], PersistentDataType.LONG) ?: 0L
+            val start = pdc.get(cdStartKeys[i], PersistentDataType.LONG) ?: 0L
+            val cd = ActiveCd(name, max, start)
+            if (cd.remainingTicks > 0) {
+                result += cd
+            }
+        }
+        return result
+    }
+
+    private fun recordSkillCd(player: Player, name: String, cdTicks: Long) {
+        val pdc = player.persistentDataContainer
+        val existing = getActiveCds(player).toMutableList()
+        // 移除同名技能旧记录
+        existing.removeAll { it.name == name }
+        // 添加到头部
+        existing.add(0, ActiveCd(name, cdTicks, System.currentTimeMillis()))
+        // 保留前4个
+        val keep = existing.take(4)
+        // 写入 PDC
+        for (i in 0 until 4) {
+            val cd = keep.getOrNull(i)
+            if (cd != null) {
+                pdc.set(cdNameKeys[i], PersistentDataType.STRING, cd.name)
+                pdc.set(cdMaxKeys[i], PersistentDataType.LONG, cd.maxTicks)
+                pdc.set(cdStartKeys[i], PersistentDataType.LONG, cd.startTime)
+            } else {
+                pdc.remove(cdNameKeys[i])
+                pdc.remove(cdMaxKeys[i])
+                pdc.remove(cdStartKeys[i])
+            }
+        }
+    }
+
     private fun isCancelled(event: Any): Boolean {
         return (callNoArg(event, "isCancelled") as? Boolean) == true
     }
 
     private fun callNoArg(target: Any, name: String): Any? {
-        return target.javaClass.methods.firstOrNull { it.name == name && it.parameterCount == 0 }?.invoke(target)
+        val cacheKey = target.javaClass.name + "#" + name
+        val method = noArgMethodCache[cacheKey]
+            ?: target.javaClass.methods.firstOrNull { it.name == name && it.parameterCount == 0 }
+                ?.also { noArgMethodCache[cacheKey] = it }
+            ?: return null
+        return method.invoke(target)
     }
 
     private fun warnOnce(key: String, message: String) {

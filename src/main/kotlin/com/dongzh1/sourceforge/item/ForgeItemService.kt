@@ -20,6 +20,8 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.persistence.PersistentDataContainer
 import java.text.DecimalFormat
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 class ForgeItemService(
@@ -38,6 +40,16 @@ class ForgeItemService(
     private val scoreKey = NamespacedKey(plugin, "score")
     private val chunkWorldLevelKey = NamespacedKey("chunkworld", "level")
     private val pixelShopPriceKey = NamespacedKey("pixelshop", "price")
+
+    /** 预建 affixId -> NamespacedKey，避免热路径反复构造（构造会做正则校验）。 */
+    private val affixKeys: Map<String, NamespacedKey> =
+        config.affixes.values.associate { it.id to NamespacedKey(plugin, it.pdcKey) }
+
+    /** 每玩家全身词条总和缓存；装备变化时由监听器失效，避免每次战斗/回盾都扫全背包。 */
+    private val statCache = ConcurrentHashMap<UUID, Map<String, Double>>()
+
+    private fun affixKey(affix: AffixConfig): NamespacedKey =
+        affixKeys[affix.id] ?: NamespacedKey(plugin, affix.pdcKey)
 
 
     fun createBlueprint(blueprint: BlueprintConfig, tierRange: IntRange = blueprint.defaultTierRange(), amount: Int = 1): ItemStack {
@@ -356,7 +368,7 @@ class ForgeItemService(
 
     fun readAffixValue(container: PersistentDataContainer, affixId: String): Double {
         val affix = config.affixes[affixId] ?: return 0.0
-        val key = NamespacedKey(plugin, affix.pdcKey)
+        val key = affixKey(affix)
         return when (affix.valueType) {
             "int", "integer" -> container.get(key, PersistentDataType.INTEGER)?.toDouble() ?: 0.0
             "string" -> container.get(key, PersistentDataType.STRING)?.toDoubleOrNull() ?: 0.0
@@ -378,15 +390,19 @@ class ForgeItemService(
         stripVanillaEnchantments(weapon)
         val pdc = projectile.persistentDataContainer
         val weaponPdc = weapon.itemMeta?.persistentDataContainer
+        val typeId = weaponPdc?.get(typeKey, PersistentDataType.STRING)
+        val categoryId = weaponPdc?.get(categoryKey, PersistentDataType.STRING)
+            ?: typeId?.let { config.equipment[it]?.weaponCategory }
         pdc.set(projectileMarkerKey, PersistentDataType.BYTE, 1)
-        pdc.set(typeKey, PersistentDataType.STRING, weaponType(weapon) ?: "ranged")
-        pdc.set(categoryKey, PersistentDataType.STRING, weaponCategory(weapon) ?: "ranged")
+        pdc.set(typeKey, PersistentDataType.STRING, typeId ?: "ranged")
+        pdc.set(categoryKey, PersistentDataType.STRING, categoryId ?: "ranged")
         pdc.set(tierKey, PersistentDataType.INTEGER, weaponPdc?.get(tierKey, PersistentDataType.INTEGER) ?: 1)
+        if (weaponPdc == null) return
         for (affixId in config.affixes.keys) {
-            val value = readAffixValue(weapon, affixId)
+            val value = readAffixValue(weaponPdc, affixId)
             if (value <= 0.0) continue
             val affix = config.affixes[affixId] ?: continue
-            val key = NamespacedKey(plugin, affix.pdcKey)
+            val key = affixKey(affix)
             when (affix.valueType) {
                 "int", "integer" -> pdc.set(key, PersistentDataType.INTEGER, value.toInt())
                 "string" -> pdc.set(key, PersistentDataType.STRING, format(value, affix.decimals))
@@ -531,7 +547,7 @@ class ForgeItemService(
         affix: AffixConfig,
         value: Double
     ) {
-        val key = NamespacedKey(plugin, affix.pdcKey)
+        val key = affixKey(affix)
         when (affix.valueType) {
             "int", "integer" -> pdc.set(key, PersistentDataType.INTEGER, value.toInt())
             "string" -> pdc.set(key, PersistentDataType.STRING, format(value, affix.decimals))
@@ -551,7 +567,7 @@ class ForgeItemService(
         val meta = item.itemMeta
         val pdc = meta.persistentDataContainer
         for (affix in config.affixes.values) {
-            pdc.remove(NamespacedKey(plugin, affix.pdcKey))
+            pdc.remove(affixKey(affix))
         }
         pdc.remove(affixesKey)
         pdc.remove(scoreKey)
@@ -581,7 +597,30 @@ class ForgeItemService(
     }
 
     fun readTotalAffix(player: Player, affixId: String): Double {
-        return effectiveSourceItems(player).sumOf { readAffixValue(it, affixId) }
+        return statTotals(player)[affixId] ?: 0.0
+    }
+
+    /** 装备变化时由 InventoryAttributeListener 调用，丢弃缓存，下次读取按最新背包重算。 */
+    fun invalidateStatCache(player: Player) {
+        statCache.remove(player.uniqueId)
+    }
+
+    private fun statTotals(player: Player): Map<String, Double> {
+        return statCache.computeIfAbsent(player.uniqueId) { computeStatTotals(player) }
+    }
+
+    private fun computeStatTotals(player: Player): Map<String, Double> {
+        val totals = HashMap<String, Double>()
+        for (item in effectiveSourceItems(player)) {
+            val pdc = item.itemMeta?.persistentDataContainer ?: continue
+            for (affixId in config.affixes.keys) {
+                val value = readAffixValue(pdc, affixId)
+                if (value != 0.0) {
+                    totals[affixId] = (totals[affixId] ?: 0.0) + value
+                }
+            }
+        }
+        return totals
     }
 
     fun readDisplayTotalAffix(player: Player, affixId: String): Double {
