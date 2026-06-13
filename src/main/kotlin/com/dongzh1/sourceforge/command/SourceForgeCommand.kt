@@ -99,6 +99,47 @@ class SourceForgeCommand(
                 plugin.reloadAll()
                 sender.sendMessage("§a[SourceForge] §f战斗调试已${if (enabled) "开启" else "关闭"}")
             }
+            "energy" -> {
+                val sub = args.getOrNull(1)?.lowercase()
+                when (sub) {
+                    "deduct" -> {
+                        val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
+                        val amount = args.getOrNull(3)?.toDoubleOrNull()
+                        if (target == null || amount == null || amount <= 0) {
+                            sender.sendMessage("§e用法: /$label energy deduct <玩家> <数量>")
+                            return true
+                        }
+                        val ok = plugin.forgeListener.deductEnergy(target, amount)
+                        if (ok) {
+                            sender.sendMessage("§a[SourceForge] §f已扣除 ${target.name} 能量 $amount, 剩余: ${"%.0f".format(plugin.forgeListener.getEnergyCurrent(target))}")
+                        } else {
+                            sender.sendMessage("§c[SourceForge] §f${target.name} 能量不足 ($amount), 当前: ${"%.0f".format(plugin.forgeListener.getEnergyCurrent(target))}")
+                        }
+                    }
+                    "get" -> {
+                        val target = args.getOrNull(2)?.let { Bukkit.getPlayerExact(it) } ?: (sender as? Player)
+                        if (target == null) {
+                            sender.sendMessage("§e用法: /$label energy get [玩家]")
+                            return true
+                        }
+                        val cur = plugin.forgeListener.getEnergyCurrent(target)
+                        val max = plugin.forgeListener.getEnergyMax(target)
+                        sender.sendMessage("§a[SourceForge] §f${target.name} 能量: ${"%.0f".format(cur)}/${"%.0f".format(max)}")
+                    }
+                    "set" -> {
+                        if (!sender.hasPermission("sourceforge.admin")) { sender.sendMessage("§c你没有权限"); return true }
+                        val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
+                        val amount = args.getOrNull(3)?.toDoubleOrNull()
+                        if (target == null || amount == null || amount < 0) {
+                            sender.sendMessage("§e用法: /$label energy set <玩家> <数量>")
+                            return true
+                        }
+                        plugin.forgeListener.setEnergy(target, amount)
+                        sender.sendMessage("§a[SourceForge] §f已设置 ${target.name} 能量: ${"%.0f".format(amount)}/${"%.0f".format(plugin.forgeListener.getEnergyMax(target))}")
+                    }
+                    else -> sender.sendMessage("§e用法: /$label energy <deduct|get|set> [玩家] [数量]")
+                }
+            }
             "givematerial" -> {
                 if (!sender.hasPermission("sourceforge.admin")) {
                     sender.sendMessage("§c你没有权限")

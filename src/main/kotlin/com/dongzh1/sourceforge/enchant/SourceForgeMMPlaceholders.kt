@@ -33,6 +33,18 @@ class SourceForgeMMPlaceholders(private val plugin: SourceForge) {
                 count++
             }
             plugin.logger.info("SourceForge MM 占位符已注册: $count 个属性")
+
+            // 额外注册运行时属性
+            val runtime = java.util.function.BiFunction { entity: Any, _: String? ->
+                try {
+                    val be = entity.javaClass.getMethod("getBukkitEntity").invoke(entity)
+                    if (be is Player) {
+                        "%.0f".format(plugin.forgeListener.getEnergyCurrent(be))
+                    } else "0"
+                } catch (_: Exception) { "0" }
+            }
+            val rp = entityMethod.invoke(null, runtime)
+            registerMethod.invoke(manager, arrayOf("sourceforge.energy_current", "sf.energy_current"), rp)
         } catch (e: Exception) {
             plugin.logger.warning("注册 MM 占位符失败: ${e.message}")
         }

@@ -33,6 +33,7 @@ class ForgeListener(
     private val skillDamageKey = NamespacedKey(plugin, "skill_damage")
     private val shieldCurrentKey = NamespacedKey(plugin, "shield_current")
     private val shieldLastDamageKey = NamespacedKey(plugin, "shield_last_damage")
+    private val energyCurrentKey = NamespacedKey(plugin, "energy_current")
 
     init {
         startShieldRegen()
@@ -335,6 +336,10 @@ class ForgeListener(
         }
     }
 
+    fun getCurrentShieldPublic(player: Player): Double {
+        return getCurrentShield(player, 10.0 + plugin.itemService.readTotalAffix(player, "shield_capacity"))
+    }
+
     private fun getCurrentShield(player: Player, maxShield: Double): Double {
         val pdc = player.persistentDataContainer
         val stored = pdc.get(shieldCurrentKey, PersistentDataType.DOUBLE)
@@ -350,12 +355,50 @@ class ForgeListener(
         player.persistentDataContainer.set(shieldCurrentKey, PersistentDataType.DOUBLE, value.coerceIn(0.0, maxShield))
     }
 
+    // ==================== 能量系统 ====================
+
+    fun getEnergyMax(player: Player): Double {
+        return plugin.itemService.readDisplayTotalAffix(player, "energy_max")
+    }
+
+    fun getEnergyCurrent(player: Player): Double {
+        val max = getEnergyMax(player)
+        val stored = player.persistentDataContainer.get(energyCurrentKey, PersistentDataType.DOUBLE)
+        return if (stored == null) {
+            setEnergy(player, max)
+            max
+        } else {
+            stored.coerceAtMost(max)
+        }
+    }
+
+    fun setEnergy(player: Player, value: Double) {
+        val max = getEnergyMax(player)
+        player.persistentDataContainer.set(energyCurrentKey, PersistentDataType.DOUBLE, value.coerceIn(0.0, max))
+    }
+
+    fun deductEnergy(player: Player, amount: Double): Boolean {
+        val current = getEnergyCurrent(player)
+        if (current < amount) return false
+        setEnergy(player, current - amount)
+        return true
+    }
+
+    @EventHandler
+    fun onJoinInitEnergy(event: org.bukkit.event.player.PlayerJoinEvent) {
+        val player = event.player
+        val max = getEnergyMax(player)
+        if (max > 0) {
+            getEnergyCurrent(player) // triggers init to max
+        }
+    }
+
     private fun startShieldRegen() {
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
                 tickShieldRegen(player)
             }
-        }, 20L, 20L) // 每秒一次
+        }, 3L, 3L) // 每 3 tick (0.15s)，20 次回满 = 3 秒
     }
 
     private fun tickShieldRegen(player: Player) {
@@ -365,10 +408,10 @@ class ForgeListener(
         val lastDamage = player.persistentDataContainer.get(shieldLastDamageKey, PersistentDataType.LONG) ?: 0L
         val elapsed = System.currentTimeMillis() - lastDamage
         if (elapsed < 5000) return // 受伤后 5 秒内不回复
-        val regen = maxShield / 3.0 // 每秒回复 1/3，3 秒回满
+        val regen = maxShield / 20.0 // 每次 1/20，20 次回满
         val newValue = minOf(maxShield, current + regen)
         setCurrentShield(player, newValue, maxShield)
-        if (plugin.forgeConfig.debugCombat) {
+        if (plugin.forgeConfig.debugCombat && (newValue.toInt() % 10 == 0 || newValue >= maxShield || current < regen)) {
             player.sendMessage("§8[SourceForge Debug] §7护盾回复: +${"%.1f".format(regen)}, ${"%.1f".format(newValue)}/${"%.1f".format(maxShield)}")
         }
     }

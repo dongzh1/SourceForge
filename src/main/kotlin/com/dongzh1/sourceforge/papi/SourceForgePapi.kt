@@ -69,10 +69,12 @@ object SourceForgePapi : PlaceholderExpansion() {
 
             // 生存属性 (全身)
             key == "health" -> format(totalAffix(player, "health"), 0)
-            key == "shield_capacity" -> format(totalAffix(player, "shield_capacity"), 0)
+            key == "shield_capacity" -> format(plugin.itemService.readDisplayTotalAffix(player, "shield_capacity"), 0)
+            key == "shield_current" -> format(plugin.forgeListener.getCurrentShieldPublic(player), 0)
             key == "total_health" -> format(totalAffix(player, "health") + totalAffix(player, "shield_capacity"), 0)
             key == "armor" -> format(totalAffix(player, "armor"), 0)
             key == "energy_max" -> format(totalAffix(player, "energy_max"), 0)
+            key == "energy_current" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
 
             // 总属性 (全身)
             key == "total_base_damage" -> format(totalAffix(player, "base_damage"), 1)
