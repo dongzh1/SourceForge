@@ -19,6 +19,8 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
     private val cdNameKeys = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_name") }
     private val cdMaxKeys  = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_max") }
     private val cdStartKeys = Array(4) { NamespacedKey(plugin, "cd_${it + 1}_start") }
+    /** 玩家级 CD 弹窗显示开关；存在该键=关闭（默认开）。 */
+    private val cdDisplayOffKey = NamespacedKey(plugin, "cd_display_off")
 
     // 反射 Method 缓存，避免每次技能事件都全量扫描方法列表
     private val noArgMethodCache = ConcurrentHashMap<String, Method>()
@@ -78,7 +80,7 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
                 val cdTicks = (afterCd * 20).toLong()
                 recordSkillCd(player, skillName, cdTicks)
                 val betterHud = plugin.forgeConfig.betterHud
-                if (betterHud.enabled) {
+                if (betterHud.enabled && isCdDisplayEnabled(player)) {
                     BetterHudHook.showSkillCd(plugin, player, betterHud.skillCdPopup, rawName, afterCd, cdTicks)
                 }
                 if (plugin.forgeConfig.debugCombat) {
@@ -174,6 +176,20 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
             }
         }
         return result
+    }
+
+    /** 该玩家是否显示 CD 弹窗（默认开）。 */
+    fun isCdDisplayEnabled(player: Player): Boolean =
+        !player.persistentDataContainer.has(cdDisplayOffKey, PersistentDataType.BYTE)
+
+    /** 设置该玩家的 CD 弹窗显示开关；关闭时立即清掉其现有 CD 弹窗。 */
+    fun setCdDisplay(player: Player, enabled: Boolean) {
+        if (enabled) {
+            player.persistentDataContainer.remove(cdDisplayOffKey)
+        } else {
+            player.persistentDataContainer.set(cdDisplayOffKey, PersistentDataType.BYTE, 1)
+            BetterHudHook.clear(player)
+        }
     }
 
     private fun recordSkillCd(player: Player, name: String, cdTicks: Long) {

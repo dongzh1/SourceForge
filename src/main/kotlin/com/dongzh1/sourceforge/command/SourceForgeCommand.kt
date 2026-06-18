@@ -252,17 +252,82 @@ class SourceForgeCommand(
                 }
                 showStats(player)
             }
-            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|stats|debug>")
+            "cd" -> {
+                val player = sender as? Player
+                if (player == null) {
+                    sender.sendMessage("只有玩家可以切换 CD 显示")
+                    return true
+                }
+                val enabled = when (args.getOrNull(1)?.lowercase()) {
+                    "on", "true" -> true
+                    "off", "false" -> false
+                    null, "toggle" -> !plugin.skillListener.isCdDisplayEnabled(player)
+                    else -> {
+                        sender.sendMessage("§e用法: /$label cd <on|off>")
+                        return true
+                    }
+                }
+                plugin.skillListener.setCdDisplay(player, enabled)
+                sender.sendMessage("§a[SourceForge] §f技能 CD 显示已${if (enabled) "开启" else "关闭"}")
+            }
+            "track", "nav", "navigate" -> {
+                if (!sender.hasPermission("sourceforge.admin")) {
+                    sender.sendMessage("§c你没有权限")
+                    return true
+                }
+                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+                if (target == null) {
+                    sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
+                    return true
+                }
+                if (args.getOrNull(2)?.equals("off", true) == true) {
+                    val had = plugin.navigationManager.stop(target)
+                    sender.sendMessage(if (had) "§a[SourceForge] §f已清空 ${target.name} 的全部追踪目标" else "§e[SourceForge] §f${target.name} 当前没有追踪目标")
+                    return true
+                }
+                val name = args.getOrNull(2)
+                val x = args.getOrNull(3)?.toDoubleOrNull()
+                val y = args.getOrNull(4)?.toDoubleOrNull()
+                val z = args.getOrNull(5)?.toDoubleOrNull()
+                if (name == null || x == null || y == null || z == null) {
+                    sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
+                    return true
+                }
+                val world = args.getOrNull(6) ?: target.world.name
+                val colorArg = args.getOrNull(7)
+                val resolved = com.dongzh1.sourceforge.nav.NavigationManager.resolveColor(colorArg) ?: run {
+                    sender.sendMessage("§c[SourceForge] §f未知颜色: $colorArg，可用命名色: ${com.dongzh1.sourceforge.nav.NavigationManager.COLORS.keys.joinToString(", ")}，或直接写 §b#RRGGBB")
+                    return true
+                }
+                plugin.navigationManager.track(target, name, x, y, z, world, resolved.hex, resolved.icon)
+                sender.sendMessage("§a[SourceForge] §f已为 §e${target.name} §f追踪 §b$name §7(${x.toInt()}, ${y.toInt()}, ${z.toInt()} @ $world) §f颜色 §b${resolved.label}§f，当前共 ${plugin.navigationManager.targetNames(target).size} 个目标")
+            }
+            "untrack" -> {
+                if (!sender.hasPermission("sourceforge.admin")) {
+                    sender.sendMessage("§c你没有权限")
+                    return true
+                }
+                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+                val name = args.getOrNull(2)
+                if (target == null || name == null) {
+                    sender.sendMessage("§e用法: /$label untrack <玩家> <目标名>")
+                    return true
+                }
+                val ok = plugin.navigationManager.untrack(target, name)
+                sender.sendMessage(if (ok) "§a[SourceForge] §f已移除 ${target.name} 的追踪目标 §b$name" else "§e[SourceForge] §f${target.name} 没有名为 §b$name §f的追踪目标")
+            }
+            else -> sender.sendMessage("§e用法: /$label <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
         }
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "reload", "validate", "giveblueprint", "giveequipment", "givematerial", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
-                args[0].equals("giveblueprint", true) || args[0].equals("giveequipment", true) || args[0].equals("givematerial", true) || args[0].equals("give", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
+                args[0].equals("giveblueprint", true) || args[0].equals("giveequipment", true) || args[0].equals("givematerial", true) || args[0].equals("give", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
                 args[0].equals("debug", true) -> listOf("combat", "betterhud").filter { it.startsWith(args[1], true) }
+                args[0].equals("cd", true) -> listOf("on", "off").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
             }
             3 -> when {
@@ -271,11 +336,29 @@ class SourceForgeCommand(
                 args[0].equals("givematerial", true) -> plugin.forgeConfig.forgeMaterials.map { it.id }.filter { it.startsWith(args[2], true) }
                 args[0].equals("give", true) -> expressionSuggestions().filter { it.startsWith(args[2], true) }
                 args[0].equals("debug", true) -> listOf("on", "off").filter { it.startsWith(args[2], true) }
+                args[0].equals("track", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> listOf("off").filter { it.startsWith(args[2], true) }
+                args[0].equals("untrack", true) -> (Bukkit.getPlayerExact(args[1])?.let { plugin.navigationManager.targetNames(it) } ?: emptyList()).filter { it.startsWith(args[2], true) }
                 else -> emptyList()
             }
+            // track 的坐标/世界/颜色补全：默认补全 args[1] 指定玩家的当前坐标与所在世界。
+            4 -> if (isTrackAlias(args[0])) trackPlayerLoc(args[1])?.let { listOf(it.blockX.toString()) }?.filter { it.startsWith(args[3], true) } ?: emptyList() else emptyList()
+            5 -> if (isTrackAlias(args[0])) trackPlayerLoc(args[1])?.let { listOf(it.blockY.toString()) }?.filter { it.startsWith(args[4], true) } ?: emptyList() else emptyList()
+            6 -> if (isTrackAlias(args[0])) trackPlayerLoc(args[1])?.let { listOf(it.blockZ.toString()) }?.filter { it.startsWith(args[5], true) } ?: emptyList() else emptyList()
+            7 -> if (isTrackAlias(args[0])) {
+                val worlds = LinkedHashSet<String>()
+                Bukkit.getPlayerExact(args[1])?.world?.name?.let { worlds.add(it) }
+                Bukkit.getWorlds().forEach { worlds.add(it.name) }
+                worlds.filter { it.startsWith(args[6], true) }
+            } else emptyList()
+            8 -> if (isTrackAlias(args[0])) com.dongzh1.sourceforge.nav.NavigationManager.COLORS.keys.filter { it.startsWith(args[7], true) } else emptyList()
             else -> emptyList()
         }
     }
+
+    private fun isTrackAlias(sub: String): Boolean =
+        sub.equals("track", true) || sub.equals("nav", true) || sub.equals("navigate", true)
+
+    private fun trackPlayerLoc(name: String): org.bukkit.Location? = Bukkit.getPlayerExact(name)?.location
 
     private fun expressionSuggestions(): List<String> {
         val blueprintExpressions = plugin.forgeConfig.blueprints.keys.flatMap {

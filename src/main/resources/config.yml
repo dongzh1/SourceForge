@@ -13,6 +13,8 @@ debug:
 betterhud:
   enabled: true
   skill-cd-popup: "sourceforge_skill_cd"
+  # 坐标追踪导航 popup 名（/sf track 使用）。布局可用的条目变量见 docs。
+  navigator-popup: "sourceforge_navigator"
   # 推送 popup 的全链路诊断日志（getPopup/getHudPlayer/show 各步骤打到控制台）。
   # 也可用 /sf debug betterhud on 临时开启。
   debug: false

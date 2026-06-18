@@ -8,6 +8,7 @@ import com.dongzh1.sourceforge.enchant.SourceForgeSkillListener
 import com.dongzh1.sourceforge.forge.ForgeListener
 import com.dongzh1.sourceforge.forge.InventoryAttributeListener
 import com.dongzh1.sourceforge.item.ForgeItemService
+import com.dongzh1.sourceforge.nav.NavigationManager
 import com.dongzh1.sourceforge.papi.SourceForgePapi
 import com.xbaimiao.easylib.EasyPlugin
 import org.bukkit.Bukkit
@@ -26,6 +27,8 @@ class SourceForge : EasyPlugin() {
     lateinit var forgeListener: ForgeListener
         private set
     lateinit var skillListener: SourceForgeSkillListener
+        private set
+    lateinit var navigationManager: NavigationManager
         private set
 
     override fun enable() {
@@ -59,6 +62,11 @@ class SourceForge : EasyPlugin() {
         val sl = SourceForgeSkillListener(this)
         sl.registerIfAvailable()
         skillListener = sl
+
+        val nav = NavigationManager(this)
+        Bukkit.getPluginManager().registerEvents(nav, this)
+        nav.start()
+        navigationManager = nav
 
         logger.info("SourceForge 已启动")
     }

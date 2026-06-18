@@ -76,6 +76,8 @@ dependencies {
     // 仅取 API 接口；isTransitive=false 避免带入更高版本 kotlin-stdlib 覆盖本项目 1.9
     compileOnly("io.github.toxicity188:BetterHud-standard-api:1.14.1") { isTransitive = false }
     compileOnly("io.github.toxicity188:BetterHud-bukkit-api:1.14.1") { isTransitive = false }
+    // HudPlayer 继承 kr.toxicity.command.BetterCommandSource；调用其成员(pointers())需此接口在编译期可见
+    compileOnly("io.github.toxicity188:BetterCommand:1.4.3") { isTransitive = false }
     compileOnly(fileTree("libs"))
 }
 

@@ -114,6 +114,7 @@ data class ForgeConfig(
                 betterHud = BetterHudConfig(
                     enabled = config.getBoolean("betterhud.enabled", true),
                     skillCdPopup = config.getString("betterhud.skill-cd-popup", "sourceforge_skill_cd")!!,
+                    navigatorPopup = config.getString("betterhud.navigator-popup", "sourceforge_navigator")!!,
                     debug = config.getBoolean("betterhud.debug", false)
                 ),
                 forge = loadForgeSystem(config),
@@ -308,6 +309,7 @@ data class ForgeSystemConfig(
 data class BetterHudConfig(
     val enabled: Boolean,
     val skillCdPopup: String,
+    val navigatorPopup: String,
     val debug: Boolean
 )
 
