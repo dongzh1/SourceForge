@@ -11,6 +11,20 @@ items:
       item-name: "<!i><white>短剑"
       unbreakable: true
     texture: sourceforge:item/short_sword
+    events:
+      - on: left_click
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: SF_KJ_LIGHT, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
+          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
+      - on: right_click
+        conditions:
+          - { type: hand, hand: main_hand }
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: GD, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:flintlock:
     material: crossbow
@@ -35,6 +49,20 @@ items:
     data:
       item-name: "<!i><white>长剑"
       unbreakable: true
+    events:
+      - on: left_click
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: SF_KJ_HEAVY, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
+          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
+      - on: right_click
+        conditions:
+          - { type: hand, hand: main_hand }
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: GD, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:spear:
     material: trident
@@ -47,6 +75,20 @@ items:
     data:
       item-name: "<!i><gray>短匕"
       unbreakable: true
+    events:
+      - on: left_click
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: SF_KJ_LIGHT, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
+          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
+      - on: right_click
+        conditions:
+          - { type: hand, hand: main_hand }
+        functions:
+          - { type: cancel_event }
+          - { type: mythic_mobs_skill, skill: GD, power: 1 }
+          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:bulwark_helmet:
     material: iron_helmet
@@ -151,6 +193,13 @@ items:
     data:
       item-name: "<!i><aqua>秘纹丝线"
 
+  # 源质锤：右键源质锻炉核心检测结构（占位材质，用户后续替换贴图）
+  sourceforge:forge_hammer:
+    material: iron_axe
+    data:
+      item-name: "<!i><yellow>源质锤"
+      unbreakable: true
+
 categories:
   sourceforge:internal:
     name: <!i><white>SourceForge</white>
@@ -189,3 +238,14 @@ categories:
       - sourceforge:rime_shard
       - sourceforge:bulwark_plate
       - sourceforge:rune_thread
+  sourceforge:forge:
+    name: <!i><white>SourceForge 锻炉</white>
+    hidden: true
+    icon: sourceforge:forge_core
+    list:
+      - sourceforge:forge_hammer
+      - sourceforge:forge_core
+      - sourceforge:forge_shell_iron
+      - sourceforge:forge_shell_gold
+      - sourceforge:forge_shell_diamond
+      - sourceforge:forge_shell_netherite

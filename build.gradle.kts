@@ -20,6 +20,11 @@ easylib {
     library("com.github.cryptomorin:XSeries:9.9.0", true) {
         relocate("com.cryptomorin.xseries", "${project.group}.shadow.xseries")
     }
+    // Kryo 5：源质锻炉多方块作业的按世界持久化（cloud=false -> implementation + shadow 重定位）
+    library("com.esotericsoftware.kryo:kryo5:5.6.2", false) {
+        relocate("com.esotericsoftware", "${project.group}.shadow.kryo")
+        relocate("org.objenesis", "${project.group}.shadow.objenesis")
+    }
 //    library("de.tr7zw:item-nbt-api:2.12.3", true){
 //        relocate("de.tr7zw.changeme.nbtapi", "${project.group}.shadow.itemnbtapi")
 //        repo("https://repo.codemc.org/repository/maven-public/")
@@ -71,8 +76,10 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
-    compileOnly("net.momirealms:craft-engine-core:0.0.66")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.66")
+    // 必须与服务器部署的 CraftEngine 版本一致（v26.6）。旧的 0.0.66 API 与 26.6 不兼容，
+    // 运行时 ImmutableBlockState.owner()/value()/id() 会抛 NoSuchMethodError 被 runCatching 吞掉 → blockId 返回 null。
+    compileOnly("net.momirealms:craft-engine-core:26.6.3")
+    compileOnly("net.momirealms:craft-engine-bukkit:26.6.3")
     // 仅取 API 接口；isTransitive=false 避免带入更高版本 kotlin-stdlib 覆盖本项目 1.9
     compileOnly("io.github.toxicity188:BetterHud-standard-api:1.14.1") { isTransitive = false }
     compileOnly("io.github.toxicity188:BetterHud-bukkit-api:1.14.1") { isTransitive = false }
@@ -106,7 +113,12 @@ tasks {
         easylib.getAllRelocate().forEach {
             relocate(it.pattern, it.replacement)
         }
-        minimize()
+        minimize {
+            // Kryo / objenesis 大量走反射，minimize 的静态分析会误删其内部类，导致运行时序列化崩溃
+            exclude(dependency("com.esotericsoftware.kryo:kryo5:.*"))
+            exclude(dependency("org.objenesis:objenesis:.*"))
+            exclude(dependency("com.esotericsoftware:.*:.*"))
+        }
     }
     processResources {
         expand("version" to project.version)

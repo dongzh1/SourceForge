@@ -93,6 +93,9 @@ object SourceForgePapi : PlaceholderExpansion() {
             key == "total_ability_efficiency" -> format(totalAffix(player, "ability_efficiency"), 4)
             key == "total_ability_range" -> format(plugin.itemService.readDisplayTotalAffix(player, "ability_range"), 4)
 
+            // 最近攻击生物的干净显示名（供 BetterHud 怪物血条弹窗，已去 § 旧码 / 原版译中文）
+            key == "target_name" -> com.dongzh1.sourceforge.hud.EntityTargetTracker.nameFor(player.uniqueId)
+
             // 原版属性
             key == "vanilla_attack_damage" -> format(attribute(player, Attribute.ATTACK_DAMAGE), 2)
             key == "vanilla_attack_speed" -> format(attribute(player, Attribute.ATTACK_SPEED), 2)

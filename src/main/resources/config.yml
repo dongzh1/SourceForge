@@ -22,6 +22,52 @@ betterhud:
 forge:
   guarantee-material-affix: true
 
+# 源质锻炉多方块结构（3×3×3 空心立方，核心居中，26 个外壳同层级）
+# 锻造时长 ticks = round(base-time-seconds * (层级序号*per-tier + base) / 外壳倍率 * 20)
+forge-structure:
+  enabled: true
+  base-time-seconds: 10
+  tier-weight:
+    base: 0.5
+    per-tier: 0.5
+  core-block: "sourceforge:forge_core"
+  # 外壳层级 -> CE 方块 id（声明顺序即层级序号 1..4）
+  shell-blocks:
+    iron: "sourceforge:forge_shell_iron"
+    gold: "sourceforge:forge_shell_gold"
+    diamond: "sourceforge:forge_shell_diamond"
+    netherite: "sourceforge:forge_shell_netherite"
+  # 外壳层级 -> 速度倍率
+  shell-multipliers:
+    iron: 1.0
+    gold: 1.5
+    diamond: 2.0
+    netherite: 3.0
+  hammer: "sourceforge:forge_hammer"
+
+mods:
+  gui-title: "&0源质改造"
+  capacity:
+    melee_light: {base: 30, tier-increment: 10}
+    melee_heavy: {base: 30, tier-increment: 10}
+    polearm: {base: 30, tier-increment: 10}
+    bow: {base: 30, tier-increment: 10}
+    crossbow: {base: 30, tier-increment: 10}
+    firearm: {base: 30, tier-increment: 10}
+    armor_physical: {base: 24, tier-increment: 8}
+    armor_magic: {base: 24, tier-increment: 8}
+    default: {base: 20, tier-increment: 5}
+  max-mod-slots:
+    melee_light: 8
+    melee_heavy: 8
+    polearm: 8
+    bow: 8
+    crossbow: 8
+    firearm: 8
+    armor_physical: 6
+    armor_magic: 6
+    default: 6
+
 score:
   base-per-tier: 100.0
   min-score: 1

@@ -13,6 +13,7 @@ softdepend:
   - CraftEngine
   - ChunkWorld
   - EasyLevels
+  - MythicMobs
   - PlaceholderAPI
   - BetterHud
 commands:

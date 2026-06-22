@@ -3,10 +3,8 @@ package com.dongzh1.sourceforge.item
 import com.dongzh1.sourceforge.SourceForge
 import com.dongzh1.sourceforge.config.AffixConfig
 import com.dongzh1.sourceforge.config.AffixRollConfig
-import com.dongzh1.sourceforge.config.BlueprintConfig
 import com.dongzh1.sourceforge.config.EquipmentConfig
 import com.dongzh1.sourceforge.config.ForgeConfig
-import com.dongzh1.sourceforge.config.ForgeMaterialConfig
 import com.dongzh1.sourceforge.util.color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -28,10 +26,6 @@ class ForgeItemService(
     private val plugin: SourceForge,
     private val config: ForgeConfig
 ) {
-    private val blueprintKey = NamespacedKey(plugin, "blueprint")
-    private val blueprintTierKey = NamespacedKey(plugin, "blueprint_tier")
-    private val blueprintTierMinKey = NamespacedKey(plugin, "blueprint_tier_min")
-    private val blueprintTierMaxKey = NamespacedKey(plugin, "blueprint_tier_max")
     private val typeKey = NamespacedKey(plugin, "type")
     private val categoryKey = NamespacedKey(plugin, "weapon_category")
     private val tierKey = NamespacedKey(plugin, "tier")
@@ -44,6 +38,10 @@ class ForgeItemService(
     /** 预建 affixId -> NamespacedKey，避免热路径反复构造（构造会做正则校验）。 */
     private val affixKeys: Map<String, NamespacedKey> =
         config.affixes.values.associate { it.id to NamespacedKey(plugin, it.pdcKey) }
+
+    /** affixId -> mod_delta_<pdcKey>，MOD 系统额外加成层；与基础词条相加。 */
+    private val modDeltaKeys: Map<String, NamespacedKey> =
+        config.affixes.values.associate { it.id to NamespacedKey(plugin, "mod_delta_${it.pdcKey}") }
 
     /**
      * 每玩家全身词条总和缓存；装备变化时由监听器失效，避免每次战斗/回盾都扫全背包。
@@ -59,72 +57,13 @@ class ForgeItemService(
         affixKeys[affix.id] ?: NamespacedKey(plugin, affix.pdcKey)
 
 
-    fun createBlueprint(blueprint: BlueprintConfig, tierRange: IntRange = blueprint.defaultTierRange(), amount: Int = 1): ItemStack {
-        val item = config.blueprintItem.ceId?.let { CraftEngineHook.build(it, amount.coerceAtLeast(1)) }
-            ?: ItemStack(config.blueprintItem.material, amount.coerceAtLeast(1))
-        val meta = item.itemMeta
-        val normalizedRange = normalizeTierRange(tierRange, blueprint.tierMin, blueprint.tierMax)
-        val tierText = formatTierRange(normalizedRange)
-        meta.setDisplayName(color(config.blueprintItem.nameFormat.replace("%name%", blueprint.displayName)))
-        config.blueprintItem.customModelData?.let { meta.setCustomModelData(it) }
-        val lore = config.blueprintItem.lore.map { line ->
-            line.replace("%blueprint%", blueprint.displayName)
-                .replace("%tier%", tierText)
-                .replace("%equipment_type%", config.equipmentDisplayName(blueprint.equipmentType))
-                .replace("%materials%", blueprint.requirements.joinToString(", ") { "${config.displayName(it.id)} x${it.amount}" })
-        }
-        meta.lore = color(lore)
-        meta.persistentDataContainer.set(blueprintKey, PersistentDataType.STRING, blueprint.id)
-        meta.persistentDataContainer.set(blueprintTierKey, PersistentDataType.INTEGER, normalizedRange.first)
-        meta.persistentDataContainer.set(blueprintTierMinKey, PersistentDataType.INTEGER, normalizedRange.first)
-        meta.persistentDataContainer.set(blueprintTierMaxKey, PersistentDataType.INTEGER, normalizedRange.last)
-        item.itemMeta = meta
-        return item
-    }
-
-    fun blueprintId(item: ItemStack?): String? {
-        if (item == null || item.type == Material.AIR || !item.hasItemMeta()) return null
-        return item.itemMeta.persistentDataContainer.get(blueprintKey, PersistentDataType.STRING)
-    }
-
-    fun blueprintTier(item: ItemStack?): Int {
-        if (item == null || !item.hasItemMeta()) return 1
-        return item.itemMeta.persistentDataContainer.get(blueprintTierKey, PersistentDataType.INTEGER) ?: 1
-    }
-
-    fun blueprintTierRange(item: ItemStack?, blueprint: BlueprintConfig): IntRange {
-        if (item == null || !item.hasItemMeta()) return blueprint.defaultTierRange()
-        val pdc = item.itemMeta.persistentDataContainer
-        val min = pdc.get(blueprintTierMinKey, PersistentDataType.INTEGER)
-        val max = pdc.get(blueprintTierMaxKey, PersistentDataType.INTEGER)
-        if (min != null && max != null) {
-            return normalizeTierRange(min..max, blueprint.tierMin, blueprint.tierMax)
-        }
-        val legacy = pdc.get(blueprintTierKey, PersistentDataType.INTEGER)
-        return if (legacy != null) {
-            normalizeTierRange(legacy..legacy, blueprint.tierMin, blueprint.tierMax)
-        } else {
-            blueprint.defaultTierRange()
-        }
-    }
-
-    fun createEquipment(
-        blueprint: BlueprintConfig,
-        equipment: EquipmentConfig,
-        tier: Int,
-        materials: List<ForgeMaterialConfig>
-    ): ItemStack {
-        return createEquipment(equipment, tier, blueprint.maxAffixes, materials)
-    }
-
     fun createEquipment(
         equipment: EquipmentConfig,
         tier: Int,
-        maxAffixes: Int,
-        materials: List<ForgeMaterialConfig>
+        maxAffixes: Int
     ): ItemStack {
         val base = equipment.ceId?.let { CraftEngineHook.build(it, 1) } ?: ItemStack(equipment.material, 1)
-        val selected = rollAffixes(equipment, tier, maxAffixes, materials)
+        val selected = rollAffixes(equipment, tier, maxAffixes)
         writeEquipment(base, equipment, tier, selected)
         return base
     }
@@ -132,26 +71,24 @@ class ForgeItemService(
     fun createDirectEquipment(equipmentId: String, tier: Int, affixes: Int? = null): ItemStack? {
         val equipment = config.equipment[equipmentId] ?: return null
         val normalizedTier = tier.coerceAtLeast(1)
-        val blueprint = config.blueprints.values.firstOrNull { it.equipmentType == equipment.id }
-        val maxAffixes = affixes ?: blueprint?.maxAffixes ?: maxOf(1, equipment.tierAffixes[normalizedTier]?.size ?: 1)
-        return createEquipment(equipment, normalizedTier, maxAffixes.coerceAtLeast(0), emptyList())
+        val maxAffixes = affixes ?: maxOf(1, equipment.tierAffixes[normalizedTier]?.size ?: 1)
+        return createEquipment(equipment, normalizedTier, maxAffixes.coerceAtLeast(0))
     }
 
     fun rerollEquipment(item: ItemStack): Boolean {
         val equipment = config.equipment[weaponType(item)] ?: return false
         val tier = equipmentTier(item)
-        val blueprint = config.blueprints.values.firstOrNull { it.equipmentType == equipment.id }
-        val maxAffixes = blueprint?.maxAffixes ?: maxOf(1, readAffixIds(item).size)
-        val selected = rollAffixes(equipment, tier, maxAffixes, emptyList())
+        val maxAffixes = maxOf(1, readAffixIds(item).size)
+        val selected = rollAffixes(equipment, tier, maxAffixes)
         clearAffixes(item)
         writeEquipment(item, equipment, tier, selected)
+        plugin.modService.reapplyModEffects(item)
         return true
     }
 
     fun upgradeEquipment(item: ItemStack): Boolean {
         val equipment = config.equipment[weaponType(item)] ?: return false
-        val blueprint = config.blueprints.values.firstOrNull { it.equipmentType == equipment.id }
-        val maxTier = blueprint?.tierMax ?: 5
+        val maxTier = (equipment.tierAffixes.keys.maxOrNull() ?: 5).coerceAtLeast(1)
         val current = equipmentTier(item)
         if (current >= maxTier) return false
         val nextTier = current + 1
@@ -161,11 +98,12 @@ class ForgeItemService(
         val selected = if (preserved.isNotEmpty()) {
             preserved
         } else {
-            val maxAffixes = blueprint?.maxAffixes ?: maxOf(1, readAffixIds(item).size)
-            rollAffixes(equipment, nextTier, maxAffixes, emptyList())
+            val maxAffixes = maxOf(1, readAffixIds(item).size)
+            rollAffixes(equipment, nextTier, maxAffixes)
         }
         clearAffixes(item)
         writeEquipment(item, equipment, nextTier, selected)
+        plugin.modService.reapplyModEffects(item)
         return true
     }
 
@@ -283,6 +221,11 @@ class ForgeItemService(
             writeAffixValue(pdc, affix, value)
         }
         pdc.set(affixesKey, PersistentDataType.STRING, affixIds.joinToString(","))
+        pdc.set(
+            NamespacedKey(plugin, "mod_capacity"),
+            PersistentDataType.INTEGER,
+            config.modCapacity.computeCapacity(equipment.weaponCategory, tier)
+        )
         val score = calculateScore(equipment, tier, selected)
         val price = calculatePrice(equipment, score)
         pdc.set(scoreKey, PersistentDataType.INTEGER, score)
@@ -367,16 +310,49 @@ class ForgeItemService(
         }
     }
 
+    /**
+     * 将 MOD 聚合后的护甲/生命增量写为装备上的原版属性修饰符（键固定，便于覆盖更新）。
+     * base_damage / 暴击 / 技能 / 能量 / 护盾等 MOD 增量已通过 readAffixValue 的 delta 叠加在
+     * 战斗与 statTotals 路径生效，无需原版修饰符，故此处只处理护甲与生命。
+     */
+    fun applyModVanillaAttributes(item: ItemStack, armorDelta: Double, healthDelta: Double) {
+        val equipment = equipmentConfig(item) ?: return
+        val meta = item.itemMeta
+        val armorKey = NamespacedKey(plugin, "mod_attr_armor_${equipment.id.lowercase()}")
+        val healthKey = NamespacedKey(plugin, "mod_attr_health_${equipment.id.lowercase()}")
+        removeModifierByKey(meta, Attribute.ARMOR, armorKey)
+        removeModifierByKey(meta, Attribute.MAX_HEALTH, healthKey)
+        if (usesEquippedSlot(equipment)) {
+            if (armorDelta > 0.0) {
+                meta.addAttributeModifier(
+                    Attribute.ARMOR,
+                    AttributeModifier(armorKey, armorDelta, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+                )
+            }
+            if (healthDelta > 0.0) {
+                meta.addAttributeModifier(
+                    Attribute.MAX_HEALTH,
+                    AttributeModifier(healthKey, healthDelta, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+                )
+            }
+        }
+        item.itemMeta = meta
+    }
+
+    private fun removeModifierByKey(meta: org.bukkit.inventory.meta.ItemMeta, attribute: Attribute, key: NamespacedKey) {
+        val modifiers = meta.getAttributeModifiers(attribute) ?: return
+        for (modifier in modifiers) {
+            if (modifier.key == key) {
+                meta.removeAttributeModifier(attribute, modifier)
+            }
+        }
+    }
+
     fun buildExpression(expression: String, player: Player?, amount: Int): ItemStack? {
         val expr = SourceForgeExpression.parse(expression) ?: return null
         return when (expr.kind) {
-            "blueprint" -> {
-                val blueprint = config.blueprints[expr.id] ?: return null
-                val tierRange = parseTierRange(expr.params["tier"], blueprint.defaultTierRange(), blueprint.tierMin, blueprint.tierMax)
-                createBlueprint(blueprint, tierRange, amount)
-            }
             "equipment" -> {
-                val equipment = config.equipment[expr.id] ?: return null
+                if (expr.id !in config.equipment) return null
                 val tier = parseTier(expr.params["tier"], 1, 5)
                 val affixesCount = expr.params["affixes"]?.toIntOrNull()
                 createDirectEquipment(expr.id, tier, affixesCount)
@@ -405,11 +381,13 @@ class ForgeItemService(
     fun readAffixValue(container: PersistentDataContainer, affixId: String): Double {
         val affix = config.affixes[affixId] ?: return 0.0
         val key = affixKey(affix)
-        return when (affix.valueType) {
+        val baseValue = when (affix.valueType) {
             "int", "integer" -> container.get(key, PersistentDataType.INTEGER)?.toDouble() ?: 0.0
             "string" -> container.get(key, PersistentDataType.STRING)?.toDoubleOrNull() ?: 0.0
             else -> container.get(key, PersistentDataType.DOUBLE) ?: 0.0
         }
+        val delta = modDeltaKeys[affixId]?.let { container.get(it, PersistentDataType.DOUBLE) } ?: 0.0
+        return baseValue + delta
     }
 
     fun readScore(item: ItemStack?): Int {
@@ -489,8 +467,7 @@ class ForgeItemService(
     private fun rollAffixes(
         equipment: EquipmentConfig,
         tier: Int,
-        maxAffixes: Int,
-        materials: List<ForgeMaterialConfig>
+        maxAffixes: Int
     ): List<Pair<AffixConfig, Double>> {
         val limit = maxAffixes.coerceAtLeast(0)
         if (limit <= 0) return emptyList()
@@ -502,29 +479,11 @@ class ForgeItemService(
                 config.affixes[id]?.let { AffixRollConfig(id, 1.0, it.min, it.max) }
             }
         tierRolls.forEach { candidates += AffixCandidate(it, "tier") }
-        materials.forEach { material ->
-            material.affixes.forEach { candidates += AffixCandidate(it, material.id) }
-        }
 
         val rolled = linkedMapOf<String, Pair<AffixConfig, Double>>()
-        val contributedSources = mutableSetOf<String>()
         for (candidate in candidates) {
             if (!passesChance(candidate.roll.chance)) continue
-            if (applyCandidate(candidate, rolled)) {
-                contributedSources += candidate.source
-            }
-        }
-        if (config.forge.guaranteeMaterialAffix) {
-            for (material in materials) {
-                if (material.id in contributedSources) continue
-                val fallback = candidates
-                    .filter { it.source == material.id }
-                    .shuffled()
-                    .firstOrNull { applyCandidate(it, rolled) }
-                if (fallback != null) {
-                    contributedSources += material.id
-                }
-            }
+            applyCandidate(candidate, rolled)
         }
         val result = rolled.values.toMutableList()
         if (result.size <= limit) return result
@@ -604,6 +563,9 @@ class ForgeItemService(
         val pdc = meta.persistentDataContainer
         for (affix in config.affixes.values) {
             pdc.remove(affixKey(affix))
+        }
+        for (key in modDeltaKeys.values) {
+            pdc.remove(key)
         }
         pdc.remove(affixesKey)
         pdc.remove(scoreKey)

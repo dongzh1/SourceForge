@@ -1,9 +1,8 @@
 package com.dongzh1.sourceforge.forge
 
 import com.dongzh1.sourceforge.SourceForge
-import com.dongzh1.sourceforge.config.BlueprintConfig
-import com.dongzh1.sourceforge.config.MaterialRequirement
-import com.dongzh1.sourceforge.item.ItemMatcher
+import com.dongzh1.sourceforge.config.ForgeRecipe
+import com.dongzh1.sourceforge.item.CraftEngineHook
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
@@ -55,7 +54,7 @@ class ForgeListener(
 
         if (rawSlot >= event.inventory.size && event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
             event.isCancelled = true
-            player.sendMessage("§c[SourceForge] §f请手动放入对应区域，锻造界面不支持 Shift 快速放入")
+            player.sendMessage("§c[SourceForge] §f请手动把蓝图放进蓝图槽，本界面不支持 Shift 快速放入")
             playDenySound(player)
             return
         }
@@ -66,21 +65,14 @@ class ForgeListener(
                 forge(player, menu)
                 return
             }
-            if (rawSlot !in menu.inputSlots) {
+            if (rawSlot != menu.blueprintSlot) {
                 event.isCancelled = true
-                player.sendMessage("§c[SourceForge] §f这里是背景板，不能放置物品")
+                player.sendMessage("§c[SourceForge] §f这里不能放置物品")
                 playDenySound(player)
                 return
             }
-
-            val incoming = incomingItem(event, player)
-            if (incoming != null && !isAllowedInSlot(menu, rawSlot, incoming)) {
-                event.isCancelled = true
-                player.sendMessage(slotRejectMessage(menu, rawSlot))
-                playDenySound(player)
-            } else if (incoming != null) {
-                playPlaceSound(player)
-            }
+            // 蓝图槽：放行点击，1 tick 后按最新内容刷新材料展示
+            scheduleRefresh(menu, player)
         }
     }
 
@@ -89,33 +81,28 @@ class ForgeListener(
         val menu = event.inventory.holder as? ForgeMenu ?: return
         val player = event.whoClicked as? Player ?: return
         val topSlots = event.rawSlots.filter { it < event.inventory.size }
-        if (topSlots.any { it !in menu.inputSlots }) {
+        if (topSlots.any { it != menu.blueprintSlot }) {
             event.isCancelled = true
-            player.sendMessage("§c[SourceForge] §f背景板不能放置物品")
+            player.sendMessage("§c[SourceForge] §f只能把蓝图放进蓝图槽")
             playDenySound(player)
             return
         }
-        val item = event.oldCursor.takeIf { it.type != Material.AIR } ?: return
-        val blockedSlot = topSlots.firstOrNull { !isAllowedInSlot(menu, it, item) }
-        if (blockedSlot != null) {
-            event.isCancelled = true
-            player.sendMessage(slotRejectMessage(menu, blockedSlot))
-            playDenySound(player)
-        } else {
-            playPlaceSound(player)
-        }
+        scheduleRefresh(menu, player)
+    }
+
+    /** 蓝图槽内容应用后，下一 tick 重新渲染材料需求展示。 */
+    private fun scheduleRefresh(menu: ForgeMenu, player: Player) {
+        plugin.server.scheduler.runTask(plugin, Runnable { menu.renderMaterials(player) })
     }
 
     @EventHandler
     fun onClose(event: InventoryCloseEvent) {
         val menu = event.inventory.holder as? ForgeMenu ?: return
         val player = event.player as? Player ?: return
-        for (slot in menu.inputSlots) {
-            val item = event.inventory.getItem(slot) ?: continue
-            if (item.type == Material.AIR) continue
-            player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
-            event.inventory.setItem(slot, null)
-        }
+        val item = event.inventory.getItem(menu.blueprintSlot) ?: return
+        if (item.type == Material.AIR) return
+        player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
+        event.inventory.setItem(menu.blueprintSlot, null)
     }
 
     // ==================== 投射物事件 ====================
@@ -424,82 +411,112 @@ class ForgeListener(
     private fun forge(player: Player, menu: ForgeMenu) {
         val inv = menu.inventory
         val blueprintItem = inv.getItem(menu.blueprintSlot)
-        val blueprintId = plugin.itemService.blueprintId(blueprintItem)
-        if (blueprintId == null) {
-            player.sendMessage("§c[SourceForge] §f请在左侧放入蓝图")
+        if (blueprintItem == null || blueprintItem.type == Material.AIR) {
+            player.sendMessage("§c[SourceForge] §f请放入有效蓝图")
             playDenySound(player)
             return
         }
-        val blueprint = plugin.forgeConfig.blueprints[blueprintId]
-        if (blueprint == null) {
-            player.sendMessage("§c[SourceForge] §f未知蓝图: $blueprintId")
-            playDenySound(player)
-            return
-        }
-        val equipment = plugin.forgeConfig.equipment[blueprint.equipmentType]
-        if (equipment == null) {
-            player.sendMessage("§c[SourceForge] §f蓝图缺少装备配置: ${blueprint.equipmentType}")
-            playDenySound(player)
-            return
-        }
-        val availableSlots = menu.inputSlots.filter { it != menu.blueprintSlot }
-        val invalidBase = menu.baseMaterialSlots.firstNotNullOfOrNull { slot ->
-            inv.getItem(slot)?.takeIf { it.type != Material.AIR && !isBaseMaterial(blueprint, it) }
-                ?.let { slot to it }
-        }
-        if (invalidBase != null) {
-            player.sendMessage("§c[SourceForge] §f基础材料区有不属于当前蓝图的物品，请取出后再锻造")
-            playDenySound(player)
-            return
-        }
-        val invalidSpecial = menu.specialMaterialSlots.firstNotNullOfOrNull { slot ->
-            inv.getItem(slot)?.takeIf { it.type != Material.AIR && !isSpecialMaterial(it) }
-                ?.let { slot to it }
-        }
-        if (invalidSpecial != null) {
-            player.sendMessage("§c[SourceForge] §f附加材料区有未配置的材料，请取出后再锻造")
-            playDenySound(player)
-            return
-        }
-        val inputs = availableSlots.mapNotNull { slot -> inv.getItem(slot)?.takeIf { it.type != Material.AIR } }
-        val missing = blueprint.requirements.firstOrNull { count(inputs, it) < it.amount }
-        if (missing != null) {
-            player.sendMessage("§c[SourceForge] §f材料不足: ${plugin.forgeConfig.displayName(missing.id)} x${missing.amount}")
+        val ceId = CraftEngineHook.itemId(blueprintItem)
+        val recipe = ceId?.let { plugin.forgeConfig.recipes[it] }
+        if (recipe == null) {
+            player.sendMessage("§c[SourceForge] §f请放入有效蓝图")
             playDenySound(player)
             return
         }
 
-        val remainingInputs = remainingAfter(inputs, blueprint.requirements)
-        val selectedMaterials = plugin.forgeConfig.forgeMaterials
-            .filter { count(remainingInputs, MaterialRequirement(it.itemId, it.amount)) >= it.amount }
-        consume(inv, availableSlots, blueprint.requirements)
-        selectedMaterials.forEach {
-            consume(inv, availableSlots, listOf(MaterialRequirement(it.itemId, it.amount)))
+        // 校验玩家背包材料是否充足
+        val shortage = recipe.materials.firstOrNull { countInInventory(player, it.ceId) < it.amount }
+        if (shortage != null) {
+            val have = countInInventory(player, shortage.ceId)
+            val name = plugin.forgeConfig.displayName(shortage.ceId)
+            player.sendMessage("§c[SourceForge] §f材料不足: §f$name §c还差 §e${shortage.amount - have} §c个")
+            playDenySound(player)
+            return
         }
+
+        val ctx = menu.structureContext
+        if (ctx != null) {
+            // 结构模式：核心已有作业则拒绝
+            val core = org.bukkit.Bukkit.getWorld(ctx.world)?.getBlockAt(ctx.x, ctx.y, ctx.z)
+            if (core == null) {
+                player.sendMessage("§c[SourceForge] §f锻炉核心所在世界未加载")
+                playDenySound(player)
+                return
+            }
+            if (plugin.structureManager.hasJob(core)) {
+                player.sendMessage("§c[SourceForge] §f该锻炉已有作业")
+                playDenySound(player)
+                return
+            }
+            // 消耗材料 + 蓝图，并记录被消耗的 CE 物品快照（核心被破坏时退还）
+            val consumedSnapshot = consumeMaterials(player, recipe)
+            consumeBlueprint(inv, menu.blueprintSlot)?.let { consumedSnapshot.add(it) }
+
+            val ticks = Math.round(recipe.timeSeconds * 20.0 / ctx.multiplier).coerceAtLeast(1L)
+            plugin.structureManager.submitJob(
+                core = core,
+                blueprintId = recipe.blueprintId,
+                equipmentId = recipe.equipmentId,
+                tier = recipe.tier,
+                shellTier = ctx.shellTier,
+                multiplier = ctx.multiplier,
+                remainingTicks = ticks,
+                consumedSnapshot = consumedSnapshot
+            )
+            val seconds = Math.ceil(ticks / 20.0).toInt()
+            player.closeInventory()
+            player.sendMessage("§a[源质锻炉] §f开始锻造，预计 §e${seconds}s")
+            playForgeSound(player)
+            return
+        }
+
+        // 命令/管理路径：即时产出
+        consumeMaterials(player, recipe)
         consumeBlueprint(inv, menu.blueprintSlot)
-
-        val tierRange = plugin.itemService.blueprintTierRange(blueprintItem, blueprint)
-        val tier = if (tierRange.first == tierRange.last) {
-            tierRange.first
-        } else {
-            Random.nextInt(tierRange.first, tierRange.last + 1)
+        val result = plugin.itemService.createDirectEquipment(recipe.equipmentId, recipe.tier, null)
+        if (result == null) {
+            player.sendMessage("§c[SourceForge] §f配方装备不存在: ${recipe.equipmentId}")
+            playDenySound(player)
+            return
         }
-        val result = plugin.itemService.createEquipment(
-            blueprint = blueprint,
-            equipment = equipment,
-            tier = tier,
-            materials = selectedMaterials
-        )
         player.inventory.addItem(result).values.forEach { player.world.dropItemNaturally(player.location, it) }
-        player.sendMessage("§a[SourceForge] §f锻造完成: §e${equipment.displayName}")
+        player.sendMessage("§a[SourceForge] §f锻造完成: §e${plugin.forgeConfig.equipmentDisplayName(recipe.equipmentId)}")
         playForgeSound(player)
+        menu.renderMaterials(player)
+    }
+
+    /** 数背包内匹配 CE id 的物品数量（仅 storageContents，含快捷栏）。 */
+    private fun countInInventory(player: Player, ceId: String): Int {
+        var total = 0
+        for (item in player.inventory.storageContents) {
+            if (item == null || item.type == Material.AIR) continue
+            if (CraftEngineHook.itemId(item) == ceId) total += item.amount
+        }
+        return total
+    }
+
+    /** 从玩家背包扣除配方材料，返回被消耗物品的克隆快照（按消耗数量）。 */
+    private fun consumeMaterials(player: Player, recipe: ForgeRecipe): MutableList<ItemStack> {
+        val snapshot = mutableListOf<ItemStack>()
+        val storage = player.inventory.storageContents
+        for (material in recipe.materials) {
+            var remaining = material.amount
+            for (i in storage.indices) {
+                if (remaining <= 0) break
+                val item = storage[i] ?: continue
+                if (item.type == Material.AIR) continue
+                if (CraftEngineHook.itemId(item) != material.ceId) continue
+                val take = minOf(remaining, item.amount)
+                snapshot.add(item.clone().apply { amount = take })
+                item.amount -= take
+                remaining -= take
+                player.inventory.setItem(i, if (item.amount <= 0) null else item)
+            }
+        }
+        return snapshot
     }
 
     // ==================== 辅助方法 ====================
-
-    private fun playPlaceSound(player: Player) {
-        player.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.35f, 1.35f)
-    }
 
     private fun playDenySound(player: Player) {
         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 0.45f, 0.65f)
@@ -509,92 +526,14 @@ class ForgeListener(
         player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 0.8f, 1.05f)
     }
 
-    private fun count(items: List<ItemStack>, requirement: MaterialRequirement): Int {
-        return items.filter { ItemMatcher.matches(it, requirement.id) }.sumOf { it.amount }
-    }
-
-    private fun incomingItem(event: InventoryClickEvent, player: Player): ItemStack? {
-        if (event.click == ClickType.NUMBER_KEY) {
-            val button = event.hotbarButton
-            return if (button in 0..8) player.inventory.getItem(button)?.takeIf { it.type != Material.AIR } else null
-        }
-        return event.cursor.takeIf { it.type != Material.AIR }
-    }
-
-    private fun isAllowedInSlot(menu: ForgeMenu, slot: Int, item: ItemStack): Boolean {
-        return when (slot) {
-            menu.blueprintSlot -> plugin.itemService.blueprintId(item) != null
-            in menu.baseMaterialSlots -> {
-                val blueprint = currentBlueprint(menu) ?: return false
-                isBaseMaterial(blueprint, item)
-            }
-            in menu.specialMaterialSlots -> isSpecialMaterial(item)
-            else -> false
-        }
-    }
-
-    private fun slotRejectMessage(menu: ForgeMenu, slot: Int): String {
-        return when (slot) {
-            menu.blueprintSlot -> "§c[SourceForge] §f蓝图槽只能放 SourceForge 蓝图"
-            in menu.baseMaterialSlots -> {
-                if (currentBlueprint(menu) == null) {
-                    "§c[SourceForge] §f请先放入蓝图，再放当前蓝图需要的基础材料"
-                } else {
-                    "§c[SourceForge] §f基础材料区只能放当前蓝图 requirements 里的材料"
-                }
-            }
-            in menu.specialMaterialSlots -> "§c[SourceForge] §f附加材料区只能放 SourceForge materials 文件夹配置过的材料"
-            else -> "§c[SourceForge] §f这里不能放置物品"
-        }
-    }
-
-    private fun currentBlueprint(menu: ForgeMenu): BlueprintConfig? {
-        val id = plugin.itemService.blueprintId(menu.inventory.getItem(menu.blueprintSlot)) ?: return null
-        return plugin.forgeConfig.blueprints[id]
-    }
-
-    private fun isBaseMaterial(blueprint: BlueprintConfig, item: ItemStack): Boolean {
-        return blueprint.requirements.any { ItemMatcher.matches(item, it.id) }
-    }
-
-    private fun isSpecialMaterial(item: ItemStack): Boolean {
-        return plugin.forgeConfig.forgeMaterials.any { ItemMatcher.matches(item, it.itemId) }
-    }
-
-    private fun remainingAfter(items: List<ItemStack>, requirements: List<MaterialRequirement>): List<ItemStack> {
-        val remaining = items.map { it.clone() }.toMutableList()
-        for (requirement in requirements) {
-            var needed = requirement.amount
-            for (item in remaining) {
-                if (needed <= 0) break
-                if (!ItemMatcher.matches(item, requirement.id)) continue
-                val take = minOf(needed, item.amount)
-                item.amount -= take
-                needed -= take
-            }
-        }
-        return remaining.filter { it.type != Material.AIR && it.amount > 0 }
-    }
-
-    private fun consume(inv: org.bukkit.inventory.Inventory, slots: List<Int>, requirements: List<MaterialRequirement>) {
-        for (requirement in requirements) {
-            var remaining = requirement.amount
-            for (slot in slots) {
-                if (remaining <= 0) break
-                val item = inv.getItem(slot) ?: continue
-                if (!ItemMatcher.matches(item, requirement.id)) continue
-                val take = minOf(remaining, item.amount)
-                item.amount -= take
-                remaining -= take
-                if (item.amount <= 0) inv.setItem(slot, null)
-            }
-        }
-    }
-
-    private fun consumeBlueprint(inv: org.bukkit.inventory.Inventory, slot: Int) {
-        val item = inv.getItem(slot) ?: return
+    /** 从蓝图槽消耗 1 张蓝图，返回被消耗的 1 个单位克隆（用于退还快照）。 */
+    private fun consumeBlueprint(inv: org.bukkit.inventory.Inventory, slot: Int): ItemStack? {
+        val item = inv.getItem(slot) ?: return null
+        if (item.type == Material.AIR) return null
+        val clone = item.clone().apply { amount = 1 }
         item.amount -= 1
         if (item.amount <= 0) inv.setItem(slot, null)
+        return clone
     }
 
     companion object {

@@ -1,0 +1,9 @@
+id: vitality
+display-name: "&a活力"
+item: "minecraft:ghast_tear"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+effects: { health: 20.0 }
+tags: [stat]
+item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7生命 &f+%effect_health%", "", "&7适用: 护甲"]

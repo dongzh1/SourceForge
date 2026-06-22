@@ -1,0 +1,150 @@
+# 源质锻炉多方块：核心 + 4 种外壳。全部托管在 note_block（auto_state），
+# 使用原版方块贴图作为占位（用户后续替换为自定义贴图）。
+# 方块 schema 镜像 GeneMachinery 的可用写法（states.properties + appearances + variants，facing 4-direction）。
+# 立方体各面同贴图，朝向不可见；结构校验按方块 id 识别，与 facing 无关。
+items:
+  sourceforge:forge_core:
+    material: blast_furnace
+    data:
+      item-name: "<!i><gold>源质锻炉核心"
+    behavior: { type: block_item, block: sourceforge:forge_core }
+
+  sourceforge:forge_shell_iron:
+    material: iron_block
+    data:
+      item-name: "<!i><white>源质锻炉外壳·铁"
+    behavior: { type: block_item, block: sourceforge:forge_shell_iron }
+
+  sourceforge:forge_shell_gold:
+    material: gold_block
+    data:
+      item-name: "<!i><yellow>源质锻炉外壳·金"
+    behavior: { type: block_item, block: sourceforge:forge_shell_gold }
+
+  sourceforge:forge_shell_diamond:
+    material: diamond_block
+    data:
+      item-name: "<!i><aqua>源质锻炉外壳·钻石"
+    behavior: { type: block_item, block: sourceforge:forge_shell_diamond }
+
+  sourceforge:forge_shell_netherite:
+    material: netherite_block
+    data:
+      item-name: "<!i><dark_gray>源质锻炉外壳·下界合金"
+    behavior: { type: block_item, block: sourceforge:forge_shell_netherite }
+
+blocks:
+  sourceforge:forge_core:
+    loot: { template: default:loot_table/basic, arguments: { item: sourceforge:forge_core } }
+    settings: { template: [default:sound/stone, default:settings/solid_1x1x1], overrides: { hardness: 3.5, resistance: 6 } }
+    states:
+      properties:
+        facing: { type: 4-direction, default: north }
+      appearances:
+        north:
+          auto_state: note_block
+          model:
+            path: sourceforge:block/forge_core
+            generation:
+              parent: minecraft:block/cube_all
+              textures: { all: minecraft:block/blast_furnace_front_on }
+        east: { auto_state: note_block, model: { path: sourceforge:block/forge_core, y: 90 } }
+        south: { auto_state: note_block, model: { path: sourceforge:block/forge_core, y: 180 } }
+        west: { auto_state: note_block, model: { path: sourceforge:block/forge_core, y: 270 } }
+      variants:
+        facing=north: { appearance: north }
+        facing=east: { appearance: east }
+        facing=south: { appearance: south }
+        facing=west: { appearance: west }
+
+  sourceforge:forge_shell_iron:
+    loot: { template: default:loot_table/basic, arguments: { item: sourceforge:forge_shell_iron } }
+    settings: { template: [default:sound/stone, default:settings/solid_1x1x1], overrides: { hardness: 3.0, resistance: 6 } }
+    states:
+      properties:
+        facing: { type: 4-direction, default: north }
+      appearances:
+        north:
+          auto_state: note_block
+          model:
+            path: sourceforge:block/forge_shell_iron
+            generation:
+              parent: minecraft:block/cube_all
+              textures: { all: minecraft:block/iron_block }
+        east: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_iron, y: 90 } }
+        south: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_iron, y: 180 } }
+        west: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_iron, y: 270 } }
+      variants:
+        facing=north: { appearance: north }
+        facing=east: { appearance: east }
+        facing=south: { appearance: south }
+        facing=west: { appearance: west }
+
+  sourceforge:forge_shell_gold:
+    loot: { template: default:loot_table/basic, arguments: { item: sourceforge:forge_shell_gold } }
+    settings: { template: [default:sound/stone, default:settings/solid_1x1x1], overrides: { hardness: 3.0, resistance: 6 } }
+    states:
+      properties:
+        facing: { type: 4-direction, default: north }
+      appearances:
+        north:
+          auto_state: note_block
+          model:
+            path: sourceforge:block/forge_shell_gold
+            generation:
+              parent: minecraft:block/cube_all
+              textures: { all: minecraft:block/gold_block }
+        east: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_gold, y: 90 } }
+        south: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_gold, y: 180 } }
+        west: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_gold, y: 270 } }
+      variants:
+        facing=north: { appearance: north }
+        facing=east: { appearance: east }
+        facing=south: { appearance: south }
+        facing=west: { appearance: west }
+
+  sourceforge:forge_shell_diamond:
+    loot: { template: default:loot_table/basic, arguments: { item: sourceforge:forge_shell_diamond } }
+    settings: { template: [default:sound/stone, default:settings/solid_1x1x1], overrides: { hardness: 3.0, resistance: 6 } }
+    states:
+      properties:
+        facing: { type: 4-direction, default: north }
+      appearances:
+        north:
+          auto_state: note_block
+          model:
+            path: sourceforge:block/forge_shell_diamond
+            generation:
+              parent: minecraft:block/cube_all
+              textures: { all: minecraft:block/diamond_block }
+        east: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_diamond, y: 90 } }
+        south: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_diamond, y: 180 } }
+        west: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_diamond, y: 270 } }
+      variants:
+        facing=north: { appearance: north }
+        facing=east: { appearance: east }
+        facing=south: { appearance: south }
+        facing=west: { appearance: west }
+
+  sourceforge:forge_shell_netherite:
+    loot: { template: default:loot_table/basic, arguments: { item: sourceforge:forge_shell_netherite } }
+    settings: { template: [default:sound/stone, default:settings/solid_1x1x1], overrides: { hardness: 4.0, resistance: 8 } }
+    states:
+      properties:
+        facing: { type: 4-direction, default: north }
+      appearances:
+        north:
+          auto_state: note_block
+          model:
+            path: sourceforge:block/forge_shell_netherite
+            generation:
+              parent: minecraft:block/cube_all
+              textures: { all: minecraft:block/netherite_block }
+        east: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_netherite, y: 90 } }
+        south: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_netherite, y: 180 } }
+        west: { auto_state: note_block, model: { path: sourceforge:block/forge_shell_netherite, y: 270 } }
+      variants:
+        facing=north: { appearance: north }
+        facing=east: { appearance: east }
+        facing=south: { appearance: south }
+        facing=west: { appearance: west }

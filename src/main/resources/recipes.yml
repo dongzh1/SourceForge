@@ -1,0 +1,116 @@
+# 源质锻造配方表。
+# 键 = 蓝图的 CraftEngine 物品 id（用 /ce give 给玩家蓝图）。
+# 锻造时：把蓝图放进锻造界面的蓝图槽，材料从玩家背包按 CE id 自动扣除。
+# 产出 = 一件已存在的 SF 装备（equipment），等级固定 = tier，无随机词条（强度来自 MOD 系统）。
+# 结构模式下实际耗时 = round(time-seconds * 20 / 外壳速度倍率)。
+recipes:
+  sourceforge:blueprint_short_sword:
+    equipment: short_sword
+    tier: 1
+    time-seconds: 60
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 4 }
+      - { item: sourceforge:sharp_stone, amount: 2 }
+
+  sourceforge:blueprint_longsword:
+    equipment: longsword
+    tier: 1
+    time-seconds: 90
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 6 }
+      - { item: sourceforge:sharp_stone, amount: 3 }
+
+  sourceforge:blueprint_dagger:
+    equipment: dagger
+    tier: 1
+    time-seconds: 45
+    materials:
+      - { item: sourceforge:sharp_stone, amount: 3 }
+
+  sourceforge:blueprint_spear:
+    equipment: spear
+    tier: 1
+    time-seconds: 75
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 4 }
+      - { item: sourceforge:sharp_stone, amount: 2 }
+
+  sourceforge:blueprint_flintlock:
+    equipment: flintlock
+    tier: 1
+    time-seconds: 120
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 4 }
+      - { item: sourceforge:gunpowder_charge, amount: 4 }
+
+  sourceforge:blueprint_source_bow:
+    equipment: source_bow
+    tier: 1
+    time-seconds: 80
+    materials:
+      - { item: sourceforge:rune_thread, amount: 3 }
+      - { item: sourceforge:sharp_stone, amount: 2 }
+
+  sourceforge:blueprint_source_crossbow:
+    equipment: source_crossbow
+    tier: 1
+    time-seconds: 90
+    materials:
+      - { item: sourceforge:rune_thread, amount: 3 }
+      - { item: sourceforge:sharp_stone, amount: 2 }
+
+  sourceforge:blueprint_bulwark_helmet:
+    equipment: bulwark_helmet
+    tier: 1
+    time-seconds: 70
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 5 }
+
+  sourceforge:blueprint_bulwark_chestplate:
+    equipment: bulwark_chestplate
+    tier: 1
+    time-seconds: 110
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 8 }
+
+  sourceforge:blueprint_bulwark_leggings:
+    equipment: bulwark_leggings
+    tier: 1
+    time-seconds: 95
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 7 }
+
+  sourceforge:blueprint_bulwark_boots:
+    equipment: bulwark_boots
+    tier: 1
+    time-seconds: 60
+    materials:
+      - { item: sourceforge:bulwark_plate, amount: 4 }
+
+  sourceforge:blueprint_ward_helmet:
+    equipment: ward_helmet
+    tier: 1
+    time-seconds: 70
+    materials:
+      - { item: sourceforge:rune_thread, amount: 5 }
+
+  sourceforge:blueprint_ward_chestplate:
+    equipment: ward_chestplate
+    tier: 1
+    time-seconds: 110
+    materials:
+      - { item: sourceforge:rune_thread, amount: 8 }
+
+  sourceforge:blueprint_ward_leggings:
+    equipment: ward_leggings
+    tier: 1
+    time-seconds: 95
+    materials:
+      - { item: sourceforge:rune_thread, amount: 7 }
+
+  sourceforge:blueprint_ward_boots:
+    equipment: ward_boots
+    tier: 1
+    time-seconds: 60
+    materials:
+      - { item: sourceforge:rune_thread, amount: 4 }

@@ -11,12 +11,11 @@ data class ForgeConfig(
     val forge: ForgeSystemConfig,
     val score: ScoreConfig,
     val combat: CombatConfig,
-    val blueprintItem: BlueprintItemConfig,
     val itemDisplayNames: Map<String, String>,
-    val blueprints: Map<String, BlueprintConfig>,
     val equipment: Map<String, EquipmentConfig>,
     val affixes: Map<String, AffixConfig>,
-    val forgeMaterials: List<ForgeMaterialConfig>,
+    val recipes: Map<String, ForgeRecipe>,
+    val modCapacity: ModCapacityConfig,
     val validationWarnings: List<String>
 ) {
     fun displayName(id: String): String {
@@ -38,17 +37,9 @@ data class ForgeConfig(
         fun load(
             config: FileConfiguration,
             affixesConfig: YamlConfiguration = YamlConfiguration(),
-            materialsFolder: File? = null,
+            recipesFile: File? = null,
             combatConfig: YamlConfiguration = YamlConfiguration()
         ): ForgeConfig {
-            val blueprintItem = BlueprintItemConfig(
-                material = parseMaterial(config.getString("blueprint-item.material"), Material.PAPER),
-                ceId = config.getString("blueprint-item.ce-id")?.takeIf { it.isNotBlank() },
-                customModelData = config.getInt("blueprint-item.custom-model-data", 0).takeIf { it > 0 },
-                nameFormat = config.getString("blueprint-item.name-format", "&9蓝图: %name%")!!,
-                lore = config.getStringList("blueprint-item.lore")
-            )
-
             val itemDisplayNames = linkedMapOf<String, String>()
             config.getConfigurationSection("item-display-names")?.getKeys(false)?.forEach { id ->
                 config.getString("item-display-names.$id")?.let { itemDisplayNames[id.lowercase()] = it }
@@ -73,7 +64,7 @@ data class ForgeConfig(
                     material = parseMaterial(config.getString("$path.material"), Material.IRON_SWORD),
                     ceId = config.getString("$path.ce-id")?.takeIf { it.isNotBlank() },
                     weaponCategory = config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase(),
-                    chunkWorldLevelMode = config.getString("$path.chunkworld-level", "blueprint-tier")!!,
+                    chunkWorldLevelMode = config.getString("$path.chunkworld-level", "tier")!!,
                     pixelShopPrice = config.getDouble("$path.pixelshop-price", 0.0),
                     effectiveSlots = config.getStringList("$path.effective-slots")
                         .ifEmpty { defaultEffectiveSlots(id, config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase()) }
@@ -85,28 +76,7 @@ data class ForgeConfig(
                 )
             }
 
-            val blueprints = linkedMapOf<String, BlueprintConfig>()
-            config.getConfigurationSection("blueprints")?.getKeys(false)?.forEach { id ->
-                val path = "blueprints.$id"
-                val requirements = config.getMapList("$path.requirements").mapNotNull { map ->
-                    val itemId = map["id"]?.toString() ?: return@mapNotNull null
-                    MaterialRequirement(itemId, map["amount"]?.toString()?.toIntOrNull() ?: 1)
-                }
-                blueprints[id] = BlueprintConfig(
-                    id = id,
-                    displayName = config.getString("$path.display-name", id)!!,
-                    equipmentType = config.getString("$path.equipment-type", id)!!,
-                    tierMin = config.getInt("$path.tier.min", 1).coerceAtLeast(1),
-                    tierMax = config.getInt("$path.tier.max", 1).coerceAtLeast(1),
-                    fixedTier = config.getInt("$path.tier.fixed", 0).takeIf { it > 0 },
-                    affixSlotsMin = config.getInt("$path.affix-slots.min", 1).coerceAtLeast(0),
-                    affixSlotsMax = config.getInt("$path.affix-slots.max", 1).coerceAtLeast(0),
-                    maxAffixes = config.getInt("$path.max-affixes", config.getInt("$path.affix-slots.max", 1)).coerceAtLeast(0),
-                    requirements = requirements
-                )
-            }
-
-            val forgeMaterials = loadForgeMaterials(materialsFolder)
+            val recipes = loadRecipes(recipesFile)
 
             return ForgeConfig(
                 guiTitle = config.getString("gui.title", "&0源质锻造")!!,
@@ -120,14 +90,58 @@ data class ForgeConfig(
                 forge = loadForgeSystem(config),
                 score = loadScore(config),
                 combat = loadCombat(combatConfig),
-                blueprintItem = blueprintItem,
                 itemDisplayNames = itemDisplayNames,
-                blueprints = blueprints,
                 equipment = equipment,
                 affixes = affixes,
-                forgeMaterials = forgeMaterials,
-                validationWarnings = validate(blueprints, equipment, affixes, forgeMaterials)
+                recipes = recipes,
+                modCapacity = loadModCapacity(config),
+                validationWarnings = validate(recipes, equipment, affixes)
             )
+        }
+
+        private fun loadRecipes(recipesFile: File?): Map<String, ForgeRecipe> {
+            if (recipesFile == null || !recipesFile.isFile) return emptyMap()
+            val yaml = YamlConfiguration.loadConfiguration(recipesFile)
+            val section = yaml.getConfigurationSection("recipes") ?: return emptyMap()
+            val result = linkedMapOf<String, ForgeRecipe>()
+            for (blueprintId in section.getKeys(false)) {
+                val path = "recipes.$blueprintId"
+                val materials = yaml.getMapList("$path.materials").mapNotNull { map ->
+                    val itemId = map["item"]?.toString() ?: return@mapNotNull null
+                    RecipeMaterial(itemId, map["amount"]?.toString()?.toIntOrNull() ?: 1)
+                }
+                result[blueprintId] = ForgeRecipe(
+                    blueprintId = blueprintId,
+                    equipmentId = yaml.getString("$path.equipment", blueprintId)!!,
+                    tier = yaml.getInt("$path.tier", 1).coerceAtLeast(1),
+                    timeSeconds = yaml.getDouble("$path.time-seconds", 60.0).coerceAtLeast(0.0),
+                    materials = materials
+                )
+            }
+            return result
+        }
+
+        private fun loadModCapacity(config: FileConfiguration): ModCapacityConfig {
+            val guiTitle = config.getString("mods.gui-title", "&0源质改造")!!
+            val capacityByCategory = linkedMapOf<String, ModCapacityEntry>()
+            config.getConfigurationSection("mods.capacity")?.getKeys(false)?.forEach { cat ->
+                val base = "mods.capacity.$cat"
+                capacityByCategory[cat.lowercase()] = ModCapacityEntry(
+                    base = config.getInt("$base.base", 20),
+                    tierIncrement = config.getInt("$base.tier-increment", 5)
+                )
+            }
+            if ("default" !in capacityByCategory) {
+                capacityByCategory["default"] = ModCapacityEntry(20, 5)
+            }
+            val maxModSlotsByCategory = linkedMapOf<String, Int>()
+            config.getConfigurationSection("mods.max-mod-slots")?.getKeys(false)?.forEach { cat ->
+                maxModSlotsByCategory[cat.lowercase()] = config.getInt("mods.max-mod-slots.$cat", 6)
+            }
+            if ("default" !in maxModSlotsByCategory) {
+                maxModSlotsByCategory["default"] = 6
+            }
+            return ModCapacityConfig(guiTitle, capacityByCategory, maxModSlotsByCategory)
         }
 
         private fun parseMaterial(raw: String?, fallback: Material): Material {
@@ -185,25 +199,6 @@ data class ForgeConfig(
             return result
         }
 
-        private fun loadForgeMaterials(folder: File?): List<ForgeMaterialConfig> {
-            if (folder == null || !folder.isDirectory) return emptyList()
-            return folder.listFiles { file -> file.isFile && file.extension.lowercase() in setOf("yml", "yaml") }
-                ?.sortedBy { it.name }
-                ?.mapNotNull { file ->
-                    val config = YamlConfiguration.loadConfiguration(file)
-                    val id = config.getString("id") ?: file.nameWithoutExtension
-                    val itemId = config.getString("item") ?: config.getString("item-id") ?: return@mapNotNull null
-                    ForgeMaterialConfig(
-                        id = id,
-                        displayName = config.getString("display-name", id)!!,
-                        itemId = itemId,
-                        amount = config.getInt("amount", 1).coerceAtLeast(1),
-                        affixes = loadRolls(config, "affixes")
-                    )
-                }
-                ?: emptyList()
-        }
-
         private fun loadRolls(config: FileConfiguration, path: String): List<AffixRollConfig> {
             val section = config.getConfigurationSection(path) ?: return emptyList()
             return section.getKeys(false).mapNotNull { affixId ->
@@ -249,18 +244,22 @@ data class ForgeConfig(
         }
 
         private fun validate(
-            blueprints: Map<String, BlueprintConfig>,
+            recipes: Map<String, ForgeRecipe>,
             equipment: Map<String, EquipmentConfig>,
-            affixes: Map<String, AffixConfig>,
-            forgeMaterials: List<ForgeMaterialConfig>
+            affixes: Map<String, AffixConfig>
         ): List<String> {
             val warnings = mutableListOf<String>()
-            for (blueprint in blueprints.values) {
-                if (blueprint.equipmentType !in equipment) {
-                    warnings += "蓝图 ${blueprint.id} 引用了不存在的装备 ${blueprint.equipmentType}"
+            for (recipe in recipes.values) {
+                if (recipe.equipmentId !in equipment) {
+                    warnings += "配方 ${recipe.blueprintId} 引用了不存在的装备 ${recipe.equipmentId}"
                 }
-                if (blueprint.requirements.isEmpty()) {
-                    warnings += "蓝图 ${blueprint.id} 没有配置 requirements"
+                if (recipe.materials.isEmpty()) {
+                    warnings += "配方 ${recipe.blueprintId} 没有配置 materials"
+                }
+                for (material in recipe.materials) {
+                    if (material.amount <= 0) {
+                        warnings += "配方 ${recipe.blueprintId} 材料 ${material.ceId} amount 必须大于 0"
+                    }
                 }
             }
             for (item in equipment.values) {
@@ -273,12 +272,6 @@ data class ForgeConfig(
                     if (tier <= 0) warnings += "装备 ${item.id} tier-affixes 使用了非法等级 $tier"
                     validateRolls("装备 ${item.id} 等级 $tier", rolls, affixes, warnings)
                 }
-            }
-            for (material in forgeMaterials) {
-                if (material.amount <= 0) {
-                    warnings += "材料 ${material.id} amount 必须大于 0"
-                }
-                validateRolls("材料 ${material.id}", material.affixes, affixes, warnings)
             }
             return warnings
         }
@@ -323,36 +316,6 @@ data class ScoreConfig(
     val affixWeights: Map<String, Double>
 )
 
-data class BlueprintItemConfig(
-    val material: Material,
-    val ceId: String?,
-    val customModelData: Int?,
-    val nameFormat: String,
-    val lore: List<String>
-)
-
-data class BlueprintConfig(
-    val id: String,
-    val displayName: String,
-    val equipmentType: String,
-    val tierMin: Int,
-    val tierMax: Int,
-    val fixedTier: Int?,
-    val affixSlotsMin: Int,
-    val affixSlotsMax: Int,
-    val maxAffixes: Int,
-    val requirements: List<MaterialRequirement>
-) {
-    fun defaultTier(): Int = fixedTier ?: tierMin
-    fun defaultTierRange(): IntRange {
-        val fixed = fixedTier
-        if (fixed != null) return fixed..fixed
-        val min = minOf(tierMin, tierMax)
-        val max = maxOf(tierMin, tierMax)
-        return min..max
-    }
-}
-
 data class EquipmentConfig(
     val id: String,
     val displayName: String,
@@ -367,17 +330,19 @@ data class EquipmentConfig(
     val tierAffixes: Map<Int, List<AffixRollConfig>>
 )
 
-data class MaterialRequirement(
-    val id: String,
-    val amount: Int
+/** 锻造配方。键 = 蓝图 CE 物品 id。 */
+data class ForgeRecipe(
+    val blueprintId: String,
+    val equipmentId: String,
+    val tier: Int,
+    val timeSeconds: Double,
+    val materials: List<RecipeMaterial>
 )
 
-data class ForgeMaterialConfig(
-    val id: String,
-    val displayName: String,
-    val itemId: String,
-    val amount: Int,
-    val affixes: List<AffixRollConfig>
+/** 配方所需材料：CE 物品 id + 数量。 */
+data class RecipeMaterial(
+    val ceId: String,
+    val amount: Int
 )
 
 data class AffixRollConfig(
@@ -403,3 +368,21 @@ data class AffixConfig(
 data class CombatConfig(
     val defenseFloor: Double
 )
+
+data class ModCapacityEntry(val base: Int, val tierIncrement: Int)
+
+data class ModCapacityConfig(
+    val guiTitle: String,
+    val capacityByCategory: Map<String, ModCapacityEntry>,
+    val maxModSlotsByCategory: Map<String, Int>
+) {
+    fun computeCapacity(weaponCategory: String, tier: Int): Int {
+        val e = capacityByCategory[weaponCategory.lowercase()]
+            ?: capacityByCategory["default"]
+            ?: ModCapacityEntry(20, 5)
+        return e.base + (tier - 1).coerceAtLeast(0) * e.tierIncrement
+    }
+
+    fun computeMaxSlots(weaponCategory: String): Int =
+        (maxModSlotsByCategory[weaponCategory.lowercase()] ?: maxModSlotsByCategory["default"] ?: 6).coerceIn(0, 8)
+}
