@@ -1,8 +1,36 @@
 gui:
   title: "&0源质锻造"
 
+# 锻造界面布局（3 行 / 27 格箱子界面）。所有槽位 0 起算，可自由调整。
+# 标题复用上面的 gui.title。
+forge-ui:
+  size: 27                      # 界面大小（27 = 3 行）
+  blueprint-slot: 18            # 蓝图输入槽（唯一可放入物品的槽）
+  action-slot: 19               # 动作槽：空闲=锻造锤，锻造中=进度箭头，完成=收取
+  output-slot: 20               # 产出预览槽（只读，永不可拿取）
+  material-slots:               # 材料需求展示槽（只读绿区，最多 12 个）
+    - 4
+    - 5
+    - 6
+    - 7
+    - 13
+    - 14
+    - 15
+    - 16
+    - 22
+    - 23
+    - 24
+    - 25
+  hammer-material: "minecraft:iron_axe"            # 空闲动作槽图标（开始锻造）
+  arrow-material: "minecraft:spectral_arrow"       # 锻造中/收取动作槽图标
+  filler-material: "minecraft:gray_stained_glass_pane"  # 其余槽位填充玻璃
+
 debug:
   combat: false
+
+# 附魔台抽奖（右键附魔台打开抽奖界面，放入空白 MOD + 消耗经验抽取随机 MOD）
+lottery:
+  xp-cost: 30
 
 # BetterHud 集成：每次 MM 技能进入冷却时弹出一个 popup（按技能名堆叠，最多由
 # BetterHud 端 max-stack 控制）。CD 结束时由本插件主动移除。

@@ -11,7 +11,6 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 
@@ -57,12 +56,14 @@ class ForgeStructureListener(
                     dismantle(player, block, ceId)
                     return
                 }
-                // 核心非拆除右键：开锻造 UI / 进度（取消事件防止放方块等）
+                // 核心非拆除右键：开锻造 UI（进度/收取已并入 ForgeMenu 的动作槽）。
                 if (isCore) {
                     event.isCancelled = true
                     val job = manager.jobAt(block)
                     if (job != null) {
-                        openProgress(player, block)
+                        // 已有作业：直接打开锻造界面，动作槽显示进度/收取。
+                        // 用作业自身记录的外壳/倍率构造上下文，避免重新校验结构。
+                        openStructureForge(player, block, job.shellTier, job.multiplier)
                         return
                     }
                     val result = ForgeStructure.validate(block, config)
@@ -139,11 +140,6 @@ class ForgeStructureListener(
         player.openInventory(ForgeMenu(plugin, ctx).inventory)
     }
 
-    private fun openProgress(player: Player, core: Block) {
-        val menu = ForgeProgressMenu(plugin, core.world.name, core.x, core.y, core.z)
-        player.openInventory(menu.inventory)
-    }
-
     /**
      * 锻炉方块（核心 + 外壳）禁止普通破坏：任何工具的挖掘/瞬破都拦截，
      * 只能“手持源质锤 + 潜行 + 右键”拆除（见 dismantle）。核心作业的材料退还也在拆除时处理。
@@ -157,41 +153,6 @@ class ForgeStructureListener(
         if (ceId !in config.forgeBlockIds) return
         event.isCancelled = true
         event.player.sendMessage("§7[源质锻炉] §f需手持源质锤 §eShift+右键 §f拆除")
-    }
-
-    // ==================== 进度界面点击 ====================
-
-    @EventHandler
-    fun onProgressClick(event: InventoryClickEvent) {
-        val menu = event.inventory.holder as? ForgeProgressMenu ?: return
-        event.isCancelled = true
-        val player = event.whoClicked as? Player ?: return
-        if (event.rawSlot != menu.collectSlot) {
-            menu.refresh()
-            return
-        }
-        val core = menu.coreBlock()
-        if (core == null) {
-            player.sendMessage("§c[源质锻炉] §f核心所在世界未加载")
-            return
-        }
-        val job = manager.jobAt(core)
-        if (job == null) {
-            player.sendMessage("§c[源质锻炉] §f没有进行中的作业")
-            player.closeInventory()
-            return
-        }
-        if (!job.isDone()) {
-            val seconds = Math.ceil(job.remainingTicks / 20.0).toInt()
-            player.sendMessage("§e[源质锻炉] §f还在锻造中，剩余 §f${seconds}s")
-            menu.refresh()
-            return
-        }
-        if (manager.collect(core, player)) {
-            player.sendMessage("§a[源质锻炉] §f已收取产物")
-            player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 0.8f, 1.05f)
-            player.closeInventory()
-        }
     }
 
     private fun playDeny(player: Player) {

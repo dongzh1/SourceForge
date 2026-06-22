@@ -1,7 +1,11 @@
 package com.dongzh1.sourceforge
 
 import com.dongzh1.sourceforge.command.SourceForgeCommand
+import com.dongzh1.sourceforge.config.EnhancementConfig
 import com.dongzh1.sourceforge.config.ForgeConfig
+import com.dongzh1.sourceforge.config.LotteryConfig
+import com.dongzh1.sourceforge.mod.LotteryListener
+import com.dongzh1.sourceforge.mod.ModUpgradeMenu
 import com.dongzh1.sourceforge.enchant.SourceEnchantListener
 import com.dongzh1.sourceforge.enchant.SourceForgeMMPlaceholders
 import com.dongzh1.sourceforge.enchant.SourceForgeSkillListener
@@ -12,6 +16,9 @@ import com.dongzh1.sourceforge.item.ForgeItemService
 import com.dongzh1.sourceforge.mod.ModListener
 import com.dongzh1.sourceforge.mod.ModRegistry
 import com.dongzh1.sourceforge.mod.ModService
+import com.dongzh1.sourceforge.mod.NightmareConfig
+import com.dongzh1.sourceforge.mod.NightmareListener
+import com.dongzh1.sourceforge.mod.NightmareService
 import com.dongzh1.sourceforge.multiblock.ForgeStructureConfig
 import com.dongzh1.sourceforge.multiblock.ForgeStructureListener
 import com.dongzh1.sourceforge.multiblock.ForgeStructureManager
@@ -33,6 +40,8 @@ class SourceForge : EasyPlugin() {
         private set
     lateinit var modService: ModService
         private set
+    lateinit var nightmareService: NightmareService
+        private set
     lateinit var forgeListener: ForgeListener
         private set
     lateinit var skillListener: SourceForgeSkillListener
@@ -40,6 +49,10 @@ class SourceForge : EasyPlugin() {
     lateinit var navigationManager: NavigationManager
         private set
     lateinit var structureManager: ForgeStructureManager
+        private set
+    lateinit var enhancementConfig: EnhancementConfig
+        private set
+    lateinit var lotteryConfig: LotteryConfig
         private set
 
     override fun enable() {
@@ -61,6 +74,8 @@ class SourceForge : EasyPlugin() {
         saveBundledResource("materials/rune_thread.yml")
         saveBundledResource("mods/serration.yml")
         saveBundledResource("mods/vitality.yml")
+        saveBundledResource("nightmare.yml")
+        saveBundledResource("enhancement.yml")
         reloadAll()
 
         val command = SourceForgeCommand(this)
@@ -71,6 +86,8 @@ class SourceForge : EasyPlugin() {
         forgeListener = fl
         Bukkit.getPluginManager().registerEvents(InventoryAttributeListener(this), this)
         Bukkit.getPluginManager().registerEvents(ModListener(this), this)
+        Bukkit.getPluginManager().registerEvents(LotteryListener(this), this)
+        Bukkit.getPluginManager().registerEvents(NightmareListener(this), this)
         Bukkit.getPluginManager().registerEvents(SourceEnchantListener(this), this)
         SourceForgePapi.register(this)
         SourceForgeMMPlaceholders(this).registerIfAvailable()
@@ -109,6 +126,8 @@ class SourceForge : EasyPlugin() {
         val affixesConfig = YamlConfiguration.loadConfiguration(File(dataFolder, "affixes.yml"))
         val combatConfig = YamlConfiguration.loadConfiguration(File(dataFolder, "combat.yml"))
         forgeConfig = ForgeConfig.load(config, affixesConfig, File(dataFolder, "recipes.yml"), combatConfig)
+        enhancementConfig = EnhancementConfig.load(File(dataFolder, "enhancement.yml"))
+        lotteryConfig = LotteryConfig.load(config)
         itemService = ForgeItemService(this, forgeConfig)
         val modsFolder = File(dataFolder, "mods")
         val (modMap, modWarnings) = ModRegistry.load(modsFolder, forgeConfig.affixes)
@@ -116,6 +135,12 @@ class SourceForge : EasyPlugin() {
         if (modWarnings.isNotEmpty()) {
             logger.warning("MOD 配置告警 ${modWarnings.size} 个:")
             modWarnings.forEach { logger.warning(" - $it") }
+        }
+        val (nightmareConfig, nightmareWarnings) = NightmareConfig.load(File(dataFolder, "nightmare.yml"), forgeConfig.affixes)
+        nightmareService = NightmareService(this, nightmareConfig, forgeConfig.affixes)
+        if (nightmareWarnings.isNotEmpty()) {
+            logger.warning("梦魇MOD 配置告警 ${nightmareWarnings.size} 个:")
+            nightmareWarnings.forEach { logger.warning(" - $it") }
         }
         if (forgeConfig.validationWarnings.isNotEmpty()) {
             logger.warning("SourceForge 配置校验发现 ${forgeConfig.validationWarnings.size} 个问题:")

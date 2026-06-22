@@ -11,20 +11,6 @@ items:
       item-name: "<!i><white>短剑"
       unbreakable: true
     texture: sourceforge:item/short_sword
-    events:
-      - on: left_click
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: SF_KJ_LIGHT, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
-          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
-      - on: right_click
-        conditions:
-          - { type: hand, hand: main_hand }
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: GD, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:flintlock:
     material: crossbow
@@ -49,20 +35,6 @@ items:
     data:
       item-name: "<!i><white>长剑"
       unbreakable: true
-    events:
-      - on: left_click
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: SF_KJ_HEAVY, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
-          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
-      - on: right_click
-        conditions:
-          - { type: hand, hand: main_hand }
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: GD, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:spear:
     material: trident
@@ -75,20 +47,6 @@ items:
     data:
       item-name: "<!i><gray>短匕"
       unbreakable: true
-    events:
-      - on: left_click
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: SF_KJ_LIGHT, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_NO1, power: 1 }
-          - { type: mythic_mobs_skill, skill: SF_CK, power: 1 }
-      - on: right_click
-        conditions:
-          - { type: hand, hand: main_hand }
-        functions:
-          - { type: cancel_event }
-          - { type: mythic_mobs_skill, skill: GD, power: 1 }
-          - { type: mythic_mobs_skill, skill: GD_check, power: 1 }
 
   sourceforge:bulwark_helmet:
     material: iron_helmet

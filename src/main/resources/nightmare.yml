@@ -1,0 +1,46 @@
+# 梦魇MOD 配置：词条为每个物品实例随机生成（存于物品 PDC，不在此文件）。
+material: "minecraft:paper"
+goal-kills: 50
+base-cost: 18
+negative-chance: 0.5
+negative-cost-reduction: 6
+positive-count:
+  min: 2
+  max: 3
+# 每武器类别的可 roll 词条池；min/max 是正属性区间；neg-min/neg-max 可选(负属性区间，绝对值)。
+pools:
+  melee:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  melee_light:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  melee_heavy:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  polearm:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  bow:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  crossbow:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }
+  firearm:
+    base_damage:      { min: 2.0,  max: 8.0,  neg-min: 1.0,  neg-max: 4.0 }
+    critical_chance:  { min: 0.05, max: 0.30, neg-min: 0.03, neg-max: 0.12 }
+    critical_damage:  { min: 0.10, max: 0.50, neg-min: 0.05, neg-max: 0.20 }
+    status_chance:    { min: 0.05, max: 0.25, neg-min: 0.03, neg-max: 0.10 }

@@ -1,0 +1,21 @@
+# 武器强化配置。锻炉蓝图槽放入 SF 武器即进入强化模式。
+# 按武器 weapon-category 查询；未配置的类别回退 default。
+# levels[i] = 升到 level i+1 的所需材料与加成（index 0 -> level 1）。
+enhance-time-seconds: 30
+categories:
+  melee:
+    max-level: 5
+    levels:
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 2 } ], base-damage: 1.0, mod-capacity: 2 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 4 } ], base-damage: 1.5, mod-capacity: 2 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 6 } ], base-damage: 2.0, mod-capacity: 3 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 8 } ], base-damage: 2.5, mod-capacity: 3 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 10 } ], base-damage: 3.0, mod-capacity: 4 }
+  default:
+    max-level: 5
+    levels:
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 2 } ], base-damage: 1.0, mod-capacity: 2 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 4 } ], base-damage: 1.5, mod-capacity: 2 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 6 } ], base-damage: 2.0, mod-capacity: 3 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 8 } ], base-damage: 2.5, mod-capacity: 3 }
+      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 10 } ], base-damage: 3.0, mod-capacity: 4 }

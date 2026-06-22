@@ -165,6 +165,7 @@ class ModListener(
             ModService.InstallResult.SLOT_OCCUPIED -> "§c该槽位已被占用"
             ModService.InstallResult.INVALID_MOD -> "§c光标上的物品不是有效 MOD"
             ModService.InstallResult.NOT_EQUIPMENT -> "§c目标不是 SourceForge 装备"
+            ModService.InstallResult.SEALED_NIGHTMARE -> "§c该梦魇MOD 尚未鉴定，无法安装"
         }
     }
 

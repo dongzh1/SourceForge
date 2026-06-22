@@ -16,6 +16,7 @@ data class ForgeConfig(
     val affixes: Map<String, AffixConfig>,
     val recipes: Map<String, ForgeRecipe>,
     val modCapacity: ModCapacityConfig,
+    val forgeUi: ForgeUiConfig,
     val validationWarnings: List<String>
 ) {
     fun displayName(id: String): String {
@@ -95,6 +96,7 @@ data class ForgeConfig(
                 affixes = affixes,
                 recipes = recipes,
                 modCapacity = loadModCapacity(config),
+                forgeUi = loadForgeUi(config),
                 validationWarnings = validate(recipes, equipment, affixes)
             )
         }
@@ -119,6 +121,23 @@ data class ForgeConfig(
                 )
             }
             return result
+        }
+
+        private fun loadForgeUi(config: FileConfiguration): ForgeUiConfig {
+            val defaults = ForgeUiConfig()
+            val section = config.getConfigurationSection("forge-ui") ?: return defaults
+            val materialSlots = section.getIntegerList("material-slots")
+                .takeIf { it.isNotEmpty() } ?: defaults.materialSlots
+            return ForgeUiConfig(
+                size = section.getInt("size", defaults.size),
+                blueprintSlot = section.getInt("blueprint-slot", defaults.blueprintSlot),
+                actionSlot = section.getInt("action-slot", defaults.actionSlot),
+                outputSlot = section.getInt("output-slot", defaults.outputSlot),
+                materialSlots = materialSlots,
+                hammerMaterial = parseMaterial(section.getString("hammer-material"), defaults.hammerMaterial),
+                arrowMaterial = parseMaterial(section.getString("arrow-material"), defaults.arrowMaterial),
+                fillerMaterial = parseMaterial(section.getString("filler-material"), defaults.fillerMaterial)
+            )
         }
 
         private fun loadModCapacity(config: FileConfiguration): ModCapacityConfig {
@@ -328,6 +347,18 @@ data class EquipmentConfig(
     val baseLore: List<String>,
     val affixIds: List<String>,
     val tierAffixes: Map<Int, List<AffixRollConfig>>
+)
+
+/** 锻造 GUI 布局配置（3 行 / 27 格箱子界面）。所有槽位可在 config.yml 的 forge-ui 段配置。 */
+data class ForgeUiConfig(
+    val size: Int = 27,
+    val blueprintSlot: Int = 18,
+    val actionSlot: Int = 19,
+    val outputSlot: Int = 20,
+    val materialSlots: List<Int> = listOf(4, 5, 6, 7, 13, 14, 15, 16, 22, 23, 24, 25),
+    val hammerMaterial: Material = Material.IRON_AXE,
+    val arrowMaterial: Material = Material.SPECTRAL_ARROW,
+    val fillerMaterial: Material = Material.GRAY_STAINED_GLASS_PANE
 )
 
 /** 锻造配方。键 = 蓝图 CE 物品 id。 */

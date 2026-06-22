@@ -31,6 +31,46 @@ class SourceForgeCommand(
                 }
                 player.openInventory(com.dongzh1.sourceforge.mod.EquipmentSelectMenu(plugin, player).inventory)
             }
+            "upgrademod" -> {
+                val player = sender as? Player
+                if (player == null) {
+                    sender.sendMessage("只有玩家可以打开 MOD 升级界面")
+                    return true
+                }
+                player.openInventory(com.dongzh1.sourceforge.mod.ModUpgradeMenu(plugin, player).inventory)
+            }
+            "giveupgradecore" -> {
+                if (!sender.hasPermission("sourceforge.admin")) {
+                    sender.sendMessage("§c你没有权限")
+                    return true
+                }
+                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+                if (target == null) {
+                    sender.sendMessage("§e用法: /$label giveupgradecore <玩家> [数量]")
+                    return true
+                }
+                val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                val item = com.dongzh1.sourceforge.item.CraftEngineHook.build("sourceforge:upgrade_core", amount)
+                    ?: org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER, amount)
+                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 升级核心 x$amount")
+            }
+            "giveblankmod" -> {
+                if (!sender.hasPermission("sourceforge.admin")) {
+                    sender.sendMessage("§c你没有权限")
+                    return true
+                }
+                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+                if (target == null) {
+                    sender.sendMessage("§e用法: /$label giveblankmod <玩家> [数量]")
+                    return true
+                }
+                val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                val item = com.dongzh1.sourceforge.item.CraftEngineHook.build("sourceforge:blank_mod", amount)
+                    ?: org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER, amount)
+                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 空白 MOD x$amount")
+            }
             "givemod" -> {
                 if (!sender.hasPermission("sourceforge.admin")) {
                     sender.sendMessage("§c你没有权限")
@@ -54,6 +94,25 @@ class SourceForgeCommand(
                 }
                 target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
                 sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} MOD $modId x$amount")
+            }
+            "givenightmare" -> {
+                if (!sender.hasPermission("sourceforge.admin")) {
+                    sender.sendMessage("§c你没有权限")
+                    return true
+                }
+                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+                if (target == null) {
+                    sender.sendMessage("§e用法: /$label givenightmare <玩家> [武器类别]")
+                    return true
+                }
+                val category = args.getOrNull(2)
+                if (category != null && category.lowercase() !in plugin.nightmareService.categories()) {
+                    sender.sendMessage("§c[SourceForge] §f未知武器类别: $category，可用: ${plugin.nightmareService.categories().joinToString(", ")}")
+                    return true
+                }
+                val item = plugin.nightmareService.createSealed(category, 1)
+                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 梦魇MOD (${category ?: "随机类别"})")
             }
             "reload" -> {
                 if (!sender.hasPermission("sourceforge.admin")) {
@@ -344,16 +403,16 @@ class SourceForgeCommand(
                 val ok = plugin.navigationManager.untrack(target, name)
                 sender.sendMessage(if (ok) "§a[SourceForge] §f已移除 ${target.name} 的追踪目标 §b$name" else "§e[SourceForge] §f${target.name} 没有名为 §b$name §f的追踪目标")
             }
-            else -> sender.sendMessage("§e用法: /$label <forge|mods|givemod|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
+            else -> sender.sendMessage("§e用法: /$label <forge|mods|upgrademod|givemod|givenightmare|giveupgradecore|giveblankmod|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
         }
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "mods", "givemod", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "mods", "upgrademod", "givemod", "givenightmare", "giveupgradecore", "giveblankmod", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
-                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
+                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("givenightmare", true) || args[0].equals("giveupgradecore", true) || args[0].equals("giveblankmod", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
                 args[0].equals("debug", true) -> listOf("combat", "betterhud", "forgeinfo").filter { it.startsWith(args[1], true) }
                 args[0].equals("cd", true) -> listOf("on", "off").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
@@ -362,6 +421,8 @@ class SourceForgeCommand(
                 args[0].equals("giveequipment", true) -> plugin.forgeConfig.equipment.keys.filter { it.startsWith(args[2], true) }
                 args[0].equals("give", true) -> expressionSuggestions().filter { it.startsWith(args[2], true) }
                 args[0].equals("givemod", true) -> plugin.modService.allModIds().filter { it.startsWith(args[2], true) }
+                args[0].equals("giveupgradecore", true) || args[0].equals("giveblankmod", true) -> listOf("1", "8", "16", "64").filter { it.startsWith(args[2], true) }
+                args[0].equals("givenightmare", true) -> plugin.nightmareService.categories().filter { it.startsWith(args[2], true) }
                 args[0].equals("debug", true) -> listOf("on", "off").filter { it.startsWith(args[2], true) }
                 args[0].equals("track", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> listOf("off").filter { it.startsWith(args[2], true) }
                 args[0].equals("untrack", true) -> (Bukkit.getPlayerExact(args[1])?.let { plugin.navigationManager.targetNames(it) } ?: emptyList()).filter { it.startsWith(args[2], true) }

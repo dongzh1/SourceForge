@@ -92,8 +92,22 @@ class ForgeStructureManager(
 
     private fun produceOutput(job: ForgeJob): ItemStack? {
         return runCatching {
-            plugin.itemService.createDirectEquipment(job.equipmentId, job.tier, null)
+            if (job.mode == ForgeJob.MODE_ENHANCE) {
+                produceEnhanceOutput(job)
+            } else {
+                plugin.itemService.createDirectEquipment(job.equipmentId, job.tier, null)
+            }
         }.getOrNull()
+    }
+
+    /** enhance 模式：解码输入武器，应用目标段位加成，作为产物。 */
+    private fun produceEnhanceOutput(job: ForgeJob): ItemStack? {
+        val weapon = job.inputItem?.let { decodeItem(it) } ?: return null
+        val category = plugin.itemService.weaponCategory(weapon)
+        val current = job.enhanceTargetLevel - 1
+        val level = plugin.enhancementConfig.nextLevel(category, current) ?: return weapon
+        plugin.itemService.applyEnhancement(weapon, job.enhanceTargetLevel, level.baseDamage, level.modCapacity)
+        return weapon
     }
 
     // ==================== 查询 / 提交 / 收取 / 退还 ====================
@@ -135,6 +149,44 @@ class ForgeStructureManager(
             materialsSnapshot = snapshot,
             remainingTicks = ticks
         )
+        val data = worldData(core.world.name)
+        data.jobs[WorldForgeJobs.pack(core.x, core.y, core.z)] = job
+        markDirty(core.world.name)
+        return job
+    }
+
+    /**
+     * 提交一个武器强化作业（enhance 模式）。inputWeapon 为被强化的武器（会被序列化保存），
+     * targetLevel 为强化后的目标段位。consumedSnapshot 为被消耗的材料（核心破坏时退还，含武器本体）。
+     */
+    fun submitEnhanceJob(
+        core: Block,
+        inputWeapon: ItemStack,
+        targetLevel: Int,
+        shellTier: String,
+        multiplier: Double,
+        remainingTicks: Long,
+        consumedSnapshot: List<ItemStack>
+    ): ForgeJob {
+        val snapshot = ArrayList<String>()
+        consumedSnapshot.forEach { encodeItem(it).let(snapshot::add) }
+        val ticks = remainingTicks.coerceAtLeast(1L)
+        val job = ForgeJob(
+            coreWorld = core.world.name,
+            coreX = core.x,
+            coreY = core.y,
+            coreZ = core.z,
+            blueprintId = "",
+            equipmentId = plugin.itemService.weaponType(inputWeapon) ?: "",
+            tier = plugin.itemService.equipmentTier(inputWeapon),
+            shellTier = shellTier,
+            multiplier = multiplier,
+            materialsSnapshot = snapshot,
+            remainingTicks = ticks
+        )
+        job.mode = ForgeJob.MODE_ENHANCE
+        job.inputItem = encodeItem(inputWeapon)
+        job.enhanceTargetLevel = targetLevel
         val data = worldData(core.world.name)
         data.jobs[WorldForgeJobs.pack(core.x, core.y, core.z)] = job
         markDirty(core.world.name)

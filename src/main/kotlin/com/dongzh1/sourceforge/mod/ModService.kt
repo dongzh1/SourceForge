@@ -21,6 +21,15 @@ class ModService(
     private val modInstalledKey = NamespacedKey(plugin, "mod_installed")
     private val modIdKey = NamespacedKey(plugin, "mod_id")
 
+    /** MOD 物品上的段位（Feature B）。安装后段位也编码进 mod_installed 的 token (`id#rank`)。 */
+    private val modRankKey = NamespacedKey(plugin, "mod_rank")
+
+    /** 梦魇MOD 占用某槽位时，mod_installed 中的占位 token。 */
+    private val nmToken = "~nm"
+
+    /** 每个槽位的梦魇MOD 实例数据 (nm_data 字符串)，仅当该槽 token == ~nm 时有效。 */
+    private val nmSlotKeys: List<NamespacedKey> = (0 until 8).map { NamespacedKey(plugin, "nm_slot_$it") }
+
     /** affixId -> AffixConfig 直接查表，热路径复用。 */
     private val affixById: Map<String, AffixConfig> = forgeConfig.affixes
 
@@ -38,10 +47,20 @@ class ModService(
         EXCLUSIVITY_CONFLICT,
         SLOT_OCCUPIED,
         INVALID_MOD,
-        NOT_EQUIPMENT
+        NOT_EQUIPMENT,
+        SEALED_NIGHTMARE
     }
 
     fun allModIds(): Set<String> = mods.keys
+
+    /** 槽位 token 是否为梦魇MOD 占位。 */
+    fun isNightmareSlot(token: String?): Boolean = token == nmToken
+
+    /** 读取某个 ~nm 槽位的梦魇MOD 实例数据字符串（无则 null）。 */
+    fun nightmareSlotData(item: ItemStack?, slotIndex: Int): String? {
+        if (item == null || !item.hasItemMeta() || slotIndex !in 0 until 8) return null
+        return item.itemMeta.persistentDataContainer.get(nmSlotKeys[slotIndex], PersistentDataType.STRING)
+    }
 
     fun isModItem(item: ItemStack?): Boolean {
         if (item == null || item.type == Material.AIR || !item.hasItemMeta()) return false
@@ -58,28 +77,64 @@ class ModService(
         return mods[id]
     }
 
-    fun createModItem(id: String, amount: Int = 1): ItemStack? {
+    /** 读取 MOD 物品上的段位（无则 0）。 */
+    fun modRank(item: ItemStack?): Int {
+        if (item == null || item.type == Material.AIR || !item.hasItemMeta()) return 0
+        return item.itemMeta.persistentDataContainer.get(modRankKey, PersistentDataType.INTEGER) ?: 0
+    }
+
+    /**
+     * 解析普通槽位 token `<id>` 或 `<id>#<rank>` -> (id, rank)。
+     * 梦魇 token `~nm` 不走这里。无效返回 null。
+     */
+    fun parseSlotToken(token: String?): Pair<String, Int>? {
+        if (token.isNullOrBlank() || token == nmToken) return null
+        val hash = token.indexOf('#')
+        return if (hash < 0) {
+            token to 0
+        } else {
+            val id = token.substring(0, hash)
+            val rank = token.substring(hash + 1).toIntOrNull() ?: 0
+            if (id.isBlank()) null else id to rank
+        }
+    }
+
+    private fun slotToken(id: String, rank: Int): String =
+        if (rank > 0) "$id#$rank" else id
+
+    fun createModItem(id: String, amount: Int = 1, rank: Int = 0): ItemStack? {
         val mod = mods[id] ?: return null
+        val r = rank.coerceIn(0, mod.maxRank)
         val item = CraftEngineHook.build(mod.itemId, amount.coerceAtLeast(1))
             ?: ItemStack(mod.material, amount.coerceAtLeast(1))
         val meta = item.itemMeta
         meta.setDisplayName(color(mod.displayName))
+        val effectValue: (String) -> Double = { affixId -> mod.effectAtRank(affixId, r) }
+        val rankLine = if (mod.maxRank > 0) "&7段位: &b$r&7/&f${mod.maxRank}" else null
         val loreLines = if (mod.itemLore.isNotEmpty()) {
-            mod.itemLore.map { line ->
+            val base = mod.itemLore.map { line ->
                 var l = line.replace("%cost%", mod.cost.toString())
-                for ((affixId, value) in mod.effects) {
+                    .replace("%rank%", r.toString())
+                    .replace("%max_rank%", mod.maxRank.toString())
+                for (affixId in mod.effects.keys) {
                     val affix = affixById[affixId]
-                    val formatted = if (affix != null) format(value, affix.decimals) else format(value, 1)
+                    val formatted = if (affix != null) format(effectValue(affixId), affix.decimals) else format(effectValue(affixId), 1)
                     l = l.replace("%effect_$affixId%", formatted)
                 }
                 l
+            }.toMutableList()
+            if (rankLine != null && base.none { it.contains("%rank%") || it.contains("段位") }) {
+                base += rankLine
             }
+            base
         } else {
-            val def = mutableListOf("&8MOD", "&7容量消耗: &e${mod.cost}", "")
-            for ((affixId, value) in mod.effects) {
+            val def = mutableListOf("&8MOD", "&7容量消耗: &e${mod.cost}")
+            rankLine?.let { def += it }
+            def += ""
+            for (affixId in mod.effects.keys) {
                 val affix = affixById[affixId]
                 val name = affix?.displayName ?: affixId
-                val formatted = if (affix != null) format(value, affix.decimals) else format(value, 1)
+                val formatted = if (affix != null) format(effectValue(affixId), affix.decimals) else format(effectValue(affixId), 1)
                 def += "&7$name &f+$formatted"
             }
             def
@@ -87,6 +142,9 @@ class ModService(
         meta.lore = color(loreLines)
         mod.customModelData?.let { meta.setCustomModelData(it) }
         meta.persistentDataContainer.set(modIdKey, PersistentDataType.STRING, id)
+        if (mod.maxRank > 0) {
+            meta.persistentDataContainer.set(modRankKey, PersistentDataType.INTEGER, r)
+        }
         item.itemMeta = meta
         return item
     }
@@ -109,9 +167,21 @@ class ModService(
     }
 
     fun usedCapacity(item: ItemStack?): Int {
-        return readInstalledSlots(item).sumOf { id ->
-            id?.let { mods[it]?.cost } ?: 0
+        if (item == null) return 0
+        val slots = readInstalledSlots(item)
+        val pdc = if (item.hasItemMeta()) item.itemMeta.persistentDataContainer else null
+        var total = 0
+        for (i in slots.indices) {
+            val token = slots[i] ?: continue
+            total += if (token == nmToken) {
+                val data = pdc?.get(nmSlotKeys[i], PersistentDataType.STRING)
+                data?.let { plugin.nightmareService.parseDataString(it)?.cost } ?: 0
+            } else {
+                val (id, _) = parseSlotToken(token) ?: continue
+                mods[id]?.cost ?: 0
+            }
         }
+        return total
     }
 
     fun readCapacity(item: ItemStack): Int {
@@ -134,12 +204,14 @@ class ModService(
         val equipId = plugin.itemService.weaponType(item)
         if (!mod.appliesTo(category, equipId)) return InstallResult.WRONG_CATEGORY
         val slots = readInstalledSlots(item)
-        val sameCount = slots.count { it == mod.id }
+        val sameCount = slots.count { parseSlotToken(it)?.first == mod.id }
         if (sameCount >= mod.maxPerEquipment) return InstallResult.MAX_COUNT_EXCEEDED
         val group = mod.exclusivityGroup
         if (!group.isNullOrBlank()) {
-            val conflict = slots.withIndex().any { (idx, installedId) ->
-                idx != targetSlot && installedId != null && installedId != mod.id &&
+            val conflict = slots.withIndex().any { (idx, token) ->
+                if (idx == targetSlot || token == null) return@any false
+                val installedId = parseSlotToken(token)?.first ?: return@any false
+                installedId != mod.id &&
                     mods[installedId]?.exclusivityGroup?.takeIf { it.isNotBlank() } == group
             }
             if (conflict) return InstallResult.EXCLUSIVITY_CONFLICT
@@ -150,15 +222,41 @@ class ModService(
 
     fun tryInstall(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
         if (!plugin.itemService.isSourceEquipment(item)) return InstallResult.NOT_EQUIPMENT
+        if (plugin.nightmareService.isNightmare(modItem)) {
+            return tryInstallNightmare(item, modItem, slotIndex)
+        }
         val mod = modConfig(modItem) ?: return InstallResult.INVALID_MOD
         val slots = readInstalledSlots(item).toMutableList()
         if (slotIndex !in 0 until 8) return InstallResult.INVALID_MOD
         if (slots[slotIndex] != null) return InstallResult.SLOT_OCCUPIED
         val v = validateInstall(item, mod, slotIndex)
         if (v != InstallResult.SUCCESS) return v
-        slots[slotIndex] = mod.id
+        val rank = modRank(modItem).coerceIn(0, mod.maxRank)
+        slots[slotIndex] = slotToken(mod.id, rank)
         val meta = item.itemMeta
         writeInstalledSlots(meta, slots)
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        modItem.amount -= 1
+        return InstallResult.SUCCESS
+    }
+
+    private fun tryInstallNightmare(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
+        val nm = plugin.nightmareService
+        if (nm.state(modItem) != NightmareService.STATE_UNVEILED) return InstallResult.SEALED_NIGHTMARE
+        if (slotIndex !in 0 until 8) return InstallResult.INVALID_MOD
+        val instance = nm.parseData(modItem) ?: return InstallResult.INVALID_MOD
+        val slots = readInstalledSlots(item).toMutableList()
+        if (slots[slotIndex] != null) return InstallResult.SLOT_OCCUPIED
+        val category = plugin.itemService.weaponCategory(item)
+        if (category == null || !category.equals(instance.category, ignoreCase = true)) {
+            return InstallResult.WRONG_CATEGORY
+        }
+        if (usedCapacity(item) + instance.cost > readCapacity(item)) return InstallResult.CAPACITY_EXCEEDED
+        slots[slotIndex] = nmToken
+        val meta = item.itemMeta
+        writeInstalledSlots(meta, slots)
+        meta.persistentDataContainer.set(nmSlotKeys[slotIndex], PersistentDataType.STRING, nm.serialize(instance))
         item.itemMeta = meta
         reapplyModEffects(item)
         modItem.amount -= 1
@@ -168,13 +266,22 @@ class ModService(
     fun tryRemove(item: ItemStack, slotIndex: Int): ItemStack? {
         val slots = readInstalledSlots(item).toMutableList()
         if (slotIndex !in 0 until 8) return null
-        val id = slots[slotIndex] ?: return null
+        val token = slots[slotIndex] ?: return null
         slots[slotIndex] = null
         val meta = item.itemMeta
         writeInstalledSlots(meta, slots)
+        if (token == nmToken) {
+            val data = meta.persistentDataContainer.get(nmSlotKeys[slotIndex], PersistentDataType.STRING)
+            meta.persistentDataContainer.remove(nmSlotKeys[slotIndex])
+            item.itemMeta = meta
+            reapplyModEffects(item)
+            val instance = data?.let { plugin.nightmareService.parseDataString(it) }
+            return instance?.let { plugin.nightmareService.buildFromData(it) }
+        }
         item.itemMeta = meta
         reapplyModEffects(item)
-        return createModItem(id, 1) ?: fallbackModItem(id)
+        val (id, rank) = parseSlotToken(token) ?: return fallbackModItem(token)
+        return createModItem(id, 1, rank) ?: fallbackModItem(id)
     }
 
     private fun fallbackModItem(id: String): ItemStack {
@@ -196,12 +303,22 @@ class ModService(
         val slots = readInstalledSlots(item)
         // 聚合各 affixId 的增量
         val deltaMap = HashMap<String, Double>()
-        for (id in slots) {
-            if (id == null) continue
+        for (i in slots.indices) {
+            val token = slots[i] ?: continue
+            if (token == nmToken) {
+                val data = pdc.get(nmSlotKeys[i], PersistentDataType.STRING) ?: continue
+                val instance = plugin.nightmareService.parseDataString(data) ?: continue
+                for ((affixId, value) in instance.affixes) {
+                    if (affixId !in affixById) continue
+                    deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + value
+                }
+                continue
+            }
+            val (id, rank) = parseSlotToken(token) ?: continue
             val mod = mods[id] ?: continue
-            for ((affixId, value) in mod.effects) {
+            for (affixId in mod.effects.keys) {
                 if (affixId !in affixById) continue
-                deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + value
+                deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + mod.effectAtRank(affixId, rank)
             }
         }
         for ((affixId, delta) in deltaMap) {

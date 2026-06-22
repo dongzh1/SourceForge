@@ -29,6 +29,15 @@ class ForgeJob() {
     /** "FORGING" / "DONE" */
     var state: String = STATE_FORGING
 
+    /** 作业类型："craft"（锻造，默认）/ "enhance"（武器强化）。 */
+    var mode: String = MODE_CRAFT
+
+    /** enhance 模式下被强化的武器（Base64 ItemStack），craft 模式为 null。 */
+    var inputItem: String? = null
+
+    /** enhance 模式：强化后达到的目标段位。 */
+    var enhanceTargetLevel: Int = 0
+
     /** 完成后产出的物品（Base64 ItemStack），未完成为 null。 */
     var outputItem: String? = null
 
@@ -64,6 +73,8 @@ class ForgeJob() {
     companion object {
         const val STATE_FORGING = "FORGING"
         const val STATE_DONE = "DONE"
+        const val MODE_CRAFT = "craft"
+        const val MODE_ENHANCE = "enhance"
     }
 }
 

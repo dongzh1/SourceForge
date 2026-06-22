@@ -1,0 +1,29 @@
+# MOD 相关道具的 CE 物品（占位贴图，用户后续替换）。
+# - blank_mod：空白MOD，放进附魔台(抽奖台)消耗经验随机抽一个普通MOD。
+# - upgrade_core：升级核心，MOD 升级界面消耗它提升 MOD 段位。
+# SF 代码按 CE id 识别（CraftEngineHook.itemId），id 必须与代码一致。
+items:
+  sourceforge:blank_mod:
+    material: book
+    data:
+      item-name: "<!i><light_purple>空白MOD"
+      lore:
+        - "<!i><gray>放入附魔台(抽奖台)"
+        - "<!i><gray>消耗经验随机抽取一个普通MOD"
+
+  sourceforge:upgrade_core:
+    material: paper
+    data:
+      item-name: "<!i><aqua>升级核心"
+      lore:
+        - "<!i><gray>在 MOD 升级界面消耗"
+        - "<!i><gray>用于提升 MOD 段位"
+
+categories:
+  sourceforge:mod_items:
+    name: <!i><white>MOD 道具</white>
+    hidden: true
+    icon: sourceforge:blank_mod
+    list:
+      - sourceforge:blank_mod
+      - sourceforge:upgrade_core

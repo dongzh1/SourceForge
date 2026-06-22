@@ -40,7 +40,10 @@ object ModRegistry {
                     applicableEquipment = config.getStringList("applicable-equipment").map { it.lowercase() }.toSet(),
                     effects = effects,
                     tags = config.getStringList("tags"),
-                    itemLore = config.getStringList("item-lore")
+                    itemLore = config.getStringList("item-lore"),
+                    maxRank = config.getInt("max-rank", 0).coerceAtLeast(0),
+                    upgradeCostBase = config.getInt("upgrade-cost", 1).coerceAtLeast(1),
+                    weight = config.getDouble("weight", 1.0).coerceAtLeast(0.0)
                 )
             }
         return mods to warnings

@@ -57,7 +57,13 @@ class ModInstallMenu(
             }
             val installedId = slots.getOrNull(i)
             if (installedId != null) {
-                val display = modService.createModItem(installedId) ?: unknownModDisplay(installedId)
+                val display = if (installedId == "~nm") {
+                    nightmareSlotDisplay(item, i) ?: unknownModDisplay(installedId)
+                } else {
+                    val parsed = modService.parseSlotToken(installedId)
+                    if (parsed != null) modService.createModItem(parsed.first, 1, parsed.second) ?: unknownModDisplay(installedId)
+                    else unknownModDisplay(installedId)
+                }
                 val meta = display.itemMeta
                 val lore = (meta.lore ?: mutableListOf()).toMutableList()
                 lore += color("&e左键取出")
@@ -91,6 +97,12 @@ class ModInstallMenu(
         inventory.setItem(equipDisplaySlot, item.clone())
         inventory.setItem(backSlot, label(Material.ARROW, "&e返回", emptyList()))
         inventory.setItem(closeSlot, label(Material.BARRIER, "&c关闭", emptyList()))
+    }
+
+    private fun nightmareSlotDisplay(equipment: ItemStack, slotIndex: Int): ItemStack? {
+        val data = modService.nightmareSlotData(equipment, slotIndex) ?: return null
+        val instance = plugin.nightmareService.parseDataString(data) ?: return null
+        return plugin.nightmareService.buildFromData(instance)
     }
 
     private fun unknownModDisplay(id: String): ItemStack {

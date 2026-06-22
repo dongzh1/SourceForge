@@ -29,6 +29,10 @@ class ForgeItemService(
     private val typeKey = NamespacedKey(plugin, "type")
     private val categoryKey = NamespacedKey(plugin, "weapon_category")
     private val tierKey = NamespacedKey(plugin, "tier")
+    private val enhanceLevelKey = NamespacedKey(plugin, "enhance_level")
+    private val baseDamageKey = NamespacedKey(plugin, "base_damage")
+    private val modCapacityKey = NamespacedKey(plugin, "mod_capacity")
+    private val modCapacityMaxKey = NamespacedKey(plugin, "mod_capacity_max")
     private val affixesKey = NamespacedKey(plugin, "affixes")
     private val projectileMarkerKey = NamespacedKey(plugin, "projectile_source")
     private val scoreKey = NamespacedKey(plugin, "score")
@@ -366,6 +370,47 @@ class ForgeItemService(
         if (ceItem != null) return ceItem
         val material = Material.matchMaterial(itemId.uppercase()) ?: return null
         return ItemStack(material, amount)
+    }
+
+    // ==================== 武器强化（Feature A） ====================
+
+    /** 读取武器当前强化等级（PDC sourceforge:enhance_level INT，默认 0）。 */
+    fun enhanceLevel(item: ItemStack?): Int {
+        if (item == null || !item.hasItemMeta()) return 0
+        return item.itemMeta.persistentDataContainer.get(enhanceLevelKey, PersistentDataType.INTEGER) ?: 0
+    }
+
+    /**
+     * 对一件武器原地应用一次强化升级（mutates `item`）：
+     * - enhance_level += 1（写为 targetLevel）
+     * - base_damage(DOUBLE) += baseDamageBonus
+     * - mod_capacity(INT) += modCapacityBonus，受 mod_capacity_max 上限（若存在）
+     * 并刷新 lore 中的强化等级行。
+     */
+    fun applyEnhancement(item: ItemStack, targetLevel: Int, baseDamageBonus: Double, modCapacityBonus: Int) {
+        val meta = item.itemMeta
+        val pdc = meta.persistentDataContainer
+
+        pdc.set(enhanceLevelKey, PersistentDataType.INTEGER, targetLevel)
+
+        val curDamage = pdc.get(baseDamageKey, PersistentDataType.DOUBLE) ?: 0.0
+        pdc.set(baseDamageKey, PersistentDataType.DOUBLE, curDamage + baseDamageBonus)
+
+        val curCap = pdc.get(modCapacityKey, PersistentDataType.INTEGER) ?: 0
+        val capMax = pdc.get(modCapacityMaxKey, PersistentDataType.INTEGER)
+        var newCap = curCap + modCapacityBonus
+        if (capMax != null) newCap = newCap.coerceAtMost(capMax)
+        pdc.set(modCapacityKey, PersistentDataType.INTEGER, newCap)
+
+        // lore：刷新/追加强化等级行
+        val tag = "&7强化等级:"
+        val lore = (meta.lore ?: mutableListOf()).toMutableList()
+        val line = color("$tag &b+$targetLevel")
+        val idx = lore.indexOfFirst { it.contains("强化等级:") }
+        if (idx >= 0) lore[idx] = line else lore.add(line)
+        meta.lore = lore
+
+        item.itemMeta = meta
     }
 
     fun equipmentTier(item: ItemStack?): Int {

@@ -1,0 +1,98 @@
+# 原版剑（木/石/铁/金/钻石/下界合金）做成 CE 物品。
+# - data.pdc 写 mythicmobs:type → MythicMobs 原生触发该 MM 物品的砍击/格挡/冲砍（对应 packs/新手装备/.../原版武器.yml 的同名条目）
+# - data.pdc 写 sourceforge:* → SF 识别为装备并读取基础伤害/武器类别/MOD容量（善用 PDC，无需 SF 代码）
+# 已抛弃装备等级概念：不写 sourceforge:tier。MOD 容量直接烤进 PDC：
+#   sourceforge:mod_capacity     = 当前可用容量（SF 现有逻辑直接读取）
+#   sourceforge:mod_capacity_max = 容量上限（预留给“强化”功能，强化把当前抬向上限）
+# 数值为占位“合适值”，随时可调。
+items:
+  sourceforge:wooden_sword:
+    material: wooden_sword
+    data:
+      item-name: "<!i><white>木剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "wooden_sword"
+        "sourceforge:type": "wooden_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 4.0
+        "sourceforge:mod_capacity": 8
+        "sourceforge:mod_capacity_max": 16
+
+  sourceforge:stone_sword:
+    material: stone_sword
+    data:
+      item-name: "<!i><gray>石剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "stone_sword"
+        "sourceforge:type": "stone_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 5.0
+        "sourceforge:mod_capacity": 10
+        "sourceforge:mod_capacity_max": 18
+
+  sourceforge:iron_sword:
+    material: iron_sword
+    data:
+      item-name: "<!i><white>铁剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "iron_sword"
+        "sourceforge:type": "iron_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 6.0
+        "sourceforge:mod_capacity": 12
+        "sourceforge:mod_capacity_max": 20
+
+  sourceforge:golden_sword:
+    material: golden_sword
+    data:
+      item-name: "<!i><yellow>金剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "golden_sword"
+        "sourceforge:type": "golden_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 5.0
+        "sourceforge:mod_capacity": 10
+        "sourceforge:mod_capacity_max": 18
+
+  sourceforge:diamond_sword:
+    material: diamond_sword
+    data:
+      item-name: "<!i><aqua>钻石剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "diamond_sword"
+        "sourceforge:type": "diamond_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 7.0
+        "sourceforge:mod_capacity": 16
+        "sourceforge:mod_capacity_max": 24
+
+  sourceforge:netherite_sword:
+    material: netherite_sword
+    data:
+      item-name: "<!i><dark_red>下界合金剑"
+      unbreakable: true
+      pdc:
+        "mythicmobs:type": "netherite_sword"
+        "sourceforge:type": "netherite_sword"
+        "sourceforge:weapon_category": "melee"
+        "sourceforge:base_damage": 8.0
+        "sourceforge:mod_capacity": 20
+        "sourceforge:mod_capacity_max": 30
+
+categories:
+  sourceforge:vanilla_swords:
+    name: <!i><white>原版武器</white>
+    hidden: true
+    icon: sourceforge:netherite_sword
+    list:
+      - sourceforge:wooden_sword
+      - sourceforge:stone_sword
+      - sourceforge:iron_sword
+      - sourceforge:golden_sword
+      - sourceforge:diamond_sword
+      - sourceforge:netherite_sword

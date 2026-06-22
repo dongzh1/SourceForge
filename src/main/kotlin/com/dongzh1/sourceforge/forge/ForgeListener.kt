@@ -60,18 +60,27 @@ class ForgeListener(
         }
 
         if (rawSlot < event.inventory.size) {
-            if (rawSlot == menu.forgeSlot) {
+            if (rawSlot == menu.actionSlot) {
                 event.isCancelled = true
-                forge(player, menu)
+                onActionClick(player, menu)
                 return
             }
             if (rawSlot != menu.blueprintSlot) {
+                // 材料展示 / 产出预览等只读槽
                 event.isCancelled = true
-                player.sendMessage("§c[SourceForge] §f这里不能放置物品")
-                playDenySound(player)
+                if (menu.isReadonlySlot(rawSlot)) {
+                    // 静默拒绝（产出预览/材料展示），仅当玩家试图拿取/放入时提示
+                    if (event.currentItem != null || event.cursor?.type?.isAir == false) {
+                        player.sendMessage("§c[SourceForge] §f这里不能放置或拿取物品")
+                        playDenySound(player)
+                    }
+                } else {
+                    player.sendMessage("§c[SourceForge] §f这里不能放置物品")
+                    playDenySound(player)
+                }
                 return
             }
-            // 蓝图槽：放行点击，1 tick 后按最新内容刷新材料展示
+            // 蓝图槽：放行点击，1 tick 后按最新内容刷新材料展示与产出预览
             scheduleRefresh(menu, player)
         }
     }
@@ -90,15 +99,50 @@ class ForgeListener(
         scheduleRefresh(menu, player)
     }
 
-    /** 蓝图槽内容应用后，下一 tick 重新渲染材料需求展示。 */
+    /** 蓝图槽内容应用后，下一 tick 重新渲染材料需求展示与产出预览。 */
     private fun scheduleRefresh(menu: ForgeMenu, player: Player) {
-        plugin.server.scheduler.runTask(plugin, Runnable { menu.renderMaterials(player) })
+        plugin.server.scheduler.runTask(plugin, Runnable {
+            menu.renderMaterialsAndPreview(player)
+            menu.renderAction(player)
+        })
+    }
+
+    /**
+     * 动作槽点击：根据当前作业状态分派。
+     * - 锻造中：仅刷新（不响应）。
+     * - 完成：收取产物并回到空闲态。
+     * - 空闲：执行锻造启动逻辑（命令模式即时产出）。
+     */
+    private fun onActionClick(player: Player, menu: ForgeMenu) {
+        val job = menu.currentJob()
+        when {
+            job != null && !job.isDone() -> {
+                val seconds = Math.ceil(job.remainingTicks / 20.0).toInt()
+                player.sendMessage("§e[源质锻炉] §f还在锻造中，剩余 §f${seconds}s")
+                menu.renderAction(player)
+            }
+            job != null && job.isDone() -> {
+                val core = menu.coreBlock()
+                if (core == null) {
+                    player.sendMessage("§c[源质锻炉] §f核心所在世界未加载")
+                    playDenySound(player)
+                    return
+                }
+                if (plugin.structureManager.collect(core, player)) {
+                    player.sendMessage("§a[源质锻炉] §f已收取产物")
+                    playForgeSound(player)
+                    menu.renderAll(player)
+                }
+            }
+            else -> forge(player, menu)
+        }
     }
 
     @EventHandler
     fun onClose(event: InventoryCloseEvent) {
         val menu = event.inventory.holder as? ForgeMenu ?: return
         val player = event.player as? Player ?: return
+        menu.stopProgressTask()
         val item = event.inventory.getItem(menu.blueprintSlot) ?: return
         if (item.type == Material.AIR) return
         player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
@@ -412,14 +456,19 @@ class ForgeListener(
         val inv = menu.inventory
         val blueprintItem = inv.getItem(menu.blueprintSlot)
         if (blueprintItem == null || blueprintItem.type == Material.AIR) {
-            player.sendMessage("§c[SourceForge] §f请放入有效蓝图")
+            player.sendMessage("§c[SourceForge] §f请放入有效蓝图或要强化的武器")
             playDenySound(player)
             return
         }
         val ceId = CraftEngineHook.itemId(blueprintItem)
         val recipe = ceId?.let { plugin.forgeConfig.recipes[it] }
         if (recipe == null) {
-            player.sendMessage("§c[SourceForge] §f请放入有效蓝图")
+            // 不是蓝图：尝试武器强化
+            if (plugin.itemService.isSourceEquipment(blueprintItem)) {
+                enhance(player, menu, inv)
+                return
+            }
+            player.sendMessage("§c[SourceForge] §f请放入有效蓝图或要强化的武器")
             playDenySound(player)
             return
         }
@@ -464,9 +513,10 @@ class ForgeListener(
                 consumedSnapshot = consumedSnapshot
             )
             val seconds = Math.ceil(ticks / 20.0).toInt()
-            player.closeInventory()
             player.sendMessage("§a[源质锻炉] §f开始锻造，预计 §e${seconds}s")
             playForgeSound(player)
+            // 不再关闭界面：动作槽切换为进度箭头，并刷新材料展示（已扣除）
+            menu.renderAll(player)
             return
         }
 
@@ -482,7 +532,101 @@ class ForgeListener(
         player.inventory.addItem(result).values.forEach { player.world.dropItemNaturally(player.location, it) }
         player.sendMessage("§a[SourceForge] §f锻造完成: §e${plugin.forgeConfig.equipmentDisplayName(recipe.equipmentId)}")
         playForgeSound(player)
-        menu.renderMaterials(player)
+        menu.renderAll(player)
+    }
+
+    /** 武器强化：校验下一段、扣材料、提交 enhance 作业（结构模式）或即时强化（命令模式）。 */
+    private fun enhance(player: Player, menu: ForgeMenu, inv: org.bukkit.inventory.Inventory) {
+        val weapon = inv.getItem(menu.blueprintSlot)
+        if (weapon == null || !plugin.itemService.isSourceEquipment(weapon)) {
+            player.sendMessage("§c[SourceForge] §f请放入要强化的武器")
+            playDenySound(player)
+            return
+        }
+        val category = plugin.itemService.weaponCategory(weapon)
+        val level = plugin.itemService.enhanceLevel(weapon)
+        val next = plugin.enhancementConfig.nextLevel(category, level)
+        if (next == null) {
+            player.sendMessage("§c[源质锻炉] §f该武器已满级")
+            playDenySound(player)
+            return
+        }
+        // 材料校验
+        val shortage = next.materials.firstOrNull { countInInventory(player, it.ceId) < it.amount }
+        if (shortage != null) {
+            val have = countInInventory(player, shortage.ceId)
+            val name = plugin.forgeConfig.displayName(shortage.ceId)
+            player.sendMessage("§c[SourceForge] §f材料不足: §f$name §c还差 §e${shortage.amount - have} §c个")
+            playDenySound(player)
+            return
+        }
+
+        val ctx = menu.structureContext
+        if (ctx != null) {
+            val core = org.bukkit.Bukkit.getWorld(ctx.world)?.getBlockAt(ctx.x, ctx.y, ctx.z)
+            if (core == null) {
+                player.sendMessage("§c[SourceForge] §f锻炉核心所在世界未加载")
+                playDenySound(player)
+                return
+            }
+            if (plugin.structureManager.hasJob(core)) {
+                player.sendMessage("§c[SourceForge] §f该锻炉已有作业")
+                playDenySound(player)
+                return
+            }
+            // 消耗材料；取出武器本体（含在退还快照中，核心破坏不丢失）
+            val consumedSnapshot = consumeEnhanceMaterials(player, next.materials)
+            val weaponClone = weapon.clone()
+            consumedSnapshot.add(weaponClone)
+            inv.setItem(menu.blueprintSlot, null)
+
+            val ticks = Math.round(plugin.enhancementConfig.enhanceTimeSeconds * 20.0 / ctx.multiplier).coerceAtLeast(1L)
+            plugin.structureManager.submitEnhanceJob(
+                core = core,
+                inputWeapon = weaponClone,
+                targetLevel = level + 1,
+                shellTier = ctx.shellTier,
+                multiplier = ctx.multiplier,
+                remainingTicks = ticks,
+                consumedSnapshot = consumedSnapshot
+            )
+            val seconds = Math.ceil(ticks / 20.0).toInt()
+            player.sendMessage("§b[源质锻炉] §f开始强化，预计 §e${seconds}s")
+            playForgeSound(player)
+            menu.renderAll(player)
+            return
+        }
+
+        // 命令模式：即时强化
+        consumeEnhanceMaterials(player, next.materials)
+        val result = weapon.clone()
+        plugin.itemService.applyEnhancement(result, level + 1, next.baseDamage, next.modCapacity)
+        inv.setItem(menu.blueprintSlot, null)
+        player.inventory.addItem(result).values.forEach { player.world.dropItemNaturally(player.location, it) }
+        player.sendMessage("§b[SourceForge] §f强化完成: Lv.${level + 1}")
+        playForgeSound(player)
+        menu.renderAll(player)
+    }
+
+    /** 扣除强化材料，返回被消耗物品克隆快照。 */
+    private fun consumeEnhanceMaterials(player: Player, materials: List<com.dongzh1.sourceforge.config.RecipeMaterial>): MutableList<ItemStack> {
+        val snapshot = mutableListOf<ItemStack>()
+        val storage = player.inventory.storageContents
+        for (material in materials) {
+            var remaining = material.amount
+            for (i in storage.indices) {
+                if (remaining <= 0) break
+                val item = storage[i] ?: continue
+                if (item.type == Material.AIR) continue
+                if (CraftEngineHook.itemId(item) != material.ceId) continue
+                val take = minOf(remaining, item.amount)
+                snapshot.add(item.clone().apply { amount = take })
+                item.amount -= take
+                remaining -= take
+                player.inventory.setItem(i, if (item.amount <= 0) null else item)
+            }
+        }
+        return snapshot
     }
 
     /** 数背包内匹配 CE id 的物品数量（仅 storageContents，含快捷栏）。 */
