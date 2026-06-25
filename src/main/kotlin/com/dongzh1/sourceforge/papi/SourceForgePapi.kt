@@ -76,6 +76,13 @@ object SourceForgePapi : PlaceholderExpansion() {
             key == "armor" -> format(totalAffix(player, "armor"), 0)
             key == "energy_max" -> format(totalAffix(player, "energy_max"), 0)
             key == "energy_current" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
+            // MANA（= energy 池，含基础值10）。BetterHud 用 %sourceforge_mana% / %sourceforge_mana_max% / %sourceforge_mana_percent%
+            key == "mana" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
+            key == "mana_max" -> format(plugin.forgeListener.getEnergyMax(player), 0)
+            key == "mana_percent" -> {
+                val max = plugin.forgeListener.getEnergyMax(player)
+                percent(if (max > 0.0) plugin.forgeListener.getEnergyCurrent(player) / max else 0.0)
+            }
 
             // 技能 CD
             key == "cd_count" -> plugin.skillListener.getActiveCds(player).size.toString()

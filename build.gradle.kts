@@ -57,6 +57,7 @@ repositories {
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    maven("https://repo.codemc.io/repository/maven-releases/")
 }
 
 java {
@@ -85,6 +86,20 @@ dependencies {
     compileOnly("io.github.toxicity188:BetterHud-bukkit-api:1.14.1") { isTransitive = false }
     // HudPlayer 继承 kr.toxicity.command.BetterCommandSource；调用其成员(pointers())需此接口在编译期可见
     compileOnly("io.github.toxicity188:BetterCommand:1.4.3") { isTransitive = false }
+    // PacketEvents：Phase 2 发包悬浮符号特效用（运行期由服务器 PacketEvents 插件提供，故 compileOnly 不打包）。
+    // 2.11.0+ 支持 MC 1.21.11；与服务器装的 PacketEvents 版本保持一致即可。
+    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
+    // GraalJS（SF 技能脚本引擎）：shade 进 jar，运行期不依赖服务器 JDK 自带 JS。
+    // 排除 Truffle 优化运行时/编译器：它要 GraalVM 的 JVMCI（普通 JDK 没有 IS_BUILDING_NATIVE_IMAGE 字段会崩），
+    // 排除后回退到 DefaultTruffleRuntime 纯解释器，任何 JDK 都能跑（脚本稍慢，对技能逻辑无所谓）。
+    // Truffle 依赖 ServiceLoader → shadowJar 需 mergeServiceFiles()。
+    implementation("org.graalvm.polyglot:polyglot:24.1.2")
+    implementation("org.graalvm.polyglot:js-community:24.1.2") {
+        exclude(group = "org.graalvm.truffle", module = "truffle-runtime")
+        exclude(group = "org.graalvm.truffle", module = "truffle-compiler")
+        exclude(group = "org.graalvm.truffle", module = "truffle-enterprise")
+        exclude(group = "org.graalvm.compiler", module = "compiler")
+    }
     compileOnly(fileTree("libs"))
 }
 
@@ -113,12 +128,10 @@ tasks {
         easylib.getAllRelocate().forEach {
             relocate(it.pattern, it.replacement)
         }
-        minimize {
-            // Kryo / objenesis 大量走反射，minimize 的静态分析会误删其内部类，导致运行时序列化崩溃
-            exclude(dependency("com.esotericsoftware.kryo:kryo5:.*"))
-            exclude(dependency("org.objenesis:objenesis:.*"))
-            exclude(dependency("com.esotericsoftware:.*:.*"))
-        }
+        mergeServiceFiles()   // Truffle/GraalJS 靠 META-INF/services 发现语言引擎，必须合并
+
+        // 不再使用 minimize：它的可达性静态分析对 Kotlin 不稳定，曾间歇性把本项目自有类（如 util/Text）
+        // 当作“无用类”剔除，导致运行时 NoClassDefFoundError。换来的体积收益很小，不值得这个风险。
     }
     processResources {
         expand("version" to project.version)

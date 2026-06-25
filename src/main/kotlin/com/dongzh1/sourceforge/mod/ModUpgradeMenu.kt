@@ -1,7 +1,8 @@
 package com.dongzh1.sourceforge.mod
 
 import com.dongzh1.sourceforge.SourceForge
-import com.dongzh1.sourceforge.util.color
+import com.dongzh1.sourceforge.item.CraftEngineHook
+import com.dongzh1.sourceforge.util.Text
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -27,7 +28,7 @@ class ModUpgradeMenu(
     val closeSlot = 26
 
     private val inventory: Inventory =
-        Bukkit.createInventory(this, 27, color("&0MOD 升级"))
+        Bukkit.createInventory(this, 27, CraftEngineHook.titleComponent("&0MOD 升级"))
 
     init {
         fillStatic()
@@ -102,8 +103,8 @@ class ModUpgradeMenu(
     private fun label(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }
@@ -111,7 +112,7 @@ class ModUpgradeMenu(
     private fun pane(material: Material, name: String): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
+        Text.name(meta, name)
         item.itemMeta = meta
         return item
     }

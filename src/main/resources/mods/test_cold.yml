@@ -1,0 +1,10 @@
+# 测试卡 · 只带冰元素 + 100% 触发：每次命中必叠 1 层冰（减速）。正式服可删。
+id: test_cold
+display-name: "&b[测试]冰"
+item: "minecraft:snowball"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { status_chance: 1.0, cold_damage: 2.0 }
+tags: [stat, test]
+item-lore: ["&8MOD · 测试", "", "&7触发几率 &f+%effect_status_chance%", "&7冰元素 &b+%effect_cold_damage%", "", "&7命中必叠冰（减速）"]

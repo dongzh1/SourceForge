@@ -11,7 +11,15 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockBurnEvent
+import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.block.BlockFromToEvent
+import org.bukkit.event.block.BlockPistonExtendEvent
+import org.bukkit.event.block.BlockPistonRetractEvent
+import org.bukkit.event.entity.EntityChangeBlockEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.StructureGrowEvent
 import org.bukkit.inventory.EquipmentSlot
 
 /**
@@ -35,11 +43,12 @@ class ForgeStructureListener(
 
         val player = event.player
         val hand = player.inventory.itemInMainHand
-        val isHammer = CraftEngineHook.itemId(hand) == config.hammerId
+        // 锻炉工具已从 CE 重锤迁移到原版重锤(Mace)：手持重锤即可检测/拆除
+        val isHammer = hand.type == org.bukkit.Material.MACE
         val isCore = ceId == config.coreBlockId
 
         when (event.action) {
-            // 左键核心：持源质锤 = 检测结构（取消事件防止挖掘/破坏，创造模式的瞬间破坏另由 onBreak 拦截）
+            // 左键核心：持重锤 = 检测结构（取消事件防止挖掘/破坏，创造模式的瞬间破坏另由 onBreak 拦截）
             Action.LEFT_CLICK_BLOCK -> {
                 if (isCore && isHammer) {
                     event.isCancelled = true
@@ -47,7 +56,7 @@ class ForgeStructureListener(
                 }
             }
             Action.RIGHT_CLICK_BLOCK -> {
-                // 拆除：手持源质锤 + 潜行 + 右键 任意锻炉方块（核心 / 外壳）
+                // 拆除：手持重锤 + 潜行 + 右键 任意锻炉方块（核心 / 外壳）
                 if (isHammer && player.isSneaking) {
                     event.isCancelled = true
                     val now = System.currentTimeMillis()
@@ -70,7 +79,7 @@ class ForgeStructureListener(
                     if (result.formed && result.tier != null) {
                         openStructureForge(player, block, result.tier, result.multiplier)
                     } else {
-                        player.sendMessage("§c结构未完成，请用源质锤左键核心检测")
+                        player.sendMessage("§c结构未完成，请用重锤左键核心检测")
                         playDeny(player)
                     }
                 }
@@ -88,7 +97,7 @@ class ForgeStructureListener(
     private val dismantleCooldownMs = 400L
 
     /**
-     * 拆除一个锻炉方块（核心或外壳）：仅由“手持源质锤 + 潜行 + 右键”触发。
+     * 拆除一个锻炉方块（核心或外壳）：仅由“手持重锤 + 潜行 + 右键”触发。
      * 用 CE 稳定 api 的 CraftEngineBlocks.remove 移除（掉落方块物品 + 清理 CE 数据）；
      * 若拆的是带作业的核心，先退还已消耗材料。
      */
@@ -142,7 +151,7 @@ class ForgeStructureListener(
 
     /**
      * 锻炉方块（核心 + 外壳）禁止普通破坏：任何工具的挖掘/瞬破都拦截，
-     * 只能“手持源质锤 + 潜行 + 右键”拆除（见 dismantle）。核心作业的材料退还也在拆除时处理。
+     * 只能“手持重锤 + 潜行 + 右键”拆除（见 dismantle）。核心作业的材料退还也在拆除时处理。
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onBreak(event: BlockBreakEvent) {
@@ -152,7 +161,56 @@ class ForgeStructureListener(
         val ceId = CraftEngineHook.blockId(block) ?: return
         if (ceId !in config.forgeBlockIds) return
         event.isCancelled = true
-        event.player.sendMessage("§7[源质锻炉] §f需手持源质锤 §eShift+右键 §f拆除")
+        event.player.sendMessage("§7[源质锻炉] §f需手持重锤 §eShift+右键 §f拆除")
+    }
+
+    // ===== 锻炉方块保护(核心+外壳):位置与作业绑定,被移动/破坏会导致结构与作业错乱,故堵住除重锤外的所有途径 =====
+
+    /** 是否锻炉方块(核心或外壳)。 */
+    private fun isForgeBlock(b: Block): Boolean {
+        if (!config.enabled) return false
+        val ceId = CraftEngineHook.blockId(b) ?: return false
+        return ceId in config.forgeBlockIds
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onPistonExtend(event: BlockPistonExtendEvent) {
+        if (event.blocks.any { isForgeBlock(it) }) event.isCancelled = true   // 锻炉方块不可被推动
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onPistonRetract(event: BlockPistonRetractEvent) {
+        if (event.blocks.any { isForgeBlock(it) }) event.isCancelled = true   // 粘性活塞不可拉走锻炉方块
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onEntityExplode(event: EntityExplodeEvent) {
+        event.blockList().removeIf { isForgeBlock(it) }   // TNT/苦力怕/凋零/末影水晶等:不炸毁锻炉方块
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onBlockExplode(event: BlockExplodeEvent) {
+        event.blockList().removeIf { isForgeBlock(it) }   // 床/重生锚爆炸:不炸毁锻炉方块
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onEntityChangeBlock(event: EntityChangeBlockEvent) {
+        if (isForgeBlock(event.block)) event.isCancelled = true   // 末影人搬运/凋零撞击:锻炉方块不可被实体改变
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onBurn(event: BlockBurnEvent) {
+        if (isForgeBlock(event.block)) event.isCancelled = true   // 着火:不烧毁锻炉方块
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onLiquidFlow(event: BlockFromToEvent) {
+        if (isForgeBlock(event.toBlock)) event.isCancelled = true // 液体冲入:不替换锻炉方块位置
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onStructureGrow(event: StructureGrowEvent) {
+        event.blocks.removeIf { isForgeBlock(it.block) }  // 树木/巨型结构生长:不覆盖锻炉方块
     }
 
     private fun playDeny(player: Player) {

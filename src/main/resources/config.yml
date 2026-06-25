@@ -1,36 +1,19 @@
 gui:
+  # 锻造界面的纯文字标题回退：仅当 forge_gui.yml 的 title 为空串 "" 时使用。
   title: "&0源质锻造"
 
-# 锻造界面布局（3 行 / 27 格箱子界面）。所有槽位 0 起算，可自由调整。
-# 标题复用上面的 gui.title。
-forge-ui:
-  size: 27                      # 界面大小（27 = 3 行）
-  blueprint-slot: 18            # 蓝图输入槽（唯一可放入物品的槽）
-  action-slot: 19               # 动作槽：空闲=锻造锤，锻造中=进度箭头，完成=收取
-  output-slot: 20               # 产出预览槽（只读，永不可拿取）
-  material-slots:               # 材料需求展示槽（只读绿区，最多 12 个）
-    - 4
-    - 5
-    - 6
-    - 7
-    - 13
-    - 14
-    - 15
-    - 16
-    - 22
-    - 23
-    - 24
-    - 25
-  hammer-material: "minecraft:iron_axe"            # 空闲动作槽图标（开始锻造）
-  arrow-material: "minecraft:spectral_arrow"       # 锻造中/收取动作槽图标
-  filler-material: "minecraft:gray_stained_glass_pane"  # 其余槽位填充玻璃
+# 锻造界面布局已迁移到专用文件 forge_gui.yml（首次启用时自动生成于插件数据目录）。
+# 槽位、按钮三态外观（material/name/lore，支持完整 MiniMessage 含 <image>/<shift>/<gradient>）、
+# 背景图标题等全部在 forge_gui.yml 中配置。本文件不再有 forge-ui 段。
 
 debug:
   combat: false
 
 # 附魔台抽奖（右键附魔台打开抽奖界面，放入空白 MOD + 消耗经验抽取随机 MOD）
+# required-bookshelves: 打开界面所需的环绕书架数（类似原版顶级附魔台）；在附魔台周围 5×5 外圈、上下两层统计书架。设 0 关闭此限制。
 lottery:
   xp-cost: 30
+  required-bookshelves: 16
 
 # BetterHud 集成：每次 MM 技能进入冷却时弹出一个 popup（按技能名堆叠，最多由
 # BetterHud 端 max-stack 控制）。CD 结束时由本插件主动移除。
@@ -427,6 +410,75 @@ blueprints:
         amount: 1
 
 equipment:
+  # 原版剑（CE 物品 sourceforge:*），可经 /sf giveequipment <id> 给出 → 成为可改造的 SF 装备。
+  wooden_sword:
+    display-name: "木剑"
+    material: WOODEN_SWORD
+    ce-id: "sourceforge:wooden_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 2.0, max: 4.0 }
+        critical_chance: { chance: 0.30, min: 0.02, max: 0.05 }
+  stone_sword:
+    display-name: "石剑"
+    material: STONE_SWORD
+    ce-id: "sourceforge:stone_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 3.0, max: 5.0 }
+        critical_chance: { chance: 0.30, min: 0.02, max: 0.06 }
+  iron_sword:
+    display-name: "铁剑"
+    material: IRON_SWORD
+    ce-id: "sourceforge:iron_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 4.0, max: 6.0 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
+  golden_sword:
+    display-name: "金剑"
+    material: GOLDEN_SWORD
+    ce-id: "sourceforge:golden_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 3.0, max: 5.0 }
+        critical_chance: { chance: 0.45, min: 0.04, max: 0.09 }
+  diamond_sword:
+    display-name: "钻石剑"
+    material: DIAMOND_SWORD
+    ce-id: "sourceforge:diamond_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 5.0, max: 7.0 }
+        critical_chance: { chance: 0.40, min: 0.04, max: 0.10 }
+        critical_damage: { chance: 0.30, min: 0.15, max: 0.30 }
+  netherite_sword:
+    display-name: "下界合金剑"
+    material: NETHERITE_SWORD
+    ce-id: "sourceforge:netherite_sword"
+    weapon-category: melee_light
+    effective-slots: [mainhand]
+    affixes: [base_damage, critical_chance, critical_damage]
+    tier-affixes:
+      1:
+        base_damage: { chance: 1.0, min: 6.0, max: 8.0 }
+        critical_chance: { chance: 0.50, min: 0.05, max: 0.12 }
+        critical_damage: { chance: 0.40, min: 0.20, max: 0.40 }
   short_sword:
     display-name: "短剑"
     material: IRON_SWORD

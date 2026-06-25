@@ -1,0 +1,12 @@
+# 元素MOD · 毒（武器）— 同时附带触发几率，单卡即可中毒叠层
+id: venom
+display-name: "&a剧毒"
+item: "minecraft:poisonous_potato"
+cost: 11
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { toxin_damage: 2.0, status_chance: 0.25 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat, elemental]
+item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7毒元素 &a+%effect_toxin_damage%", "&7触发几率 &f+%effect_status_chance%", "", "&7命中按触发几率中毒，叠层流血", "&7适用: 武器"]

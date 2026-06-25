@@ -39,7 +39,8 @@ data class ForgeConfig(
             config: FileConfiguration,
             affixesConfig: YamlConfiguration = YamlConfiguration(),
             recipesFile: File? = null,
-            combatConfig: YamlConfiguration = YamlConfiguration()
+            combatConfig: YamlConfiguration = YamlConfiguration(),
+            forgeUiFile: File? = null
         ): ForgeConfig {
             val itemDisplayNames = linkedMapOf<String, String>()
             config.getConfigurationSection("item-display-names")?.getKeys(false)?.forEach { id ->
@@ -96,7 +97,7 @@ data class ForgeConfig(
                 affixes = affixes,
                 recipes = recipes,
                 modCapacity = loadModCapacity(config),
-                forgeUi = loadForgeUi(config),
+                forgeUi = loadForgeUi(forgeUiFile, config.getString("gui.title", "&0源质锻造")!!),
                 validationWarnings = validate(recipes, equipment, affixes)
             )
         }
@@ -123,20 +124,47 @@ data class ForgeConfig(
             return result
         }
 
-        private fun loadForgeUi(config: FileConfiguration): ForgeUiConfig {
+        /**
+         * 从专用文件 forge_gui.yml 加载锻造界面布局（嵌套 schema）。
+         * 文件不存在时返回全默认配置（含背景图标题）。
+         * @param fallbackTitle config.yml 的 gui.title，仅作为 title 空串时的纯文字标题回退（不在此处替换，
+         *        由 ForgeMenu 在渲染时决定；此处保留 title 原值）。
+         */
+        private fun loadForgeUi(file: File?, @Suppress("UNUSED_PARAMETER") fallbackTitle: String): ForgeUiConfig {
             val defaults = ForgeUiConfig()
-            val section = config.getConfigurationSection("forge-ui") ?: return defaults
-            val materialSlots = section.getIntegerList("material-slots")
+            if (file == null || !file.isFile) return defaults
+            val yaml = YamlConfiguration.loadConfiguration(file)
+
+            val slots = yaml.getConfigurationSection("slots")
+            val materialSlots = (slots?.getIntegerList("materials") ?: emptyList())
                 .takeIf { it.isNotEmpty() } ?: defaults.materialSlots
+            val barrierSlots = slots?.getIntegerList("barriers") ?: emptyList()
+
+            // title: 缺省键时用代码默认(带背景图字形);显式写空串 "" 则视为无背景图。
+            val title = if (yaml.isSet("title")) yaml.getString("title", "")!! else defaults.title
+
             return ForgeUiConfig(
-                size = section.getInt("size", defaults.size),
-                blueprintSlot = section.getInt("blueprint-slot", defaults.blueprintSlot),
-                actionSlot = section.getInt("action-slot", defaults.actionSlot),
-                outputSlot = section.getInt("output-slot", defaults.outputSlot),
+                size = yaml.getInt("size", defaults.size),
+                title = title,
+                blueprintSlot = slots?.getInt("blueprint", defaults.blueprintSlot) ?: defaults.blueprintSlot,
+                actionSlot = slots?.getInt("action", defaults.actionSlot) ?: defaults.actionSlot,
+                outputSlot = slots?.getInt("output", defaults.outputSlot) ?: defaults.outputSlot,
                 materialSlots = materialSlots,
-                hammerMaterial = parseMaterial(section.getString("hammer-material"), defaults.hammerMaterial),
-                arrowMaterial = parseMaterial(section.getString("arrow-material"), defaults.arrowMaterial),
-                fillerMaterial = parseMaterial(section.getString("filler-material"), defaults.fillerMaterial)
+                barrierSlots = barrierSlots,
+                hammerButton = loadButton(yaml, "buttons.hammer", defaults.hammerButton),
+                progressButton = loadButton(yaml, "buttons.progress", defaults.progressButton),
+                collectButton = loadButton(yaml, "buttons.collect", defaults.collectButton),
+                fillerMaterial = parseMaterial(yaml.getString("filler-material"), defaults.fillerMaterial)
+            )
+        }
+
+        private fun loadButton(yaml: YamlConfiguration, path: String, defaults: ForgeButtonConfig): ForgeButtonConfig {
+            val section = yaml.getConfigurationSection(path) ?: return defaults
+            val lore = if (section.isSet("lore")) section.getStringList("lore") else defaults.lore
+            return ForgeButtonConfig(
+                material = parseMaterial(section.getString("material"), defaults.material),
+                name = section.getString("name", defaults.name)!!,
+                lore = lore
             )
         }
 
@@ -349,16 +377,55 @@ data class EquipmentConfig(
     val tierAffixes: Map<Int, List<AffixRollConfig>>
 )
 
-/** 锻造 GUI 布局配置（3 行 / 27 格箱子界面）。所有槽位可在 config.yml 的 forge-ui 段配置。 */
+/**
+ * 锻造 GUI 布局配置（默认 5 行 / 45 格箱子界面，带 CraftEngine 自定义背景图）。
+ * 由专用文件 forge_gui.yml 加载（见 ForgeConfig.loadForgeUi(file, fallbackTitle)），
+ * 不再从主 config.yml 的 forge-ui 段读取。
+ *
+ * 所有文本字段（title / 按钮 name / lore）支持完整 MiniMessage，含 CE 标签
+ * （<image>/<shift>/<font>/<i18n>/<gradient> 等），并兼容传统 §/& 颜色码。
+ *
+ * title: 容器标题字符串。默认含 <shift> 偏移 + sourceforge:forge_gui 背景图字形，
+ * 由 CraftEngine 完整解析器渲染为 forge.png 背景图。
+ * 留空（""）时回退到 config.yml 的 gui.title 文字标题。
+ *
+ * 当 title 设置了背景图时，空槽不再填灰玻璃（否则会盖住背景图）；
+ * 仅 barrierSlots 列出的槽放屏障锁死，其余非功能槽留空（空气）。
+ */
 data class ForgeUiConfig(
-    val size: Int = 27,
-    val blueprintSlot: Int = 18,
-    val actionSlot: Int = 19,
-    val outputSlot: Int = 20,
-    val materialSlots: List<Int> = listOf(4, 5, 6, 7, 13, 14, 15, 16, 22, 23, 24, 25),
-    val hammerMaterial: Material = Material.IRON_AXE,
-    val arrowMaterial: Material = Material.SPECTRAL_ARROW,
+    val size: Int = 45,
+    val title: String = "<shift:-8><image:sourceforge:forge_gui>",
+    val blueprintSlot: Int = 20,
+    val actionSlot: Int = 22,
+    val outputSlot: Int = 24,
+    val materialSlots: List<Int> = listOf(10, 11, 12, 13, 14, 15, 16),
+    val barrierSlots: List<Int> = emptyList(),
+    val hammerButton: ForgeButtonConfig = ForgeButtonConfig(
+        material = Material.IRON_AXE,
+        name = "<green>开始锻造",
+        lore = listOf("<gray>放入蓝图开始锻造，或放入武器进行强化")
+    ),
+    val progressButton: ForgeButtonConfig = ForgeButtonConfig(
+        material = Material.SPECTRAL_ARROW,
+        name = "<yellow>锻造中…",
+        lore = emptyList()
+    ),
+    val collectButton: ForgeButtonConfig = ForgeButtonConfig(
+        material = Material.SPECTRAL_ARROW,
+        name = "<green>点击收取",
+        lore = emptyList()
+    ),
     val fillerMaterial: Material = Material.GRAY_STAINED_GLASS_PANE
+) {
+    /** 标题非空白即视为使用了背景图标题（避免用玻璃盖住背景）。 */
+    val hasBackground: Boolean get() = title.isNotBlank()
+}
+
+/** 动作按钮单态外观：物品 + 名称 + 基础 lore（运行时可追加动态行）。 */
+data class ForgeButtonConfig(
+    val material: Material,
+    val name: String,
+    val lore: List<String>
 )
 
 /** 锻造配方。键 = 蓝图 CE 物品 id。 */

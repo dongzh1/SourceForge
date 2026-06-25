@@ -1,0 +1,10 @@
+# 测试卡 · 只带火元素 + 100% 触发：每次命中必叠 1 层火（灼烧DoT）。正式服可删。
+id: test_heat
+display-name: "&c[测试]火"
+item: "minecraft:blaze_powder"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { status_chance: 1.0, heat_damage: 2.0 }
+tags: [stat, test]
+item-lore: ["&8MOD · 测试", "", "&7触发几率 &f+%effect_status_chance%", "&7火元素 &c+%effect_heat_damage%", "", "&7命中必叠火（灼烧DoT）"]

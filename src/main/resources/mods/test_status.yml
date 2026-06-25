@@ -1,0 +1,11 @@
+# 测试用MOD：触发几率直接拉满 100%（+火元素），单卡每次命中必触发火异常，方便验证触发/叠层/debug。
+# 不可升级（max-rank 0 = 满效果立即生效）。正式服可删。
+id: test_status
+display-name: "&d[测试]满触发"
+item: "minecraft:nether_star"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { status_chance: 1.0, heat_damage: 2.0 }
+tags: [stat, test]
+item-lore: ["&8MOD · 测试", "&7容量消耗: &e%cost%", "", "&7触发几率 &f+%effect_status_chance%", "&7火元素 &c+%effect_heat_damage%", "", "&7命中必触发火异常（测试用）", "&7适用: 武器"]

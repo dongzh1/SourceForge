@@ -273,6 +273,54 @@ class ForgeListener(
             totalDamage *= multiplier
         }
 
+        // ===== 元素：直伤附加 + 异常触发（status_chance 可超100%，多次触发）=====
+        val ec = plugin.elementConfig
+        if (ec.enabled) {
+            val baseVals = LinkedHashMap<com.dongzh1.sourceforge.status.ElementType, Double>()
+            var elemSum = 0.0
+            for (def in ec.active) {
+                if (!def.type.isBase) continue   // 组合元素由基础融合得到，不直接从装备读
+                val v = readValue(def.affix)
+                if (v > 0.0) { baseVals[def.type] = v; elemSum += v }
+            }
+            if (elemSum > 0.0) {
+                // 没触发也有用：各基础元素属性之和按系数直接加进伤害
+                totalDamage += elemSum * ec.directDamageFactor
+                // 注：AMP 增伤（病毒/腐蚀）改由通用伤害监听 ElementDamageListener 统一放大，
+                // 覆盖 SF 近战/MM/原版/DoT 所有来源，这里不再单独乘，避免双重。
+                // Warframe 式融合：两种基础同在武器上 → 组合元素（消耗两个基础）
+                val finalElems = ec.combine(baseVals)
+                val statusChance = readValue("status_chance")
+                val guaranteed = kotlin.math.floor(statusChance).toInt()
+                val frac = statusChance - guaranteed
+                val debugOn = plugin.statusManager.isDebug(player.uniqueId)
+                val dbg = if (debugOn) StringBuilder() else null
+                // 内置触发 CD：同一(玩家→怪)0.15s 内只触发一次，堵住 SF+MM 双路径与高频多段
+                val gateOpen = statusChance > 0.0 && plugin.statusManager.tryTriggerGate(player, target)
+                if (gateOpen) {
+                    // 每种（融合后的）元素各自独立按 status_chance 计算触发次数
+                    for ((type, _) in finalElems) {
+                        var procs = guaranteed
+                        if (frac > 0.0 && Random.nextDouble() < frac) procs++
+                        if (procs > 0) plugin.statusManager.applyStacks(target, type, procs, player, cause = "普攻")
+                        dbg?.append("${type.id}×$procs ")
+                    }
+                } else if (debugOn && statusChance > 0.0) {
+                    dbg?.append("触发CD中跳过")
+                }
+                if (debugOn) {
+                    player.sendMessage(
+                        "§8[元素debug·普攻命中] §7基础元素=§f${baseVals.entries.joinToString(",") { "${it.key.id}${"%.1f".format(it.value)}" }.ifEmpty { "无" }} " +
+                            "§7→融合=§f${finalElems.joinToString(",") { it.first.id }} §7status=§f${"%.2f".format(statusChance)}"
+                    )
+                    player.sendMessage(
+                        "§8[元素debug·普攻命中] §7本次触发=§a${dbg?.toString()?.trim()?.ifEmpty { "无" } ?: "无"} " +
+                            "§7增伤×${"%.2f".format(plugin.statusManager.outgoingDamageMultiplier(target))} §7目标层数: §f${plugin.statusManager.stacksSummary(target)}"
+                    )
+                }
+            }
+        }
+
         applyDamage(totalDamage)
 
         if (plugin.forgeConfig.debugCombat) {
@@ -392,7 +440,17 @@ class ForgeListener(
     // ==================== 能量系统 ====================
 
     fun getEnergyMax(player: Player): Double {
-        return plugin.itemService.readDisplayTotalAffix(player, "energy_max")
+        // MANA = energy：基础值(默认10) + 装备 energy_max。基础值可在 config.yml 的 mana.base 调。
+        val base = plugin.config.getDouble("mana.base", 10.0)
+        return base + plugin.itemService.readDisplayTotalAffix(player, "energy_max")
+    }
+
+    /** MANA 被动回复：每秒回 mana.regen-per-second（默认1），由 SkillModListener 的 1s tick 调用。 */
+    fun regenMana(player: Player, perSecond: Double) {
+        if (perSecond <= 0.0) return
+        val max = getEnergyMax(player)
+        val cur = getEnergyCurrent(player)
+        if (cur < max) setEnergy(player, (cur + perSecond).coerceAtMost(max))
     }
 
     fun getEnergyCurrent(player: Player): Double {

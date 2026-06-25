@@ -4,7 +4,7 @@ import com.dongzh1.sourceforge.SourceForge
 import com.dongzh1.sourceforge.config.ForgeRecipe
 import com.dongzh1.sourceforge.item.CraftEngineHook
 import com.dongzh1.sourceforge.multiblock.ForgeJob
-import com.dongzh1.sourceforge.util.color
+import com.dongzh1.sourceforge.util.Text
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -43,7 +43,17 @@ class ForgeMenu(
     /** 这些槽位永远只读（点击被拒绝）：动作槽、产出预览、材料展示。 */
     private val readonlySlots: Set<Int> = (materialDisplaySlots + actionSlot + outputSlot).toSet()
 
-    private val inventory = Bukkit.createInventory(this, ui.size, color(plugin.forgeConfig.guiTitle))
+    /**
+     * 标题:forge-ui.title 非空白时用它(含 <shift> + <image:sourceforge:forge_gui>,
+     * 由 CE 完整 MiniMessage 解析器在代码层解析为 Component,真正渲染 forge.png 背景图,
+     * 不再依赖容器封包拦截);否则回退到 gui.title 文字标题。
+     * titleComponent 同时支持 CE 标签与传统 §/& 颜色码。
+     */
+    private val title: net.kyori.adventure.text.Component =
+        if (ui.hasBackground) CraftEngineHook.titleComponent(ui.title)
+        else CraftEngineHook.titleComponent(plugin.forgeConfig.guiTitle)
+
+    private val inventory = Bukkit.createInventory(this, ui.size, title)
 
     /** 锻造中实时刷新动作槽的任务；界面关闭时取消。 */
     private var progressTask: BukkitTask? = null
@@ -55,10 +65,23 @@ class ForgeMenu(
 
     override fun getInventory(): Inventory = inventory
 
-    /** 静态背景：除蓝图槽、动作槽、产出槽、材料展示槽外全部填充灰玻璃。 */
+    /**
+     * 静态装饰。
+     * - 有背景图(title 非空)时：不填灰玻璃(否则会盖住 forge.png 背景),非功能槽留空(空气);
+     *   仅 barrier-slots 列出的槽放屏障锁死(镜像 GeneMachinery grinder 的做法)。
+     * - 无背景图(文字标题)时：保留旧行为,除功能槽外全部填灰玻璃。
+     */
     private fun fillStatic() {
-        val filler = pane(ui.fillerMaterial, "&8 ", emptyList())
         val reserved = readonlySlots + blueprintSlot
+        if (ui.hasBackground) {
+            // 屏障便捷字段：锁死指定非功能槽(防误放),其余空槽保持空气以露出背景图。
+            val barrier = pane(Material.BARRIER, "&8 ", emptyList())
+            for (slot in ui.barrierSlots) {
+                if (slot in 0 until inventory.size && slot !in reserved) inventory.setItem(slot, barrier)
+            }
+            return
+        }
+        val filler = pane(ui.fillerMaterial, "&8 ", emptyList())
         for (slot in 0 until inventory.size) {
             if (slot !in reserved) inventory.setItem(slot, filler)
         }
@@ -124,9 +147,9 @@ class ForgeMenu(
             ?: ItemStack(Material.PAPER)
         run {
             val meta = preview.itemMeta
-            val lore = (meta.lore ?: mutableListOf()).toMutableList()
-            lore.add(color("&7产出预览（不可拿取）"))
-            meta.lore = lore
+            val lore = (meta.lore() ?: mutableListOf()).toMutableList()
+            lore.add(Text.comp("&7产出预览（不可拿取）"))
+            meta.lore(lore)
             preview.itemMeta = meta
         }
         inventory.setItem(outputSlot, preview)
@@ -139,10 +162,8 @@ class ForgeMenu(
             val icon = CraftEngineHook.build(material.ceId, 1)?.clone() ?: ItemStack(Material.PAPER)
             val meta = icon.itemMeta
             val name = plugin.forgeConfig.displayName(material.ceId)
-            meta.setDisplayName(color(if (enough) "&a$name" else "&c$name"))
-            meta.lore = color(
-                listOf("&7拥有 ${if (enough) "&a" else "&c"}$have&7/&f${material.amount}")
-            )
+            Text.name(meta, if (enough) "&a$name" else "&c$name")
+            Text.lore(meta, listOf("&7拥有 ${if (enough) "&a" else "&c"}$have&7/&f${material.amount}"))
             icon.itemMeta = meta
             inventory.setItem(materialDisplaySlots[index], icon)
         }
@@ -165,7 +186,7 @@ class ForgeMenu(
             // 预览仍展示武器本体
             val preview = weapon.clone()
             val meta = preview.itemMeta
-            meta.setDisplayName(color("&b强化预览 &7(已满级 Lv.$level)"))
+            Text.name(meta, "&b强化预览 &7(已满级 Lv.$level)")
             preview.itemMeta = meta
             inventory.setItem(outputSlot, preview)
             return
@@ -175,12 +196,12 @@ class ForgeMenu(
         val preview = weapon.clone()
         run {
             val meta = preview.itemMeta
-            meta.setDisplayName(color("&b强化预览 Lv.${level + 1}"))
-            val lore = (meta.lore ?: mutableListOf()).toMutableList()
-            lore.add(color("&7基础伤害 &a+${next.baseDamage}"))
-            lore.add(color("&7容量上限 &a+${next.modCapacity}"))
-            lore.add(color("&7（强化预览，不可拿取）"))
-            meta.lore = lore
+            Text.name(meta, "&b强化预览 Lv.${level + 1}")
+            val lore = (meta.lore() ?: mutableListOf()).toMutableList()
+            lore.add(Text.comp("&7基础伤害 &a+${next.baseDamage}"))
+            lore.add(Text.comp("&7容量上限 &a+${next.modCapacity}"))
+            lore.add(Text.comp("&7（强化预览，不可拿取）"))
+            meta.lore(lore)
             preview.itemMeta = meta
         }
         inventory.setItem(outputSlot, preview)
@@ -192,8 +213,8 @@ class ForgeMenu(
             val icon = CraftEngineHook.build(material.ceId, 1)?.clone() ?: ItemStack(Material.PAPER)
             val meta = icon.itemMeta
             val name = plugin.forgeConfig.displayName(material.ceId)
-            meta.setDisplayName(color(if (enough) "&a$name" else "&c$name"))
-            meta.lore = color(listOf("&7拥有 ${if (enough) "&a" else "&c"}$have&7/&f${material.amount}"))
+            Text.name(meta, if (enough) "&a$name" else "&c$name")
+            Text.lore(meta, listOf("&7拥有 ${if (enough) "&a" else "&c"}$have&7/&f${material.amount}"))
             icon.itemMeta = meta
             inventory.setItem(materialDisplaySlots[index], icon)
         }
@@ -214,10 +235,7 @@ class ForgeMenu(
             }
             job != null && job.isDone() -> {
                 stopProgressTask()
-                inventory.setItem(
-                    actionSlot,
-                    button(ui.arrowMaterial, "&a点击收取", listOf("&7锻造完成，点击放入背包"))
-                )
+                inventory.setItem(actionSlot, button(ui.collectButton))
             }
             else -> {
                 stopProgressTask()
@@ -239,17 +257,13 @@ class ForgeMenu(
         val done = (fullTicks - job.remainingTicks).coerceIn(0, fullTicks)
         val ratio = if (fullTicks > 0) done.toDouble() / fullTicks.toDouble() else 0.0
         val seconds = Math.ceil(job.remainingTicks / 20.0).toInt()
-        inventory.setItem(
-            actionSlot,
-            button(
-                ui.arrowMaterial,
-                if (isEnhance) "&b强化中…" else "&e锻造中…",
-                listOf(
-                    "&7剩余 &f${seconds}s",
-                    "&7进度 ${progressBar(ratio)}"
-                )
-            )
+        // 进度态：用配置的 progress 按钮（material + name + 基础 lore），再追加动态进度行。
+        val lore = ui.progressButton.lore + listOf(
+            "&7剩余 &f${seconds}s",
+            "&7进度 ${progressBar(ratio)}"
         )
+        val name = if (isEnhance) "&b强化中…" else ui.progressButton.name
+        inventory.setItem(actionSlot, button(ui.progressButton.material, name, lore))
     }
 
     private fun renderIdle(viewer: Player?) {
@@ -259,7 +273,8 @@ class ForgeMenu(
             return
         }
         val recipe = currentRecipe()
-        val lore = mutableListOf<String>()
+        // 空闲态：配置的 hammer 按钮基础 lore 在前，动态提示行在后。
+        val lore = ui.hammerButton.lore.toMutableList()
         var ready = false
         if (recipe != null) {
             ready = viewer != null && recipe.materials.all { countInInventory(viewer, it.ceId) >= it.amount }
@@ -269,24 +284,24 @@ class ForgeMenu(
         } else {
             lore += "&7放入有效蓝图后点击锻造"
         }
-        inventory.setItem(actionSlot, button(ui.hammerMaterial, "&a开始锻造", lore))
+        inventory.setItem(actionSlot, button(ui.hammerButton.material, ui.hammerButton.name, lore))
     }
 
     private fun renderEnhanceIdle(viewer: Player?, weapon: ItemStack) {
         val category = plugin.itemService.weaponCategory(weapon)
         val level = plugin.itemService.enhanceLevel(weapon)
         val next = plugin.enhancementConfig.nextLevel(category, level)
-        val lore = mutableListOf<String>()
+        val lore = ui.hammerButton.lore.toMutableList()
         if (next == null) {
             lore += "&c该武器已满级 (Lv.$level)"
-            inventory.setItem(actionSlot, button(ui.hammerMaterial, "&c已满级", lore))
+            inventory.setItem(actionSlot, button(ui.hammerButton.material, "&c已满级", lore))
             return
         }
         val ready = viewer != null && next.materials.all { countInInventory(viewer, it.ceId) >= it.amount }
         lore += "&7强化 &eLv.$level &7→ &aLv.${level + 1}"
         lore += "&7耗时: &e${plugin.enhancementConfig.enhanceTimeSeconds.toInt()}s"
         lore += if (ready) "&a材料充足，点击开始强化" else "&c材料不足"
-        inventory.setItem(actionSlot, button(ui.hammerMaterial, "&b开始强化", lore))
+        inventory.setItem(actionSlot, button(ui.hammerButton.material, "&b开始强化", lore))
     }
 
     private fun progressBar(ratio: Double): String {
@@ -312,10 +327,7 @@ class ForgeMenu(
                 return@Runnable
             }
             if (job.isDone()) {
-                inventory.setItem(
-                    actionSlot,
-                    button(ui.arrowMaterial, "&a点击收取", listOf("&7锻造完成，点击放入背包"))
-                )
+                inventory.setItem(actionSlot, button(ui.collectButton))
                 stopProgressTask()
                 return@Runnable
             }
@@ -347,11 +359,15 @@ class ForgeMenu(
         return total
     }
 
+    /** 用配置的按钮定义直接渲染（material + name + 基础 lore，无动态行）。 */
+    private fun button(cfg: com.dongzh1.sourceforge.config.ForgeButtonConfig): ItemStack =
+        button(cfg.material, cfg.name, cfg.lore)
+
     private fun button(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        meta.lore = color(lore)
+        Text.name(meta, name)
+        Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }
@@ -363,8 +379,8 @@ class ForgeMenu(
     private fun pane(material: Material, name: String, lore: List<String> = emptyList()): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }

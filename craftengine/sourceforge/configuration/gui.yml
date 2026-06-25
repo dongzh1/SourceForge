@@ -1,0 +1,11 @@
+# 锻造 GUI 背景图：CraftEngine 标准 image 配置（Wiki: configuration/image）。
+# 用 <image:sourceforge:forge_gui> 文本标签在容器标题里引用（Wiki: reference/text_format），CE 封包解析渲染。
+# 用 grid_size 让 CE 自动分配字符，不要手写 char/chars。
+# height=渲染像素高；ascent=垂直基线(height>=ascent，按游戏内微调)。
+images:
+  sourceforge:forge_gui:
+    height: 256
+    ascent: 13
+    font: minecraft:default
+    file: sourceforge:gui/forge.png
+    grid_size: 1,1

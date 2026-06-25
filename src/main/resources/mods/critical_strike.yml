@@ -1,0 +1,12 @@
+# 基础MOD · 暴击几率（武器）— Warframe 致命一击
+id: critical_strike
+display-name: "&e致命一击"
+item: "minecraft:spider_eye"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { critical_chance: 0.10 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat]
+item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7暴击几率 &f+%effect_critical_chance%", "", "&7适用: 武器"]

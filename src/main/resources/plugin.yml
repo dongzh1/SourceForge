@@ -16,6 +16,7 @@ softdepend:
   - MythicMobs
   - PlaceholderAPI
   - BetterHud
+  - packetevents
 commands:
   sourceforge:
     description: SourceForge main command

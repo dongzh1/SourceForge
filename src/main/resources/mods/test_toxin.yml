@@ -1,0 +1,10 @@
+# 测试卡 · 只带毒元素 + 100% 触发：每次命中必叠 1 层毒（中毒DoT）。正式服可删。
+id: test_toxin
+display-name: "&a[测试]毒"
+item: "minecraft:poisonous_potato"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { status_chance: 1.0, toxin_damage: 2.0 }
+tags: [stat, test]
+item-lore: ["&8MOD · 测试", "", "&7触发几率 &f+%effect_status_chance%", "&7毒元素 &a+%effect_toxin_damage%", "", "&7命中必叠毒（中毒DoT）"]

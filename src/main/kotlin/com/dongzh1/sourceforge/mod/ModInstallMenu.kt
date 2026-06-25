@@ -1,6 +1,8 @@
 package com.dongzh1.sourceforge.mod
 
 import com.dongzh1.sourceforge.SourceForge
+import com.dongzh1.sourceforge.item.CraftEngineHook
+import com.dongzh1.sourceforge.util.Text
 import com.dongzh1.sourceforge.util.color
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -28,7 +30,7 @@ class ModInstallMenu(
     val closeSlot = 53
 
     private val inventory: Inventory =
-        Bukkit.createInventory(this, 54, color(plugin.forgeConfig.modCapacity.guiTitle))
+        Bukkit.createInventory(this, 54, CraftEngineHook.titleComponent(plugin.forgeConfig.modCapacity.guiTitle))
 
     init {
         populate()
@@ -108,8 +110,8 @@ class ModInstallMenu(
     private fun unknownModDisplay(id: String): ItemStack {
         val item = ItemStack(Material.GRAY_DYE)
         val meta = item.itemMeta
-        meta.setDisplayName(color("&8未知 MOD"))
-        meta.lore = color(listOf("&8id: $id"))
+        Text.name(meta, "&8未知 MOD")
+        Text.lore(meta, listOf("&8id: $id"))
         item.itemMeta = meta
         return item
     }
@@ -117,8 +119,8 @@ class ModInstallMenu(
     private fun label(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }
@@ -126,8 +128,8 @@ class ModInstallMenu(
     private fun pane(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }

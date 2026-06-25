@@ -1,0 +1,11 @@
+# 技能MOD · 摸尸（desecrate）
+# 右键持有该武器 开/关；开启时持续消耗 MANA，范围内死亡生物掉落翻倍。
+# 范围吃 ability_range；每秒 MANA 消耗被 ability_efficiency 按百分比减少。
+id: desecrate
+display-name: "&5摸尸"
+item: "minecraft:rotten_flesh"
+cost: 12
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+tags: [skill]
+item-lore: ["&8MOD · 技能", "&7容量消耗: &e%cost%", "", "&7右键 开/关", "&7开启时持续消耗 §bMANA", "&7范围内死亡生物掉落 &f翻倍", "&8范围吃范围属性 · 消耗被效率降低", "", "&7适用: 武器"]

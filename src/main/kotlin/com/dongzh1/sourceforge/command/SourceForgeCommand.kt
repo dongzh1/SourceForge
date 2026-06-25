@@ -39,22 +39,7 @@ class SourceForgeCommand(
                 }
                 player.openInventory(com.dongzh1.sourceforge.mod.ModUpgradeMenu(plugin, player).inventory)
             }
-            "giveupgradecore" -> {
-                if (!sender.hasPermission("sourceforge.admin")) {
-                    sender.sendMessage("§c你没有权限")
-                    return true
-                }
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                if (target == null) {
-                    sender.sendMessage("§e用法: /$label giveupgradecore <玩家> [数量]")
-                    return true
-                }
-                val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                val item = com.dongzh1.sourceforge.item.CraftEngineHook.build("sourceforge:upgrade_core", amount)
-                    ?: org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER, amount)
-                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 升级核心 x$amount")
-            }
+            // 升级核心改由 CraftEngine 配置 + /ce 指令获取（SF 仅按 CE id "sourceforge:upgrade_core" 识别），故移除 SF 发放指令。
             "giveblankmod" -> {
                 if (!sender.hasPermission("sourceforge.admin")) {
                     sender.sendMessage("§c你没有权限")
@@ -190,6 +175,26 @@ class SourceForgeCommand(
                     lines.forEach { player.sendMessage("§7$it") }
                     // 同步写入控制台日志，便于离线排查
                     plugin.logger.info("[forgeinfo] ${player.name}: " + lines.joinToString(" | "))
+                    return true
+                }
+                // /sf debug element <on|off>：开启后命中带元素+触发的装备时，打印触发计算与目标层数
+                if (args.getOrNull(1)?.equals("element", true) == true) {
+                    val player = sender as? Player
+                    if (player == null) {
+                        sender.sendMessage("只有玩家可以使用此命令")
+                        return true
+                    }
+                    val on = when (args.getOrNull(2)?.lowercase()) {
+                        "on", "true" -> true
+                        "off", "false" -> false
+                        null, "toggle" -> !plugin.statusManager.isDebug(player.uniqueId)
+                        else -> {
+                            sender.sendMessage("§e用法: /$label debug element <on|off>")
+                            return true
+                        }
+                    }
+                    plugin.statusManager.setDebug(player.uniqueId, on)
+                    sender.sendMessage("§a[SourceForge] §f元素触发调试已${if (on) "开启" else "关闭"}")
                     return true
                 }
                 val target = args.getOrNull(1)?.lowercase()
@@ -403,17 +408,17 @@ class SourceForgeCommand(
                 val ok = plugin.navigationManager.untrack(target, name)
                 sender.sendMessage(if (ok) "§a[SourceForge] §f已移除 ${target.name} 的追踪目标 §b$name" else "§e[SourceForge] §f${target.name} 没有名为 §b$name §f的追踪目标")
             }
-            else -> sender.sendMessage("§e用法: /$label <forge|mods|upgrademod|givemod|givenightmare|giveupgradecore|giveblankmod|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
+            else -> sender.sendMessage("§e用法: /$label <forge|mods|upgrademod|givemod|givenightmare|giveblankmod|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
         }
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "mods", "upgrademod", "givemod", "givenightmare", "giveupgradecore", "giveblankmod", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "mods", "upgrademod", "givemod", "givenightmare", "giveblankmod", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
-                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("givenightmare", true) || args[0].equals("giveupgradecore", true) || args[0].equals("giveblankmod", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
-                args[0].equals("debug", true) -> listOf("combat", "betterhud", "forgeinfo").filter { it.startsWith(args[1], true) }
+                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("givenightmare", true) || args[0].equals("giveblankmod", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
+                args[0].equals("debug", true) -> listOf("combat", "betterhud", "forgeinfo", "element").filter { it.startsWith(args[1], true) }
                 args[0].equals("cd", true) -> listOf("on", "off").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
             }
@@ -421,7 +426,7 @@ class SourceForgeCommand(
                 args[0].equals("giveequipment", true) -> plugin.forgeConfig.equipment.keys.filter { it.startsWith(args[2], true) }
                 args[0].equals("give", true) -> expressionSuggestions().filter { it.startsWith(args[2], true) }
                 args[0].equals("givemod", true) -> plugin.modService.allModIds().filter { it.startsWith(args[2], true) }
-                args[0].equals("giveupgradecore", true) || args[0].equals("giveblankmod", true) -> listOf("1", "8", "16", "64").filter { it.startsWith(args[2], true) }
+                args[0].equals("giveblankmod", true) -> listOf("1", "8", "16", "64").filter { it.startsWith(args[2], true) }
                 args[0].equals("givenightmare", true) -> plugin.nightmareService.categories().filter { it.startsWith(args[2], true) }
                 args[0].equals("debug", true) -> listOf("on", "off").filter { it.startsWith(args[2], true) }
                 args[0].equals("track", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> listOf("off").filter { it.startsWith(args[2], true) }
@@ -538,6 +543,12 @@ class SourceForgeCommand(
             totals,
             listOf("energy_max", "ability_strength", "ability_duration", "ability_efficiency", "ability_range")
         )
+        sendAffixGroup(
+            player,
+            "元素属性",
+            totals,
+            listOf("heat_damage", "cold_damage", "toxin_damage", "electric_damage")
+        )
 
         val displayedIds = defaultAffixOrder.toSet()
         val extraAffixes = plugin.forgeConfig.affixes.keys.filter { it !in displayedIds }
@@ -587,7 +598,11 @@ class SourceForgeCommand(
             "ability_strength",
             "ability_duration",
             "ability_efficiency",
-            "ability_range"
+            "ability_range",
+            "heat_damage",
+            "cold_damage",
+            "toxin_damage",
+            "electric_damage"
         )
         val percentAffixes = setOf(
             "critical_chance",

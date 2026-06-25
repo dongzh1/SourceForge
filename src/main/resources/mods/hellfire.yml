@@ -1,0 +1,12 @@
+# 元素MOD · 火（武器）— 同时附带触发几率，单卡即可点燃叠层
+id: hellfire
+display-name: "&c炽焰"
+item: "minecraft:magma_cream"
+cost: 11
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { heat_damage: 2.0, status_chance: 0.25 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat, elemental]
+item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7火元素 &c+%effect_heat_damage%", "&7触发几率 &f+%effect_status_chance%", "", "&7命中按触发几率点燃，叠层灼烧", "&7适用: 武器"]

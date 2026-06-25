@@ -1,0 +1,10 @@
+# 测试卡 · 只带电元素 + 100% 触发：每次命中必叠 1 层电（瞬击+硬直）。正式服可删。
+id: test_electric
+display-name: "&e[测试]电"
+item: "minecraft:lightning_rod"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { status_chance: 1.0, electric_damage: 2.0 }
+tags: [stat, test]
+item-lore: ["&8MOD · 测试", "", "&7触发几率 &f+%effect_status_chance%", "&7电元素 &e+%effect_electric_damage%", "", "&7命中必叠电（瞬击+硬直）"]

@@ -73,12 +73,15 @@ data class EnhancementConfig(
 
 /** 附魔台抽奖配置（config.yml lottery 段）。 */
 data class LotteryConfig(
-    val xpCost: Int
+    val xpCost: Int,
+    /** 打开抽奖界面所需的环绕书架数（类似原版顶级附魔台）。在附魔台周围 5×5 外圈(±2)上下两层统计 BOOKSHELF。 */
+    val requiredBookshelves: Int
 ) {
     companion object {
         fun load(config: org.bukkit.configuration.file.FileConfiguration): LotteryConfig {
             return LotteryConfig(
-                xpCost = config.getInt("lottery.xp-cost", 30).coerceAtLeast(0)
+                xpCost = config.getInt("lottery.xp-cost", 30).coerceAtLeast(0),
+                requiredBookshelves = config.getInt("lottery.required-bookshelves", 16).coerceAtLeast(0)
             )
         }
     }

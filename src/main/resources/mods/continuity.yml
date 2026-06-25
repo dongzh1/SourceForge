@@ -1,0 +1,12 @@
+# 基础MOD · 技能持续（法术护甲）— Warframe 延展
+id: continuity
+display-name: "&3延展"
+item: "minecraft:clock"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_magic]
+effects: { ability_duration: 0.12 }
+max-rank: 5
+upgrade-cost: 1
+tags: [stat]
+item-lore: ["&8MOD · 法术护甲", "&7容量消耗: &e%cost%", "", "&7技能持续 &f+%effect_ability_duration%", "", "&7适用: 法术护甲"]

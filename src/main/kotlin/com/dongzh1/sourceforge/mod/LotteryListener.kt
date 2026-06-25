@@ -37,7 +37,35 @@ class LotteryListener(
         val player = event.player
         if (player.isSneaking) return
         event.isCancelled = true
+        // 需要环绕书架达标才能开抽奖界面（类似原版顶级附魔台）
+        val required = plugin.lotteryConfig.requiredBookshelves
+        if (required > 0) {
+            val have = countBookshelves(block)
+            if (have < required) {
+                player.sendMessage("§c[源质抽奖] §f需要 §e$required §f个书架环绕（当前 §e$have§f）—— 在附魔台周围摆满 5×5 书架")
+                playDeny(player)
+                return
+            }
+        }
         player.openInventory(LotteryMenu(plugin, player).inventory)
+    }
+
+    /**
+     * 统计附魔台周围的书架数：5×5 外圈（水平距离=±2 的 16 个格）在附魔台同层与上一层(dy 0/1)统计 BOOKSHELF。
+     * 与原版"顶级附魔台"的书架环绕形态一致，达到所需数量即可。
+     */
+    private fun countBookshelves(table: org.bukkit.block.Block): Int {
+        val world = table.world
+        var count = 0
+        for (dy in 0..1) {
+            for (dx in -2..2) {
+                for (dz in -2..2) {
+                    if (kotlin.math.max(kotlin.math.abs(dx), kotlin.math.abs(dz)) != 2) continue // 仅 5×5 外圈
+                    if (world.getBlockAt(table.x + dx, table.y + dy, table.z + dz).type == Material.BOOKSHELF) count++
+                }
+            }
+        }
+        return count
     }
 
     // ==================== 点击分派 ====================

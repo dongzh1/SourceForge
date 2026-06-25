@@ -1,0 +1,12 @@
+# 基础MOD · 技能强度（法术护甲）— Warframe 超能赋力
+id: intensify
+display-name: "&d超能赋力"
+item: "minecraft:glowstone"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_magic]
+effects: { ability_strength: 0.12 }
+max-rank: 5
+upgrade-cost: 1
+tags: [stat]
+item-lore: ["&8MOD · 法术护甲", "&7容量消耗: &e%cost%", "", "&7技能强度 &f+%effect_ability_strength%", "", "&7适用: 法术护甲"]

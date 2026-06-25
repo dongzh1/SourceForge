@@ -1,0 +1,12 @@
+# 基础MOD · 技能效率（法术护甲）— Warframe 精简
+id: streamline
+display-name: "&e精简"
+item: "minecraft:sugar"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_magic]
+effects: { ability_efficiency: 0.12 }
+max-rank: 5
+upgrade-cost: 1
+tags: [stat]
+item-lore: ["&8MOD · 法术护甲", "&7容量消耗: &e%cost%", "", "&7技能效率 &f+%effect_ability_efficiency%", "", "&7适用: 法术护甲"]

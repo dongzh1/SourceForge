@@ -1,0 +1,48 @@
+# ============================================================================
+# 锻造界面（Forge GUI）布局配置
+# ============================================================================
+# 这是锻造界面的专用配置文件，从 config.yml 中独立出来，方便单独调整界面外观。
+# 所有文本字段（title / name / lore）均支持完整 MiniMessage 语法，
+# 包括 CraftEngine 自定义标签：<image>、<shift>、<font>、<i18n>、<gradient>、<rainbow> 等，
+# 同时向后兼容传统 §/& 颜色码（会自动转换为 MiniMessage）。
+# 槽位编号从 0 起算。
+# ----------------------------------------------------------------------------
+
+# 界面大小：必须是 27 / 36 / 45 / 54（行数 × 9）。
+size: 45
+
+# 容器标题。
+#   默认含 <shift> 偏移 + sourceforge:forge_gui 背景图字形，
+#   由 CraftEngine 完整解析器渲染为 forge.png 背景图。
+#   想关掉背景图改回纯文字标题：把 title 设为空串 ""，
+#   则回退到 config.yml 的 gui.title 文字标题。
+#   微调左右位置：调整 <shift:-N> 的 N。
+title: "<shift:-8><image:sourceforge:forge_gui>"
+
+# 槽位布局。
+slots:
+  blueprint: 20            # 蓝图/武器输入（单槽，唯一可放入物品的槽）
+  action: 22               # 动作按钮（单槽：空闲=锻造，锻造中=进度，完成=收取）
+  output: 24               # 产出预览（单槽，只读，永不可拿取）
+  materials: [10, 11, 12, 13, 14, 15, 16]   # 材料列表显示（多槽，可任意选）
+  barriers: []             # 锁死的屏障槽（多槽，可任意选；仅在有背景图时生效）
+
+# 动作按钮三态外观。每态含：material（物品）、name（名称）、lore（基础描述行）。
+# 运行时会在 lore 之后追加动态行（如锻造剩余秒数 + 进度条、材料是否充足提示）。
+buttons:
+  hammer:
+    material: "minecraft:iron_axe"
+    name: "<green>开始锻造"
+    lore:
+      - "<gray>放入蓝图开始锻造，或放入武器进行强化"
+  progress:
+    material: "minecraft:spectral_arrow"
+    name: "<yellow>锻造中…"
+    lore: []
+  collect:
+    material: "minecraft:spectral_arrow"
+    name: "<green>点击收取"
+    lore: []
+
+# 仅当 title 为空（无背景图）时，用此材料填充空槽。
+filler-material: "minecraft:gray_stained_glass_pane"

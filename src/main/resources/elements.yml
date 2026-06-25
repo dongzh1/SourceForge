@@ -1,0 +1,116 @@
+# ============================================================
+# 元素异常状态系统（Warframe 简化版）
+# ============================================================
+# 命中时：先把武器上的【基础元素】两两融合成【组合元素】(消耗两个基础)，
+# 再对每个最终元素各自独立按 status_chance 计算触发次数(可超100%多次)，给怪叠层。
+#
+# status_chance 每元素独立计算：200%=每元素必触2次；150%=必触1+50%第2次。
+#
+# effect 行为类型：
+#   dot       每层每秒伤害(火/毒/毒气)
+#   slow      减速，层数越高越慢(冰/磁力)
+#   burst     叠层瞬时伤害+硬直(+radius>0 时电连锁到邻近怪)
+#   amp       提升怪【受到的全部伤害】，命中时按层数放大(病毒/腐蚀/磁力)
+#   knockback 击退+踉跄(爆裂)
+#   gas       dot + 波及 radius 内周围怪(毒气)
+#   confuse   让怪转而攻击 radius 内的其它怪(辐射)
+# ============================================================
+
+enabled: true
+stack-cap: 10
+tick-period: 10
+direct-damage-factor: 1.0
+
+# 内置触发 CD（毫秒）：同一(攻击者→怪)在此时间内只触发一次元素。
+# 防止「一刀同时走 SF 近战 + MM 原生攻击两条路径」与「高频多段技能」重复触发刷爆伤害。设 0 关闭。
+trigger-cooldown-ms: 150
+
+visual:
+  enabled: true
+  symbol-radius: 24
+  particle-count: 4
+
+elements:
+  # ===== 基础元素 =====
+  heat:
+    affix: heat_damage
+    effect: dot
+    duration: 6.0
+    dot-per-stack: 0.6
+    color: "RED"
+    symbol: "♨"
+    particle: FLAME
+  cold:
+    affix: cold_damage
+    effect: slow
+    duration: 5.0
+    slow-stacks-per-level: 2
+    slow-max-amplifier: 4
+    color: "AQUA"
+    symbol: "❄"
+    particle: SNOWFLAKE
+  toxin:
+    affix: toxin_damage
+    effect: dot
+    duration: 6.0
+    dot-per-stack: 0.5
+    color: "GREEN"
+    symbol: "☠"
+    particle: HAPPY_VILLAGER
+  electric:
+    affix: electric_damage
+    effect: burst
+    duration: 4.0
+    burst-per-stack: 0.8
+    stun-ticks: 6
+    radius: 4.0          # 连锁半径：命中时给附近一只怪也叠 1 层电
+    color: "YELLOW"
+    symbol: "⚡"
+    particle: ELECTRIC_SPARK
+
+  # ===== 组合元素（由基础融合，装备上不直接出现）=====
+  viral:                 # 冰+毒：增伤，最强
+    effect: amp
+    duration: 6.0
+    amp-per-stack: 0.10  # 每层 +10% 怪受到的全部伤害(含你的DoT)
+    color: "LIGHT_PURPLE"
+    symbol: "☣"
+    particle: SPORE_BLOSSOM_AIR
+  corrosive:             # 毒+电：护甲熔解(增伤，持续更久)
+    effect: amp
+    duration: 8.0
+    amp-per-stack: 0.08
+    color: "GREEN"
+    symbol: "⊛"
+    particle: ITEM_SLIME
+  magnetic:              # 冰+电：聚怪，把周围怪拉向目标
+    effect: pull
+    duration: 5.0
+    radius: 6.0          # 聚怪半径
+    knockback: 0.6       # 拉拽强度
+    color: "BLUE"
+    symbol: "⊗"
+    particle: GLOW
+  gas:                   # 火+毒：毒云，DoT 波及周围
+    effect: gas
+    duration: 6.0
+    dot-per-stack: 0.5
+    radius: 3.0
+    color: "GREEN"
+    symbol: "☁"
+    particle: WARPED_SPORE
+  radiation:             # 火+电：混乱，怪互相攻击
+    effect: confuse
+    duration: 6.0
+    radius: 8.0
+    color: "GOLD"
+    symbol: "☢"
+    particle: ANGRY_VILLAGER
+  blast:                 # 火+冰：击退+踉跄
+    effect: knockback
+    duration: 4.0
+    knockback: 0.9
+    stun-ticks: 6
+    color: "GOLD"
+    symbol: "✸"
+    particle: POOF

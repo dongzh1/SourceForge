@@ -1,0 +1,12 @@
+# 基础MOD · 能量上限（护甲）— Warframe 流体能量
+id: flow
+display-name: "&9流体能量"
+item: "minecraft:glowstone_dust"
+cost: 7
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+effects: { energy_max: 20.0 }
+max-rank: 5
+upgrade-cost: 1
+tags: [stat]
+item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7能量 &f+%effect_energy_max%", "", "&7适用: 护甲"]

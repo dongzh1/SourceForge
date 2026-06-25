@@ -1,7 +1,8 @@
 package com.dongzh1.sourceforge.mod
 
 import com.dongzh1.sourceforge.SourceForge
-import com.dongzh1.sourceforge.util.color
+import com.dongzh1.sourceforge.item.CraftEngineHook
+import com.dongzh1.sourceforge.util.Text
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -22,7 +23,7 @@ class EquipmentSelectMenu(
     private val forgeConfig = plugin.forgeConfig
 
     private val inventory: Inventory =
-        Bukkit.createInventory(this, 54, color(forgeConfig.modCapacity.guiTitle))
+        Bukkit.createInventory(this, 54, CraftEngineHook.titleComponent(forgeConfig.modCapacity.guiTitle))
 
     /** guiSlot -> (playerInventorySlot, weaponTypeId) */
     val cardSlots: Map<Int, Pair<Int, String>>
@@ -44,19 +45,14 @@ class EquipmentSelectMenu(
     private fun buildCards(): Map<Int, Pair<Int, String>> {
         val inv = player.inventory
         val candidates = mutableListOf<Int>()
-        // 顺序：头盔、胸甲、护腿、靴子、主手、副手
-        for (slot in listOf(39, 38, 37, 36, inv.heldItemSlot, 40)) {
+        // 装备栏：头盔、胸甲、护腿、靴子、副手
+        for (slot in listOf(39, 38, 37, 36, 40)) {
             if (itemService.isSourceEquipment(inv.getItem(slot))) candidates += slot
         }
-        // 背包生效装备（storage 0..35，排除主手槽）
+        // 物品栏 + 背包空间（storage 0..35，含快捷栏与主背包 27 格）：任意 SF 装备都可点选改造，
+        // 不再要求 effective-slots 含 inventory/backpack（改造台应能改身上任意一件装备，而不只是手持/生效中的）。
         for (idx in 0..35) {
-            if (idx == inv.heldItemSlot) continue
-            val item = inv.getItem(idx) ?: continue
-            if (!itemService.isSourceEquipment(item)) continue
-            val effective = itemService.equipmentConfig(item)?.effectiveSlots ?: continue
-            if ("inventory" in effective || "backpack" in effective) {
-                candidates += idx
-            }
+            if (itemService.isSourceEquipment(inv.getItem(idx))) candidates += idx
         }
         val result = linkedMapOf<Int, Pair<Int, String>>()
         for ((i, playerSlot) in candidates.withIndex()) {
@@ -90,14 +86,14 @@ class EquipmentSelectMenu(
         val used = modService().usedCapacity(equipment)
         val max = modService().readCapacity(equipment)
         val installed = modService().readInstalledSlots(equipment).count { it != null }
-        val lore = (meta.lore ?: mutableListOf()).toMutableList()
-        lore += ""
-        lore += color("&8——————")
+        val lore = (meta.lore() ?: mutableListOf()).toMutableList()
         val capColor = if (used > max) "&c" else "&e"
-        lore += color("&7容量: $capColor$used&7/&f$max")
-        lore += color("&7已安装: &f$installed 个 MOD")
-        lore += color("&a点击打开改造界面")
-        meta.lore = lore
+        lore += Text.comp("")
+        lore += Text.comp("&8——————")
+        lore += Text.comp("&7容量: $capColor$used&7/&f$max")
+        lore += Text.comp("&7已安装: &f$installed 个 MOD")
+        lore += Text.comp("&a点击打开改造界面")
+        meta.lore(lore)
         display.itemMeta = meta
         return display
     }
@@ -107,8 +103,8 @@ class EquipmentSelectMenu(
     private fun label(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }
@@ -116,8 +112,8 @@ class EquipmentSelectMenu(
     private fun pane(material: Material, name: String, lore: List<String>): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.setDisplayName(color(name))
-        if (lore.isNotEmpty()) meta.lore = color(lore)
+        Text.name(meta, name)
+        if (lore.isNotEmpty()) Text.lore(meta, lore)
         item.itemMeta = meta
         return item
     }

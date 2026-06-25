@@ -162,3 +162,49 @@ affixes:
     combat: ability_range
     scale: 1.0
     lore: "&7范围: &f+%value%"
+
+  # ===== 元素属性（与 status_chance 联动，详见 elements.yml）=====
+  # 数值故意偏小：装备/MOD 提供一点元素值，命中按 status_chance 触发对应元素异常并叠层。
+  heat_damage:
+    display-name: "火元素"
+    pdc-key: "heat_damage"
+    value-type: double
+    min: 0.5
+    max: 2.0
+    decimals: 1
+    combat: elemental
+    scale: 1.0
+    lore: "&7火: &c+%value%"
+
+  cold_damage:
+    display-name: "冰元素"
+    pdc-key: "cold_damage"
+    value-type: double
+    min: 0.5
+    max: 2.0
+    decimals: 1
+    combat: elemental
+    scale: 1.0
+    lore: "&7冰: &b+%value%"
+
+  toxin_damage:
+    display-name: "毒元素"
+    pdc-key: "toxin_damage"
+    value-type: double
+    min: 0.5
+    max: 2.0
+    decimals: 1
+    combat: elemental
+    scale: 1.0
+    lore: "&7毒: &a+%value%"
+
+  electric_damage:
+    display-name: "电元素"
+    pdc-key: "electric_damage"
+    value-type: double
+    min: 0.5
+    max: 2.0
+    decimals: 1
+    combat: elemental
+    scale: 1.0
+    lore: "&7电: &e+%value%"

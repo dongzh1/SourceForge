@@ -2,7 +2,7 @@ package com.dongzh1.sourceforge.mod
 
 import com.dongzh1.sourceforge.SourceForge
 import com.dongzh1.sourceforge.config.AffixConfig
-import com.dongzh1.sourceforge.util.color
+import com.dongzh1.sourceforge.util.Text
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
@@ -112,7 +112,7 @@ class NightmareService(
             ?: "melee"
         val item = ItemStack(config.material, amount.coerceAtLeast(1))
         val meta = item.itemMeta
-        meta.setDisplayName(color("&5梦魇MOD &8· 未鉴定"))
+        Text.name(meta, "&5梦魇MOD &8· 未鉴定")
         val pdc = meta.persistentDataContainer
         pdc.set(nmKey, PersistentDataType.BYTE, 1)
         pdc.set(nmStateKey, PersistentDataType.STRING, STATE_SEALED)
@@ -218,7 +218,7 @@ class NightmareService(
     fun buildFromData(data: NightmareInstance): ItemStack {
         val item = ItemStack(config.material, 1)
         val meta = item.itemMeta
-        meta.setDisplayName(color("&5梦魇MOD"))
+        Text.name(meta, "&5梦魇MOD")
         val pdc = meta.persistentDataContainer
         pdc.set(nmKey, PersistentDataType.BYTE, 1)
         pdc.set(nmStateKey, PersistentDataType.STRING, STATE_UNVEILED)
@@ -244,8 +244,9 @@ class NightmareService(
         val cat = pdc.get(nmCategoryKey, PersistentDataType.STRING) ?: "melee"
         val progress = pdc.get(nmProgressKey, PersistentDataType.INTEGER) ?: 0
         val goal = pdc.get(nmGoalKey, PersistentDataType.INTEGER) ?: config.goalKills
-        meta.setDisplayName(color("&5梦魇MOD &8· 未鉴定"))
-        meta.lore = color(
+        Text.name(meta, "&5梦魇MOD &8· 未鉴定")
+        Text.lore(
+            meta,
             listOf(
                 "&5梦魇MOD &8· 未鉴定",
                 "&7适用: ${categoryName(cat)}",
@@ -258,7 +259,7 @@ class NightmareService(
     private fun renderUnveiledLore(meta: ItemMeta, item: ItemStack) {
         val raw = meta.persistentDataContainer.get(nmDataKey, PersistentDataType.STRING)
         val instance = raw?.let { parseDataString(it) } ?: NightmareInstance(config.baseCost, category(item) ?: "melee", emptyMap())
-        meta.setDisplayName(color("&5梦魇MOD"))
+        Text.name(meta, "&5梦魇MOD")
         val lines = mutableListOf(
             "&5梦魇MOD",
             "&7容量消耗: &e${instance.cost}",
@@ -269,7 +270,7 @@ class NightmareService(
         }
         lines += ""
         lines += "&7适用: ${categoryName(instance.category)}"
-        meta.lore = color(lines)
+        Text.lore(meta, lines)
     }
 
     private fun affixLine(affixId: String, value: Double): String {

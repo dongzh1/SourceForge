@@ -6,5 +6,7 @@ max-per-equipment: 1
 exclusivity-group: "damage_amp"
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { base_damage: 4.0 }
+max-rank: 5
+upgrade-cost: 2
 tags: [stat]
 item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7基础伤害 &f+%effect_base_damage%", "", "&7适用: 武器"]

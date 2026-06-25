@@ -1,0 +1,12 @@
+# 基础MOD · 护盾（护甲）— Warframe 导能护盾
+id: redirection
+display-name: "&b导能护盾"
+item: "minecraft:prismarine_shard"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+effects: { shield_capacity: 16.0 }
+max-rank: 5
+upgrade-cost: 1
+tags: [stat]
+item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7护盾 &f+%effect_shield_capacity%", "", "&7适用: 护甲"]

@@ -1,5 +1,8 @@
 package com.dongzh1.sourceforge.item
 
+import com.dongzh1.sourceforge.util.Text
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.momirealms.craftengine.bukkit.api.CraftEngineBlocks
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems
 import net.momirealms.craftengine.core.util.Key
@@ -62,6 +65,39 @@ object CraftEngineHook {
         }
         return true
     }
+
+    /**
+     * 用 CraftEngine 的【完整】MiniMessage 解析器把字符串解析成 Paper Component。
+     * customMiniMessage() 同时支持标准标签(<font>/<gradient>/颜色/装饰)与 CE 自定义标签
+     * (<shift>/<image>/<i18n> 等)。在代码层解析成成品 Component(而非把字符串丢给 CE 封包再解析),
+     * 这样 GUI 标题里的 <image:sourceforge:forge_gui> 等格式真正生效,不再依赖容器封包拦截。
+     *
+     * CE 的 adventure 是重定位的(net.momirealms.craftengine.libraries.adventure),与 Paper 的
+     * net.kyori 不是同一套类,故走 JSON 桥接:CE 解析 -> componentToJson -> Paper 端 Gson 反序列化。
+     * 全程反射,避免编译期依赖重定位类。CE 不可用或解析失败返回 null(调用方回退到 Paper MiniMessage)。
+     */
+    fun miniMessage(raw: String): Component? {
+        if (!enabled) return null
+        return runCatching {
+            val helper = Class.forName("net.momirealms.craftengine.core.util.AdventureHelper")
+            // 先把传统 §/& 颜色码转成 MiniMessage 标签,再交给完整解析器
+            val mmStr = helper.getMethod("legacyToMiniMessage", String::class.java).invoke(null, raw) as String
+            val customMM = helper.getMethod("customMiniMessage").invoke(null)
+            val deserialize = customMM.javaClass.methods.first {
+                it.name == "deserialize" && it.parameterCount == 1 && it.parameterTypes[0] == String::class.java
+            }
+            val ceComp = deserialize.invoke(customMM, mmStr)
+            val compClass = Class.forName("net.momirealms.craftengine.libraries.adventure.text.Component")
+            val json = helper.getMethod("componentToJson", compClass).invoke(null, ceComp) as String
+            GsonComponentSerializer.gson().deserialize(json)
+        }.getOrNull()
+    }
+
+    /**
+     * GUI 标题用 Component:优先 CE 完整解析器(支持 <image>/<shift>/<font>/<i18n> 等 CE 标签),
+     * CE 不可用或解析失败时回退到 Paper 自带 MiniMessage(标准标签 + 传统 §/& 颜色码)。
+     */
+    fun titleComponent(raw: String): Component = miniMessage(raw) ?: Text.comp(raw)
 
     private fun parseKey(raw: String): Key? {
         val normalized = raw.removePrefix("ce_")

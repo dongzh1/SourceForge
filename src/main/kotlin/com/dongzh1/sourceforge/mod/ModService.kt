@@ -4,6 +4,7 @@ import com.dongzh1.sourceforge.SourceForge
 import com.dongzh1.sourceforge.config.AffixConfig
 import com.dongzh1.sourceforge.config.ForgeConfig
 import com.dongzh1.sourceforge.item.CraftEngineHook
+import com.dongzh1.sourceforge.util.Text
 import com.dongzh1.sourceforge.util.color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -108,7 +109,7 @@ class ModService(
         val item = CraftEngineHook.build(mod.itemId, amount.coerceAtLeast(1))
             ?: ItemStack(mod.material, amount.coerceAtLeast(1))
         val meta = item.itemMeta
-        meta.setDisplayName(color(mod.displayName))
+        Text.name(meta, mod.displayName)
         val effectValue: (String) -> Double = { affixId -> mod.effectAtRank(affixId, r) }
         val rankLine = if (mod.maxRank > 0) "&7段位: &b$r&7/&f${mod.maxRank}" else null
         val loreLines = if (mod.itemLore.isNotEmpty()) {
@@ -159,6 +160,16 @@ class ModService(
             slots[i] = if (token.isNullOrBlank()) null else token
         }
         return slots
+    }
+
+    /** 该物品上已安装的（普通）MOD id 集合。供技能MOD判断装备是否带某个技能。 */
+    fun installedModIds(item: ItemStack?): Set<String> {
+        val result = HashSet<String>()
+        for (token in readInstalledSlots(item)) {
+            if (token == null || token == nmToken) continue
+            parseSlotToken(token)?.let { result.add(it.first) }
+        }
+        return result
     }
 
     private fun writeInstalledSlots(meta: ItemMeta, slots: List<String?>) {
@@ -287,7 +298,7 @@ class ModService(
     private fun fallbackModItem(id: String): ItemStack {
         val item = ItemStack(Material.GRAY_DYE, 1)
         val meta = item.itemMeta
-        meta.setDisplayName(color("&8未知 MOD: $id"))
+        Text.name(meta, "&8未知 MOD: $id")
         meta.persistentDataContainer.set(modIdKey, PersistentDataType.STRING, id)
         item.itemMeta = meta
         return item
