@@ -5,6 +5,7 @@ import com.dongzh1.sourceforge.config.AffixConfig
 import com.dongzh1.sourceforge.config.AffixRollConfig
 import com.dongzh1.sourceforge.config.EquipmentConfig
 import com.dongzh1.sourceforge.config.ForgeConfig
+import com.dongzh1.sourceforge.util.Text
 import com.dongzh1.sourceforge.util.color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -21,6 +22,15 @@ import java.text.DecimalFormat
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
+
+/**
+ * 外部词缀加成回调。其它插件注册后，玩家属性统计时会把 bonus(player) 的结果累加进去。
+ * 返回 affixId->数值；调用方应按需(如玩家所在世界/状态)返回，不满足条件就返回空 Map，
+ * 从而实现"临时、非持久、可随时失效"的属性加成（数值从不写在玩家/物品上）。
+ */
+fun interface ExternalAffixProvider {
+    fun bonus(player: Player): Map<String, Double>
+}
 
 class ForgeItemService(
     private val plugin: SourceForge,
@@ -56,6 +66,20 @@ class ForgeItemService(
     private val statCache = ConcurrentHashMap<UUID, CachedStats>()
 
     private class CachedStats(val totals: Map<String, Double>, val expireAt: Long)
+
+    /**
+     * 外部临时词缀 Provider 列表（如 PixelRPG 副本临时强化）。统计属性时一并累加。
+     * 数值由回调实时返回、从不持久化，调用方可据世界/状态返回 0，保证副本外不生效、重启即归零。
+     */
+    private val externalProviders = java.util.concurrent.CopyOnWriteArrayList<ExternalAffixProvider>()
+
+    fun registerExternalAffixProvider(provider: ExternalAffixProvider) {
+        externalProviders.addIfAbsent(provider)
+    }
+
+    fun unregisterExternalAffixProvider(provider: ExternalAffixProvider) {
+        externalProviders.remove(provider)
+    }
 
     private fun affixKey(affix: AffixConfig): NamespacedKey =
         affixKeys[affix.id] ?: NamespacedKey(plugin, affix.pdcKey)
@@ -139,7 +163,7 @@ class ForgeItemService(
         selected: List<Pair<AffixConfig, Double>>
     ) {
         val meta = item.itemMeta
-        meta.setDisplayName(color("&f${equipment.displayName}"))
+        Text.name(meta, "&f${equipment.displayName}")
         meta.isUnbreakable = true
         meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE)
 
@@ -671,6 +695,15 @@ class ForgeItemService(
             for (affixId in config.affixes.keys) {
                 val value = readAffixValue(pdc, affixId)
                 if (value != 0.0) {
+                    totals[affixId] = (totals[affixId] ?: 0.0) + value
+                }
+            }
+        }
+        // 外部临时词缀(副本强化等)：实时回调累加，从不持久化；只接受已知 affixId
+        for (provider in externalProviders) {
+            val bonus = runCatching { provider.bonus(player) }.getOrNull() ?: continue
+            for ((affixId, value) in bonus) {
+                if (value != 0.0 && config.affixes.containsKey(affixId)) {
                     totals[affixId] = (totals[affixId] ?: 0.0) + value
                 }
             }
