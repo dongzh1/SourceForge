@@ -145,17 +145,45 @@ class StatusEffectManager(private val plugin: SourceForge) {
         val frac = statusChance - guaranteed
         val debugOn = isDebug(player.uniqueId)
         val dbg = if (debugOn) StringBuilder() else null
-        for ((type, _) in c.combine(baseVals)) {
+        // 基础元素各自独立按 status_chance 叠到怪身上（不在武器侧融合）
+        for ((type, _) in baseVals) {
             var procs = guaranteed
             if (frac > 0.0 && java.util.concurrent.ThreadLocalRandom.current().nextDouble() < frac) procs++
             if (procs > 0) applyStacks(target, type, procs, player, cause = "MM")
             dbg?.append("${type.id}×$procs ")
         }
+        // 复合检测（怪物侧，非消耗）：怪身上有多种基础时额外触发对应组合
+        applyCombosFromMonster(target, player)
         if (debugOn) {
             player.sendMessage(
                 "§8[元素debug·MM命中] §7status=§f${"%.2f".format(statusChance)} §7触发=§a${dbg?.toString()?.trim()?.ifEmpty { "无" } ?: "无"} " +
                     "§7目标层数: §f${stacksSummary(target)}"
             )
+        }
+    }
+
+    /**
+     * 复合检测（怪物侧，非消耗）：扫描怪身上【当前在场】的基础元素，任意两种基础同时存在即额外触发对应的组合元素，
+     * 且【保留】两种基础本身（基础的 DoT/减速等效果继续）。怪身上同时存在多种基础时，所有满足条件的组合一并触发，
+     * 因此队友各自附加不同基础元素即可在同一只怪上凑出（多个）复合效果。
+     *
+     * 复合按【在场即触发】判定（不再额外 roll status_chance）；每次调用给每个成立的组合叠 1 层（刷新持续时间）。
+     */
+    fun applyCombosFromMonster(entity: LivingEntity, source: Player?) {
+        val c = cfg()
+        if (!c.enabled || entity is Player || entity.isDead || !entity.isValid) return
+        val map = mobs[entity.uniqueId] ?: return
+        val now = System.currentTimeMillis()
+        val present = HashSet<ElementType>()
+        for ((type, st) in map) {
+            if (type.isBase && st.stacks > 0 && now < st.expireAt) present.add(type)
+        }
+        if (present.size < 2) return
+        for ((combo, a, b) in ElementType.COMBOS) {
+            if (c.element(combo) == null) continue
+            if (a in present && b in present) {
+                applyStacks(entity, combo, 1, source, cause = "复合")
+            }
         }
     }
 

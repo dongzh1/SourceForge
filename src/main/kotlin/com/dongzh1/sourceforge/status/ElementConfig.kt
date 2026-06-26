@@ -55,29 +55,6 @@ class ElementConfig(
     /** 当前生效（有定义）的元素列表，按枚举顺序。 */
     val active: List<ElementDef> get() = ElementType.entries.mapNotNull { defs[it] }
 
-    /**
-     * 把武器上的基础元素值融合成最终要触发的元素列表（Warframe 式）：
-     * 按 COMBOS 优先级贪心配对，成对的两个基础消耗为组合元素（值=两者之和），剩余基础保持原样。
-     * 未在配置中启用的组合不会形成。
-     */
-    fun combine(baseValues: Map<ElementType, Double>): List<Pair<ElementType, Double>> {
-        val avail = HashMap<ElementType, Double>()
-        for ((t, v) in baseValues) if (t.isBase && v > 0.0) avail[t] = v
-        val result = ArrayList<Pair<ElementType, Double>>()
-        for ((combo, a, b) in ElementType.COMBOS) {
-            if (defs[combo] == null) continue
-            val va = avail[a]
-            val vb = avail[b]
-            if (va != null && vb != null) {
-                result.add(combo to (va + vb))
-                avail.remove(a)
-                avail.remove(b)
-            }
-        }
-        for ((t, v) in avail) result.add(t to v)
-        return result
-    }
-
     companion object {
         fun load(cfg: FileConfiguration): ElementConfig {
             val enabled = cfg.getBoolean("enabled", true)

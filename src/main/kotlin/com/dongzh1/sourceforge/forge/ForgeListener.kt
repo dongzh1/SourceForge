@@ -250,46 +250,44 @@ class ForgeListener(
             }
         }
 
-        val configuredBaseDamage = readValue("base_damage")
-        val critChance = readValue("critical_chance")
-        val critDamageBonus = readValue("critical_damage")
+        // 暴击率 / 暴击伤害按【全身合计】读取，与 /sf stats 显示口径一致。
+        // 旧版只读手持武器 PDC（readValue）——若暴击来自防具/MOD，武器上读到 0，导致即使总暴击率 100% 也永不暴击。
+        val critChance = plugin.itemService.readTotalAffix(player, "critical_chance")
+        val critDamageBonus = plugin.itemService.readTotalAffix(player, "critical_damage")
+        // 技能强度按设计【不计入】伤害（仅作为 PAPI 值，由 MM 技能在 amount 里自行乘算）；此处仅供调试展示。
         val abilityStrength = plugin.itemService.readTotalAffix(player, "ability_strength")
 
-        // 基础伤害：优先用词条值，否则用原版基础
-        var totalDamage = if (configuredBaseDamage > 0.0) {
-            configuredBaseDamage
-        } else {
-            baseDamage
-        }
+        // 劫持传入伤害：以本次事件的【传入伤害】为基准——
+        //   · MM damage 技能：调用方用 PAPI(基础伤害[×强度])算好的 amount
+        //   · 原版攻击：武器 base_damage 已写入 ATTACK_DAMAGE 属性后的攻击伤害
+        // 不再用武器 base_damage 覆盖，避免抹掉调用方(MM/PAPI)已经算入的加成。
+        val incomingDamage = baseDamage
+        var totalDamage = incomingDamage
 
-        // 技能强度加成
-        totalDamage *= (1.0 + abilityStrength)
-
-        // 暴击判定
-        var critTriggered = false
-        if (critChance > 0.0 && Random.nextDouble() < critChance) {
-            critTriggered = true
-            val multiplier = 1.0 + if (critDamageBonus > 0.0) critDamageBonus else 0.5
-            totalDamage *= multiplier
-        }
+        // 暴击判定（全身暴击率/暴击伤害）
+        val critRoll = Random.nextDouble()
+        val critTriggered = critChance > 0.0 && critRoll < critChance
+        val critMultiplier = if (critTriggered) 1.0 + (if (critDamageBonus > 0.0) critDamageBonus else 0.5) else 1.0
+        val damageBeforeCrit = totalDamage
+        if (critTriggered) totalDamage *= critMultiplier
 
         // ===== 元素：直伤附加 + 异常触发（status_chance 可超100%，多次触发）=====
+        var elementDirect = 0.0
         val ec = plugin.elementConfig
         if (ec.enabled) {
             val baseVals = LinkedHashMap<com.dongzh1.sourceforge.status.ElementType, Double>()
             var elemSum = 0.0
             for (def in ec.active) {
-                if (!def.type.isBase) continue   // 组合元素由基础融合得到，不直接从装备读
+                if (!def.type.isBase) continue   // 组合元素由怪物侧检测得到，不直接从装备读
                 val v = readValue(def.affix)
                 if (v > 0.0) { baseVals[def.type] = v; elemSum += v }
             }
             if (elemSum > 0.0) {
                 // 没触发也有用：各基础元素属性之和按系数直接加进伤害
-                totalDamage += elemSum * ec.directDamageFactor
+                elementDirect = elemSum * ec.directDamageFactor
+                totalDamage += elementDirect
                 // 注：AMP 增伤（病毒/腐蚀）改由通用伤害监听 ElementDamageListener 统一放大，
                 // 覆盖 SF 近战/MM/原版/DoT 所有来源，这里不再单独乘，避免双重。
-                // Warframe 式融合：两种基础同在武器上 → 组合元素（消耗两个基础）
-                val finalElems = ec.combine(baseVals)
                 val statusChance = readValue("status_chance")
                 val guaranteed = kotlin.math.floor(statusChance).toInt()
                 val frac = statusChance - guaranteed
@@ -298,20 +296,22 @@ class ForgeListener(
                 // 内置触发 CD：同一(玩家→怪)0.15s 内只触发一次，堵住 SF+MM 双路径与高频多段
                 val gateOpen = statusChance > 0.0 && plugin.statusManager.tryTriggerGate(player, target)
                 if (gateOpen) {
-                    // 每种（融合后的）元素各自独立按 status_chance 计算触发次数
-                    for ((type, _) in finalElems) {
+                    // 基础元素各自独立按 status_chance 叠到怪身上（不在武器侧融合）
+                    for ((type, _) in baseVals) {
                         var procs = guaranteed
                         if (frac > 0.0 && Random.nextDouble() < frac) procs++
                         if (procs > 0) plugin.statusManager.applyStacks(target, type, procs, player, cause = "普攻")
                         dbg?.append("${type.id}×$procs ")
                     }
+                    // 复合检测（怪物侧，非消耗）：怪身上多种基础同时存在时额外触发对应组合（含队友凑出的元素）
+                    plugin.statusManager.applyCombosFromMonster(target, player)
                 } else if (debugOn && statusChance > 0.0) {
                     dbg?.append("触发CD中跳过")
                 }
                 if (debugOn) {
                     player.sendMessage(
                         "§8[元素debug·普攻命中] §7基础元素=§f${baseVals.entries.joinToString(",") { "${it.key.id}${"%.1f".format(it.value)}" }.ifEmpty { "无" }} " +
-                            "§7→融合=§f${finalElems.joinToString(",") { it.first.id }} §7status=§f${"%.2f".format(statusChance)}"
+                            "§7status=§f${"%.2f".format(statusChance)}"
                     )
                     player.sendMessage(
                         "§8[元素debug·普攻命中] §7本次触发=§a${dbg?.toString()?.trim()?.ifEmpty { "无" } ?: "无"} " +
@@ -324,14 +324,28 @@ class ForgeListener(
         applyDamage(totalDamage)
 
         if (plugin.forgeConfig.debugCombat) {
-            player.sendMessage(
-                "§8[SourceForge Debug] §7基础=${"%.2f".format(baseDamage)}, " +
-                    "配置=${"%.2f".format(configuredBaseDamage)}, " +
-                    "强度=${"%.2f".format(abilityStrength)}, " +
-                    "暴击=${"%.2f".format(critChance)}(${if (critTriggered) "触发" else "未触发"}), " +
-                    "倍率=${"%.2f".format(critDamageBonus)}, " +
-                    "最终=${"%.2f".format(totalDamage)}"
-            )
+            val srcDesc = when {
+                projectilePdc != null -> "弹射物"
+                weaponPdc != null -> "武器(${weapon?.type?.name ?: "?"})"
+                else -> "全身防具(无SF武器)"
+            }
+            val targetName = (target as? Player)?.name ?: target.type.name
+            player.sendMessage("§6[SF战斗] §f${player.name} §7→ §f$targetName  §8| 来源: $srcDesc")
+            player.sendMessage("  §7① 传入伤害(MM/原版): §f${"%.2f".format(incomingDamage)}")
+            if (critTriggered) {
+                player.sendMessage(
+                    "  §7② 暴击: §f${"%.1f".format(critChance * 100)}%§7 掷骰 §f${"%.3f".format(critRoll)} §7→ §a暴击! " +
+                        "§7倍率 §f×${"%.2f".format(critMultiplier)} §7(+${"%.0f".format(critDamageBonus * 100)}%)  " +
+                        "§f${"%.2f".format(damageBeforeCrit)}§7→§f${"%.2f".format(damageBeforeCrit * critMultiplier)}"
+                )
+            } else {
+                player.sendMessage(
+                    "  §7② 暴击: §f${"%.1f".format(critChance * 100)}%§7 掷骰 §f${"%.3f".format(critRoll)} §7→ §c未暴击"
+                )
+            }
+            if (elementDirect > 0.0) player.sendMessage("  §7③ 元素直伤: §f+${"%.2f".format(elementDirect)}")
+            player.sendMessage("  §8· 技能强度(全身)=${"%.1f".format(abilityStrength * 100)}% §8[仅PAPI, 不计入伤害]")
+            player.sendMessage("  §e最终伤害: §c${"%.2f".format(totalDamage)}")
         }
 
         return totalDamage.toFloat()

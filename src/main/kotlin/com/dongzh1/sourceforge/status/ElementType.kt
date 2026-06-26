@@ -2,7 +2,8 @@ package com.dongzh1.sourceforge.status
 
 /**
  * 元素类型（Warframe 简化版）。
- * 基础 4 种：火/冰/毒/电。组合 6 种：两种基础同时在武器上会融合成对应高级元素（消耗两个基础）。
+ * 基础 4 种：火/冰/毒/电。组合 6 种：当【怪物身上】同时存在两种对应基础元素时，额外触发对应组合元素效果，
+ * 且【不消耗】基础（基础效果继续）。怪身上同时存在多种基础可同时形成多个组合（队友配合）。
  * 具体数值/效果由 elements.yml 驱动，这里只定义种类、id、以及组合配对表。
  */
 enum class ElementType(val id: String) {
@@ -25,9 +26,9 @@ enum class ElementType(val id: String) {
         val BASES = listOf(HEAT, COLD, TOXIN, ELECTRIC)
 
         /**
-         * 组合配对表（组合元素, 基础A, 基础B），按从上到下的优先级贪心配对：
-         * 多元素时先满足靠前的组合，配对成功即消耗这两个基础，不再参与后续配对。
-         * 病毒/腐蚀（强力增伤/穿甲）优先级最高。
+         * 组合配对表（组合元素, 基础A, 基础B）。
+         * 怪物侧检测：遍历全表，凡【怪身上同时存在 A 与 B】的组合都会触发（不消耗、不互斥），
+         * 因此一只怪可同时挂多个组合。表顺序仅影响触发/调试输出的先后，不再有贪心消耗语义。
          */
         val COMBOS: List<Triple<ElementType, ElementType, ElementType>> = listOf(
             Triple(VIRAL, COLD, TOXIN),
