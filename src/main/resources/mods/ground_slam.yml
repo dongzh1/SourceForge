@@ -10,11 +10,9 @@ applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, defense]
 skill: true
 allowed-triggers: [midair]
-item-lore:
-  - "&8MOD · 技能触发栏(空中) · 防卫"
-  - ""
-  - "&7跳起后 &f空中左键 &7向下猛砸，落地掀起冲击环"
-  - "&7对周围造成 &f基础伤害&7(×1.4) + 击退"
+mana: "%cfg:ground-slam.mana|18% 能量"
+cooldown: "%cfgs:ground-slam.cooldown-ms|6000%秒"
+description:
+  - "&f空中左键 &7向下猛砸，落地掀起冲击环"
+  - "对周围造成 &f基础伤害 ×%cfg:ground-slam.dmg-mult|1.4% &7+ 击退"
   - "&6架势联动：&7铁壁架势中施放 → 范围/伤害加大 + 落地减伤"
-  - ""
-  - "&7适用: 近战武器 · 冷却 6s"

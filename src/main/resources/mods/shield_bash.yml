@@ -10,10 +10,8 @@ applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, defense]
 skill: true
 allowed-triggers: [right]
-item-lore:
-  - "&8MOD · 技能触发栏(右键) · 防卫"
-  - ""
-  - "&7右键 &f盾击 &7前方扇形：基础伤害 + 击退 + 硬直"
-  - "&6破绽联动：&7铁壁架势格挡后 → &f伤害×2、范围加大"
-  - ""
-  - "&7适用: 近战武器 · 冷却 4s"
+mana: "%cfg:shield-bash.mana|12% 能量"
+cooldown: "%cfgs:shield-bash.cooldown-ms|5000%秒"
+description:
+  - "&f右键 &7盾击前方扇形：&f基础伤害 ×%cfg:shield-bash.dmg-mult|0.8% &7+ 击退 + 硬直"
+  - "&6破绽联动：&7格挡后施放 → &f伤害×2、范围加大"

@@ -8,8 +8,5 @@ skill: true
 mm-item: sf_skill_leap
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill]
-item-lore:
-  - "&8技能MOD · 装进技能槽"
-  - "&7右键 &f纵身一跃 (MM)"
-  - ""
-  - "&7适用: 近战武器"
+description:
+  - "&f右键 &7纵身一跃 &8(MM 技能)"

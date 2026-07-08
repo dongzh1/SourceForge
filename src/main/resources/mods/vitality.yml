@@ -8,4 +8,3 @@ effects: { health: 20.0 }
 max-rank: 5
 upgrade-cost: 1
 tags: [stat]
-item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7生命 &f+%effect_health%", "", "&7适用: 护甲"]

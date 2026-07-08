@@ -54,7 +54,12 @@ object ModRegistry {
                             if (TriggerSlot.byId(it) == null) warnings += "MOD ${id} allowed-triggers 含无法识别的触发栏 '$it'（已忽略）"
                         }
                         raw.mapNotNull { TriggerSlot.byId(it)?.id }.toSet()
-                    }
+                    },
+                    // 统一排版（ModLoreBuilder）用的展示字段，全部可选。
+                    typeLabel = config.getString("type-label")?.takeIf { it.isNotBlank() },
+                    description = config.getStringList("description"),
+                    manaCost = config.getString("mana")?.takeIf { it.isNotBlank() },
+                    cooldown = config.getString("cooldown")?.takeIf { it.isNotBlank() }
                 )
             }
         return mods to warnings

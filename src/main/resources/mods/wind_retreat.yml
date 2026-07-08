@@ -1,5 +1,5 @@
 # 技能MOD · 疾风撤退（wind_retreat）— 剑客·机动套。装进武器「Shift+右键」技能触发栏。
-# Shift+右键 向后跃 + 短暂迅捷，开"撤退"联动窗口(2.5s)：接月华斩 ×1.6。
+# Shift+右键 向后跃 + 短暂迅捷，开"撤退"联动窗口(2.5s)：接月华斩 ×1.35。
 # 脚本: skills/wind_retreat.js（钩子 onActivate）；数值在 config.yml 的 wind-retreat 段。
 id: wind_retreat
 display-name: "&b疾风撤退"
@@ -10,10 +10,8 @@ applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, mobility]
 skill: true
 allowed-triggers: [shift_right]
-item-lore:
-  - "&8MOD · 技能触发栏(Shift+右键) · 机动"
-  - ""
-  - "&7Shift+右键 &f向后急退 &7并获得短暂迅捷"
-  - "&d撤退后 2.5 秒内接『月华斩』伤害 ×1.6"
-  - ""
-  - "&7适用: 近战武器 · 冷却 6s"
+mana: "%cfg:wind-retreat.mana|16% 能量"
+cooldown: "%cfgs:wind-retreat.cooldown-ms|6000%秒"
+description:
+  - "&fShift+右键 &7向后急退，获得短暂迅捷"
+  - "&d撤退后 %cfg:wind-retreat.combo-seconds|2.5% 秒内接『月华斩』×1.35"

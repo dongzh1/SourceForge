@@ -255,7 +255,6 @@ class ForgeItemService(
         val lore = mutableListOf<String>()
         lore += equipment.baseLore.map { it.replace("%tier%", tier.toString()) }
         if (lore.isNotEmpty()) lore += ""
-        lore += "&7等级: &e$tier"
 
         val pdc = meta.persistentDataContainer
         pdc.set(typeKey, PersistentDataType.STRING, equipment.id)
@@ -280,15 +279,15 @@ class ForgeItemService(
         if (price > 0.0) {
             pdc.set(pixelShopPriceKey, PersistentDataType.DOUBLE, price)
         }
-        lore += "&7评分: &b$score"
+        lore += "&7等级 &e$tier &8| &7评分 &b$score"
         if (price > 0.0) {
-            lore += "&7价格: &6${format(price, 1)}"
+            lore += "&8价格 &6${format(price, 1)}"
         }
         if (selected.isNotEmpty()) {
             lore += ""
-            lore += "&7加成"
+            lore += "&6● 属性&7:"
             selected.forEach { (affix, value) ->
-                lore += "&f${affix.displayName} &7+${format(value, affix.decimals)}"
+                lore += "  &7${affix.displayName} ${affix.color}+${formatAffixValue(affix, value)}"
             }
         }
 
@@ -446,12 +445,20 @@ class ForgeItemService(
         if (capMax != null) newCap = newCap.coerceAtMost(capMax)
         pdc.set(modCapacityKey, PersistentDataType.INTEGER, newCap)
 
-        // lore：刷新/追加强化等级行
-        val tag = "&7强化等级:"
+        // lore：刷新/追加强化行。插到「改造」分区之前，避免被 reapplyModEffects 重建时当作改造段丢弃。
         val lore = (meta.lore ?: mutableListOf()).toMutableList()
-        val line = color("$tag &b+$targetLevel")
-        val idx = lore.indexOfFirst { it.contains("强化等级:") }
-        if (idx >= 0) lore[idx] = line else lore.add(line)
+        val line = color("&7强化 &b+$targetLevel")
+        val idx = lore.indexOfFirst { it.contains("强化") }
+        if (idx >= 0) {
+            lore[idx] = line
+        } else {
+            val markerIdx = lore.indexOfFirst { it.contains("改造") }
+            when {
+                markerIdx > 0 && lore[markerIdx - 1].isBlank() -> lore.add(markerIdx - 1, line)
+                markerIdx >= 0 -> lore.add(markerIdx, line)
+                else -> lore.add(line)
+            }
+        }
         meta.lore = lore
 
         item.itemMeta = meta
@@ -783,6 +790,15 @@ class ForgeItemService(
     private fun format(value: Double, decimals: Int): String {
         if (decimals <= 0) return value.toInt().toString()
         return DecimalFormat("0." + "0".repeat(decimals)).format(value)
+    }
+
+    /** 词条数值：比例词条 ×100 加 %（小数位相应减 2），其余按 decimals；统一去掉尾随 0。与 MOD 卡口径一致。 */
+    private fun formatAffixValue(affix: AffixConfig, value: Double): String {
+        val v = if (affix.percent) value * 100.0 else value
+        val decimals = if (affix.percent) (affix.decimals - 2).coerceAtLeast(0) else affix.decimals
+        val s = format(v, decimals)
+        val trimmed = if ('.' in s) s.trimEnd('0').trimEnd('.') else s
+        return if (affix.percent) "$trimmed%" else trimmed
     }
 
     private fun parseTier(raw: String?, min: Int, max: Int): Int {

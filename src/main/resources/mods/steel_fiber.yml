@@ -9,4 +9,3 @@ effects: { armor: 8.0 }
 max-rank: 5
 upgrade-cost: 1
 tags: [stat]
-item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7护甲 &f+%effect_armor%", "", "&7适用: 护甲"]

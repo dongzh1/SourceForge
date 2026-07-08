@@ -196,6 +196,17 @@ data class ForgeConfig(
             return Material.matchMaterial(raw.substringAfter("minecraft:", raw).uppercase()) ?: fallback
         }
 
+        /** 比例型词条(MOD 卡上默认按百分比显示)：yml 可用 percent: true/false 覆盖。 */
+        private val DEFAULT_PERCENT_AFFIXES = setOf(
+            "critical_chance", "critical_damage", "status_chance", "summon_damage"
+        )
+
+        /** 词条在 MOD 卡上的数值颜色默认值(元素按元素色)：yml 可用 color 覆盖。 */
+        private val DEFAULT_AFFIX_COLORS = mapOf(
+            "heat_damage" to "&c", "cold_damage" to "&b",
+            "toxin_damage" to "&a", "electric_damage" to "&e"
+        )
+
         private fun loadAffix(config: FileConfiguration, path: String, id: String): AffixConfig {
             return AffixConfig(
                 id = id,
@@ -207,7 +218,12 @@ data class ForgeConfig(
                 decimals = config.getInt("$path.decimals", 1).coerceAtLeast(0),
                 combat = config.getString("$path.combat", id)!!.lowercase(),
                 scale = config.getDouble("$path.scale", 1.0),
-                lore = config.getString("$path.lore", "&7%name% +%value%")!!
+                lore = config.getString("$path.lore", "&7%name% +%value%")!!,
+                percent = config.getBoolean(
+                    "$path.percent",
+                    id in DEFAULT_PERCENT_AFFIXES || id.startsWith("ability_")
+                ),
+                color = config.getString("$path.color", DEFAULT_AFFIX_COLORS[id] ?: "&f")!!
             )
         }
 
@@ -460,7 +476,11 @@ data class AffixConfig(
     val decimals: Int,
     val combat: String,
     val scale: Double,
-    val lore: String
+    val lore: String,
+    /** MOD 卡上按百分比显示(值×100 加 %)。 */
+    val percent: Boolean = false,
+    /** MOD 卡上数值的颜色码(元素词条用元素色)。 */
+    val color: String = "&f"
 )
 
 data class CombatConfig(

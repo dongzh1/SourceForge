@@ -9,4 +9,3 @@ effects: { critical_chance: 0.10 }
 max-rank: 5
 upgrade-cost: 2
 tags: [stat]
-item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7暴击几率 &f+%effect_critical_chance%", "", "&7适用: 武器"]

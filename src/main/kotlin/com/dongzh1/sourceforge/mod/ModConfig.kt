@@ -30,7 +30,15 @@ data class ModConfig(
      * 允许放入的触发栏 id 白名单（见 [TriggerSlot]，如 ["left"]）。
      * 空集 = 不限制（可放任意触发栏，向后兼容旧技能MOD）。约束在 ModService.tryInstallSkill 落地。
      */
-    val allowedTriggers: Set<String> = emptySet()
+    val allowedTriggers: Set<String> = emptySet(),
+    /** 卡片头部类别标签覆盖（默认按 tags/skill 推导：属性/元素/技能/测试）。 */
+    val typeLabel: String? = null,
+    /** 机制说明行（统一排版的说明区，支持 &色码 与 %cfg[:s|t]:path|默认% 占位符）。 */
+    val description: List<String> = emptyList(),
+    /** 蓝耗显示文本（"消耗" 行，支持 %cfg% 占位符实时取 config.yml 值），null = 不显示。 */
+    val manaCost: String? = null,
+    /** 冷却显示文本（"冷却" 行，支持 %cfg% 占位符），null = 不显示。 */
+    val cooldown: String? = null
 ) {
     /** 该MOD是否允许放进触发栏 [slot]。空白名单视为全允许。 */
     fun allowsTrigger(slot: TriggerSlot): Boolean =

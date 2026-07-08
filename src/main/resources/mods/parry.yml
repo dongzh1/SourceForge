@@ -8,11 +8,8 @@ cost: 12
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill]
-item-lore:
-  - "&8MOD · 技能"
-  - "&7容量消耗: &e%cost%"
-  - ""
-  - "&7右键 &f展开架势 &8(消耗 §bMANA§8)"
-  - "&7架势窗口内被命中 &a完全免疫 &7该次伤害"
-  - ""
-  - "&7适用: 近战武器"
+mana: "%cfg:parry.mana-cost|8% 能量"
+cooldown: "%cfgs:parry.cooldown-ms|500%秒"
+description:
+  - "&f右键 &7展开架势，窗口 &f%cfgt:parry.window-ticks|100% 秒"
+  - "窗口内被命中 &a完全免疫 &7该次伤害"

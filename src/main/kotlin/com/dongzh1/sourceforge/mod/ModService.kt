@@ -79,7 +79,16 @@ class ModService(
     private val modDeltaKeys: Map<String, NamespacedKey> =
         ModKeys.modDeltaKeys(plugin, forgeConfig.affixes.values)
 
-    private val marker = color("&7---- 改造 ----")
+    /** 装备 lore「改造」分区的锚点行；reapplyModEffects 以此切开基础段与改造段并重建后者。 */
+    private val marker = color("&b● 改造&7:")
+
+    /** 旧版锚点（曾用 `---- 改造 ----`）；已发出的装备迁移时也要能识别并剥离，避免重复叠加。 */
+    private val legacyMarker = color("&7---- 改造 ----")
+
+    private fun isModMarker(line: String): Boolean = line == marker || line == legacyMarker
+
+    /** MOD 卡统一排版构建器（yml 无 item-lore 时的默认排版）。 */
+    private val loreBuilder = ModLoreBuilder(plugin, forgeConfig)
 
     enum class InstallResult {
         SUCCESS,
@@ -180,6 +189,7 @@ class ModService(
         val effectValue: (String) -> Double = { affixId -> mod.effectAtRank(affixId, r) }
         val rankLine = if (mod.maxRank > 0) "&7段位: &b$r&7/&f${mod.maxRank}" else null
         val loreLines = if (mod.itemLore.isNotEmpty()) {
+            // 旧式手写 item-lore：保留占位符替换逻辑，向后兼容未迁移的服务器配置。
             val base = mod.itemLore.map { line ->
                 var l = line.replace("%cost%", mod.cost.toString())
                     .replace("%rank%", r.toString())
@@ -196,16 +206,7 @@ class ModService(
             }
             base
         } else {
-            val def = mutableListOf("&8MOD", "&7容量消耗: &e${mod.cost}")
-            rankLine?.let { def += it }
-            def += ""
-            for (affixId in mod.effects.keys) {
-                val affix = affixById[affixId]
-                val name = affix?.displayName ?: affixId
-                val formatted = if (affix != null) format(effectValue(affixId), affix.decimals) else format(effectValue(affixId), 1)
-                def += "&7$name &f+$formatted"
-            }
-            def
+            loreBuilder.build(mod, r)
         }
         meta.lore = color(loreLines)
         mod.customModelData?.let { meta.setCustomModelData(it) }
@@ -463,7 +464,7 @@ class ModService(
         val existing = meta.lore ?: emptyList()
         val kept = mutableListOf<String>()
         for (line in existing) {
-            if (line == marker) break
+            if (isModMarker(line)) break
             kept += line
         }
         // 去掉 marker 前的尾随空行（避免反复叠加空行）
@@ -473,7 +474,22 @@ class ModService(
         rebuilt += marker
         val remaining = (capacity - used).coerceAtLeast(0)
         val capColor = if (used > capacity) "&c" else "&a"
-        rebuilt += color("&7剩余容量: $capColor$remaining&7/&f$capacity")
+        rebuilt += color("  &7容量 $capColor$remaining&7/&f$capacity")
+
+        // 技能触发栏：装了技能MOD 就把「释放方式 » 技能名」显示在装备 lore 上（槽位下标 == 触发方式）。
+        val skillSlots = readSkillSlots(item)
+        val skillLines = mutableListOf<String>()
+        for (i in skillSlots.indices) {
+            val id = skillSlots[i] ?: continue
+            val trigger = TriggerSlot.byIndex(i) ?: continue
+            val name = mods[id]?.displayName ?: id
+            skillLines += color("  &e${trigger.display} &8» $name")
+        }
+        if (skillLines.isNotEmpty()) {
+            rebuilt += ""
+            rebuilt += color("&e● 技能&7:")
+            rebuilt += skillLines
+        }
         meta.lore = rebuilt
         item.itemMeta = meta
 

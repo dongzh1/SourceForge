@@ -9,4 +9,3 @@ effects: { ability_range: 0.12 }
 max-rank: 5
 upgrade-cost: 1
 tags: [stat]
-item-lore: ["&8MOD · 法术护甲", "&7容量消耗: &e%cost%", "", "&7技能范围 &f+%effect_ability_range%", "", "&7适用: 法术护甲"]

@@ -9,4 +9,3 @@ effects: { shield_capacity: 16.0 }
 max-rank: 5
 upgrade-cost: 1
 tags: [stat]
-item-lore: ["&8MOD · 护甲", "&7容量消耗: &e%cost%", "", "&7护盾 &f+%effect_shield_capacity%", "", "&7适用: 护甲"]

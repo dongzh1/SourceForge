@@ -9,4 +9,3 @@ effects: { status_chance: 0.20 }
 max-rank: 5
 upgrade-cost: 2
 tags: [stat]
-item-lore: ["&8MOD · 武器", "&7容量消耗: &e%cost%", "", "&7触发几率 &f+%effect_status_chance%", "", "&7适用: 武器"]

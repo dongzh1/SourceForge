@@ -1,6 +1,7 @@
 # 技能MOD · 冲刺突进（dash_thrust）— 剑客·机动套。装进武器「右键」技能触发栏。
-# 右键沿视线突进 + 前方光束命中（纯物理，元素随武器元素MOD），并开"突进"联动窗口(3s)：接月华斩×1.5。
+# 右键沿视线突进 + 前方光束命中（纯物理，元素随武器元素MOD），并开"突进"联动窗口(3s)：接月华斩×1.3。
 # 脚本: skills/dash_thrust.js（钩子 onActivate）；数值在 config.yml 的 dash-thrust 段。
+# lore 由 ModLoreBuilder 统一排版；mana/cooldown/description 里的 %cfg% 占位符实时取 config.yml。
 id: dash_thrust
 display-name: "&f冲刺突进"
 item: "minecraft:diamond_sword"
@@ -10,12 +11,10 @@ applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, mobility]
 skill: true
 allowed-triggers: [right]
-item-lore:
-  - "&8MOD · 技能触发栏(右键) · 机动"
-  - ""
-  - "&7右键 &f向前冲刺 &7并划出光束"
-  - "&7命中造成 &f基础伤害&7(×1.0)"
-  - "&e突进后 3 秒内接『月华斩』伤害 ×1.5"
-  - "&8元素由武器上的元素属性MOD 命中时附加"
-  - ""
-  - "&7适用: 近战武器 · 冷却 7s"
+mana: "%cfg:dash-thrust.mana|18% 能量"
+cooldown: "%cfgs:dash-thrust.cooldown-ms|7000%秒"
+description:
+  - "&f右键 &7向前冲刺，划出光束"
+  - "命中造成 &f基础伤害 ×%cfg:dash-thrust.dmg-mult|1.0%"
+  - "&e突进后 %cfg:dash-thrust.combo-seconds|3% 秒内接『月华斩』×1.3"
+  - "&8元素由武器上的元素MOD 命中时附加"

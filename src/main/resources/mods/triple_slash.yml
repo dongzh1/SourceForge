@@ -9,12 +9,8 @@ cost: 14
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill]
-item-lore:
-  - "&8MOD · 技能"
-  - "&7容量消耗: &e%cost%"
-  - ""
-  - "&7左键 &f挥砍 &7推进连段 &8(1→2→3)"
-  - "&7对前方扇形范围 &c斩击 &7造成基础伤害"
-  - "&7第三段 &6收招重斩 &7威力更高"
-  - ""
-  - "&7适用: 近战武器"
+description:
+  - "&f左键 &7挥砍推进连段 &8(1→2→3)"
+  - "对前方扇形范围 &c斩击&7，造成基础伤害"
+  - "第三段 &6收招重斩 &7×%cfg:triple-slash.dmg-mult-3|1.8%"
+  - "&8连段 %cfgt:triple-slash.reset-ticks|40% 秒内未接续则重置"
