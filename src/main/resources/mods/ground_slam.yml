@@ -1,0 +1,20 @@
+# 技能MOD · 震地（ground_slam）— 守卫·防反套。装进武器「空中」技能触发栏（跳起后左键触发）。
+# 向下猛砸 + 落地冲击环：纯物理×base + 击退。联动：铁壁架势开启中施放→范围/伤害加大 + 落地短暂减伤。
+# 脚本: skills/ground_slam.js（钩子 onActivate）；数值在 config.yml 的 ground-slam 段。
+id: ground_slam
+display-name: "&6震地"
+item: "minecraft:diamond_sword"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill, defense]
+skill: true
+allowed-triggers: [midair]
+item-lore:
+  - "&8MOD · 技能触发栏(空中) · 防卫"
+  - ""
+  - "&7跳起后 &f空中左键 &7向下猛砸，落地掀起冲击环"
+  - "&7对周围造成 &f基础伤害&7(×1.4) + 击退"
+  - "&6架势联动：&7铁壁架势中施放 → 范围/伤害加大 + 落地减伤"
+  - ""
+  - "&7适用: 近战武器 · 冷却 6s"

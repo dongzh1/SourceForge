@@ -41,7 +41,7 @@ class ForgeItemService(
     private val tierKey = NamespacedKey(plugin, "tier")
     private val enhanceLevelKey = NamespacedKey(plugin, "enhance_level")
     private val baseDamageKey = NamespacedKey(plugin, "base_damage")
-    private val modCapacityKey = NamespacedKey(plugin, "mod_capacity")
+    private val modCapacityKey = com.dongzh1.sourceforge.mod.ModKeys.modCapacity(plugin)
     private val modCapacityMaxKey = NamespacedKey(plugin, "mod_capacity_max")
     private val affixesKey = NamespacedKey(plugin, "affixes")
     private val projectileMarkerKey = NamespacedKey(plugin, "projectile_source")
@@ -55,7 +55,7 @@ class ForgeItemService(
 
     /** affixId -> mod_delta_<pdcKey>，MOD 系统额外加成层；与基础词条相加。 */
     private val modDeltaKeys: Map<String, NamespacedKey> =
-        config.affixes.values.associate { it.id to NamespacedKey(plugin, "mod_delta_${it.pdcKey}") }
+        com.dongzh1.sourceforge.mod.ModKeys.modDeltaKeys(plugin, config.affixes.values)
 
     /**
      * 每玩家全身词条总和缓存；装备变化时由监听器失效，避免每次战斗/回盾都扫全背包。
@@ -79,6 +79,26 @@ class ForgeItemService(
 
     fun unregisterExternalAffixProvider(provider: ExternalAffixProvider) {
         externalProviders.remove(provider)
+    }
+
+    /** 导出已注册的外部词缀 Provider；reload 重建本服务实例时迁移，避免 PixelRPG 等临时属性在 /sf reload 后丢失。 */
+    fun exportExternalProviders(): List<ExternalAffixProvider> = externalProviders.toList()
+
+    /** 已注册的外部词缀 Provider 数量（诊断用）。 */
+    fun externalProviderCount(): Int = externalProviders.size
+
+    /** 当前所有外部 Provider 对该玩家的临时词缀贡献合计（诊断用，实时回调，不写入任何地方）。 */
+    fun externalProviderTotals(player: Player): Map<String, Double> {
+        val totals = HashMap<String, Double>()
+        for (provider in externalProviders) {
+            val bonus = runCatching { provider.bonus(player) }.getOrNull() ?: continue
+            for ((affixId, value) in bonus) {
+                if (value != 0.0 && config.affixes.containsKey(affixId)) {
+                    totals[affixId] = (totals[affixId] ?: 0.0) + value
+                }
+            }
+        }
+        return totals
     }
 
     private fun affixKey(affix: AffixConfig): NamespacedKey =

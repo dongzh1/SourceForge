@@ -31,6 +31,16 @@
 #   lore: 装备 lore 显示
 
 affixes:
+  summon_damage:
+    display-name: "召唤物伤害"
+    pdc-key: "summon_damage"
+    value-type: double
+    min: 0.05
+    max: 0.20
+    decimals: 2
+    combat: summon_damage
+    scale: 1.0
+    lore: "&7召唤强化: &d+%value%"
   base_damage:
     display-name: "基础伤害"
     pdc-key: "base_damage"

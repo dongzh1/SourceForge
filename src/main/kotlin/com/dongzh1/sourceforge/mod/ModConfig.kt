@@ -21,8 +21,21 @@ data class ModConfig(
     /** rank r -> r+1 所需升级核心 = upgradeCostBase * (r+1)。 */
     val upgradeCostBase: Int = 1,
     /** 抽奖权重（Feature C）。 */
-    val weight: Double = 1.0
+    val weight: Double = 1.0,
+    /** 是否为技能MOD：只能装进技能槽，安装后给装备盖上 MM 物品身份以触发 item-skills。 */
+    val skill: Boolean = false,
+    /** 技能MOD 对应的 MythicMobs 物品内部名（mythicmobs:type）。安装到技能槽时盖到装备 PDC 上。 */
+    val mmItem: String? = null,
+    /**
+     * 允许放入的触发栏 id 白名单（见 [TriggerSlot]，如 ["left"]）。
+     * 空集 = 不限制（可放任意触发栏，向后兼容旧技能MOD）。约束在 ModService.tryInstallSkill 落地。
+     */
+    val allowedTriggers: Set<String> = emptySet()
 ) {
+    /** 该MOD是否允许放进触发栏 [slot]。空白名单视为全允许。 */
+    fun allowsTrigger(slot: TriggerSlot): Boolean =
+        allowedTriggers.isEmpty() || slot.id in allowedTriggers
+
     fun appliesTo(weaponCategory: String?, equipmentId: String?): Boolean {
         if (applicableEquipment.isNotEmpty()) {
             return equipmentId != null && equipmentId.lowercase() in applicableEquipment

@@ -311,6 +311,10 @@ class StatusEffectManager(private val plugin: SourceForge) {
 
     fun isDebug(uuid: UUID): Boolean = debugPlayers.contains(uuid)
 
+    /** 该怪某元素的当前层数（SourceForgeCombatAPI 对外查询用；无状态返回 0）。 */
+    fun stacksOf(entity: LivingEntity, type: ElementType): Int =
+        mobs[entity.uniqueId]?.get(type)?.stacks ?: 0
+
     fun stacksSummary(entity: LivingEntity): String {
         val map = mobs[entity.uniqueId] ?: return "无"
         if (map.isEmpty()) return "无"

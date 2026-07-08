@@ -1,0 +1,26 @@
+# 技能MOD · 月华斩（crescent_slash）— SF 原生攻击技能（GraalJS），演示粒子技能轮子 sf.arcSlash。
+# 【触发栏技能】skill:true + allowed-triggers:[left] → 只能装进武器的「左键」技能触发栏（砍击类栏位约束示例）。
+# 装好后左键挥砍触发 onActivate：在身前画一道 180° 半圆弧（PacketEvents 发包 dust 粒子），
+# 对扇形内活体造成基础伤害并叠 1 层火元素。
+# 参数(冷却/半径/扇形角度/粒子点数/倍率)在 config.yml 的 crescent-slash 段调整。
+# 脚本: skills/crescent_slash.js（id 必须与本 MOD id 一致，钩子 onActivate）。
+id: crescent_slash
+display-name: "&b月华斩"
+item: "minecraft:diamond_sword"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill]
+# 技能触发栏MOD：装进技能触发栏（非普通MOD槽），且只允许「左键」栏（砍击 → left）。
+skill: true
+allowed-triggers: [left]
+item-lore:
+  - "&8MOD · 技能触发栏(左键)"
+  - ""
+  - "&7装入 &f左键触发栏 &7后，&f左键挥砍 &7斩出 &b半圆月华弧"
+  - "&7对扇形内目标造成 &f基础伤害&7(×base_damage)"
+  - "&8元素由武器上的元素属性MOD 命中时自动附加"
+  - "&7弧形粒子经 &fPacketEvents &7一次性发包"
+  - ""
+  - "&8⚑ 只能装进「左键」技能触发栏"
+  - "&7适用: 近战武器"

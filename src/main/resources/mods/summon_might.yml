@@ -1,0 +1,12 @@
+id: summon_might
+display-name: "&d役使"
+item: "minecraft:lead"
+cost: 9
+max-per-equipment: 1
+exclusivity-group: "summon_amp"
+applicable-categories: [summon]
+effects: { summon_damage: 0.15 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat]
+item-lore: ["&8MOD · 长鞭", "&7容量消耗: &e%cost%", "", "&7召唤物伤害 &f+%effect_summon_damage%", "", "&7适用: 长鞭"]

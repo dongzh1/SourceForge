@@ -1,0 +1,20 @@
+# 技能MOD · 三段斩（triple_slash）— SF 原生攻击技能（GraalJS），不走 MythicMobs
+# 左键挥砍 推进连段(1→2→3→重置)，对前方扇形范围造成 SF 基础伤害的 AoE 斩击。
+# 参数(连段窗口/段内CD/范围/扇形角度/各段倍率)在 config.yml 的 triple-slash 段调整。
+# 脚本: skills/triple_slash.js（id 必须与本 MOD id 一致）。
+id: triple_slash
+display-name: "&c三段斩"
+item: "minecraft:iron_sword"
+cost: 14
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill]
+item-lore:
+  - "&8MOD · 技能"
+  - "&7容量消耗: &e%cost%"
+  - ""
+  - "&7左键 &f挥砍 &7推进连段 &8(1→2→3)"
+  - "&7对前方扇形范围 &c斩击 &7造成基础伤害"
+  - "&7第三段 &6收招重斩 &7威力更高"
+  - ""
+  - "&7适用: 近战武器"

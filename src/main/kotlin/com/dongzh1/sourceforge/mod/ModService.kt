@@ -18,7 +18,7 @@ class ModService(
     private val forgeConfig: ForgeConfig,
     val mods: Map<String, ModConfig>
 ) {
-    private val modCapacityKey = NamespacedKey(plugin, "mod_capacity")
+    private val modCapacityKey = ModKeys.modCapacity(plugin)
     private val modInstalledKey = NamespacedKey(plugin, "mod_installed")
     private val modIdKey = NamespacedKey(plugin, "mod_id")
 
@@ -31,12 +31,53 @@ class ModService(
     /** 每个槽位的梦魇MOD 实例数据 (nm_data 字符串)，仅当该槽 token == ~nm 时有效。 */
     private val nmSlotKeys: List<NamespacedKey> = (0 until 8).map { NamespacedKey(plugin, "nm_slot_$it") }
 
+    /** 技能槽（独立于 8 个普通MOD槽）的安装记录：逗号分隔的技能MOD id。 */
+    private val modSkillInstalledKey = NamespacedKey(plugin, "mod_skill_installed")
+
+    /** 技能槽位最大数量上限（= 触发栏总数 6；GUI 与存储都按此上限）。实际可用数由 skillSlotCount 决定。 */
+    private val maxSkillSlots = TriggerSlot.COUNT
+
+    /** MM 物品身份桥：安装技能MOD 时给装备盖 mythicmobs:type/version。 */
+    private val mythicHook = MythicItemHook(plugin)
+
+    /** 该装备可用的技能触发栏数量（config: mods.skill-slots，默认 = 触发栏总数 6）。 */
+    fun skillSlotCount(@Suppress("UNUSED_PARAMETER") item: ItemStack? = null): Int =
+        plugin.config.getInt("mods.skill-slots", TriggerSlot.COUNT).coerceIn(0, maxSkillSlots)
+
+    /** 读取技能槽（长度 = maxSkillSlots，未占用为 null）。 */
+    fun readSkillSlots(item: ItemStack?): List<String?> {
+        val raw = if (item == null || !item.hasItemMeta()) null
+        else item.itemMeta.persistentDataContainer.get(modSkillInstalledKey, PersistentDataType.STRING)
+        val tokens = (raw ?: "").split(",")
+        return (0 until maxSkillSlots).map { tokens.getOrNull(it)?.trim()?.takeIf { t -> t.isNotEmpty() } }
+    }
+
+    private fun writeSkillSlots(meta: ItemMeta, slots: List<String?>) {
+        val padded = (0 until maxSkillSlots).map { slots.getOrNull(it) ?: "" }
+        meta.persistentDataContainer.set(modSkillInstalledKey, PersistentDataType.STRING, padded.joinToString(","))
+    }
+
+    /** 该 MOD 是否为技能MOD。 */
+    fun isSkillMod(item: ItemStack?): Boolean = modConfig(item)?.skill == true
+
+    /** 装备上已安装的技能MOD id 集合。 */
+    fun installedSkillModIds(item: ItemStack?): Set<String> =
+        readSkillSlots(item).filterNotNull().toSet()
+
+    /** 取某触发栏上安装的技能MOD id（无则 null）。供 SkillModListener 按玩家操作路由到对应技能。 */
+    fun skillModAtTrigger(item: ItemStack?, trigger: TriggerSlot): String? =
+        readSkillSlots(item).getOrNull(trigger.index)?.trim()?.takeIf { it.isNotEmpty() }
+
+    /** 当前装备应盖的 MM 物品身份：取第一个占用的技能槽对应 MOD 的 mm-item（每件装备只能有一个身份）。 */
+    private fun activeMmIdentity(item: ItemStack?): String? =
+        readSkillSlots(item).filterNotNull().firstNotNullOfOrNull { mods[it]?.mmItem }
+
     /** affixId -> AffixConfig 直接查表，热路径复用。 */
     private val affixById: Map<String, AffixConfig> = forgeConfig.affixes
 
     /** affixId -> mod_delta_<pdcKey> NamespacedKey，避免反复构造。 */
     private val modDeltaKeys: Map<String, NamespacedKey> =
-        forgeConfig.affixes.values.associate { it.id to NamespacedKey(plugin, "mod_delta_${it.pdcKey}") }
+        ModKeys.modDeltaKeys(plugin, forgeConfig.affixes.values)
 
     private val marker = color("&7---- 改造 ----")
 
@@ -49,10 +90,36 @@ class ModService(
         SLOT_OCCUPIED,
         INVALID_MOD,
         NOT_EQUIPMENT,
-        SEALED_NIGHTMARE
+        SEALED_NIGHTMARE,
+        /** 把普通MOD 放进了技能槽。 */
+        SKILL_SLOT_REQUIRED,
+        /** 把技能MOD 放进了普通MOD槽。 */
+        SKILL_MOD_WRONG_SLOT,
+        /** 技能MOD 的 allowed-triggers 不允许放进该触发栏。 */
+        TRIGGER_NOT_ALLOWED
     }
 
     fun allModIds(): Set<String> = mods.keys
+
+    /** MOD 的中文显示名(去色)；无则回退 id。供 /sf givemod 中文显示。 */
+    fun modDisplayName(id: String): String {
+        val cfg = mods[id] ?: return id
+        return org.bukkit.ChatColor.stripColor(color(cfg.displayName))?.takeIf { it.isNotBlank() } ?: id
+    }
+
+    /** 把查询(中文显示名 或 英文id，大小写不敏感)解析成 modId；找不到返回 null。 */
+    fun resolveModId(query: String): String? {
+        val q = query.trim()
+        if (q.isEmpty()) return null
+        mods.keys.firstOrNull { it.equals(q, true) }?.let { return it }       // 英文 id
+        return mods.keys.firstOrNull { modDisplayName(it).equals(q, true) }   // 中文显示名
+    }
+
+    /** givemod 补全建议：直接用配置里的中文 display-name(无空格时)，否则回退 id。 */
+    fun modSuggestions(): List<String> = mods.keys.map { id ->
+        val disp = modDisplayName(id)
+        if (disp.isNotBlank() && !disp.contains(' ')) disp else id
+    }
 
     /** 槽位 token 是否为梦魇MOD 占位。 */
     fun isNightmareSlot(token: String?): Boolean = token == nmToken
@@ -237,6 +304,7 @@ class ModService(
             return tryInstallNightmare(item, modItem, slotIndex)
         }
         val mod = modConfig(modItem) ?: return InstallResult.INVALID_MOD
+        if (mod.skill) return InstallResult.SKILL_MOD_WRONG_SLOT
         val slots = readInstalledSlots(item).toMutableList()
         if (slotIndex !in 0 until 8) return InstallResult.INVALID_MOD
         if (slots[slotIndex] != null) return InstallResult.SLOT_OCCUPIED
@@ -295,6 +363,42 @@ class ModService(
         return createModItem(id, 1, rank) ?: fallbackModItem(id)
     }
 
+    /** 安装技能MOD 到技能槽 slotIndex。成功后重算效果并盖上 MM 物品身份。 */
+    fun tryInstallSkill(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
+        if (!plugin.itemService.isSourceEquipment(item)) return InstallResult.NOT_EQUIPMENT
+        val mod = modConfig(modItem) ?: return InstallResult.INVALID_MOD
+        if (!mod.skill) return InstallResult.SKILL_SLOT_REQUIRED
+        if (slotIndex !in 0 until skillSlotCount()) return InstallResult.INVALID_MOD
+        // 触发栏约束：该MOD的 allowed-triggers 必须允许此槽位对应的触发（例：砍击只允许 left）
+        val trigger = TriggerSlot.byIndex(slotIndex) ?: return InstallResult.INVALID_MOD
+        if (!mod.allowsTrigger(trigger)) return InstallResult.TRIGGER_NOT_ALLOWED
+        val category = plugin.itemService.weaponCategory(item)
+        val equipId = plugin.itemService.weaponType(item)
+        if (!mod.appliesTo(category, equipId)) return InstallResult.WRONG_CATEGORY
+        val slots = readSkillSlots(item).toMutableList()
+        if (slots.getOrNull(slotIndex) != null) return InstallResult.SLOT_OCCUPIED
+        if (slots.count { it == mod.id } >= mod.maxPerEquipment) return InstallResult.MAX_COUNT_EXCEEDED
+        slots[slotIndex] = mod.id
+        val meta = item.itemMeta
+        writeSkillSlots(meta, slots)
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        modItem.amount -= 1
+        return InstallResult.SUCCESS
+    }
+
+    /** 取出技能槽 slotIndex 的技能MOD，返回还原的 MOD 物品。 */
+    fun tryRemoveSkill(item: ItemStack, slotIndex: Int): ItemStack? {
+        val slots = readSkillSlots(item).toMutableList()
+        val id = slots.getOrNull(slotIndex) ?: return null
+        slots[slotIndex] = null
+        val meta = item.itemMeta
+        writeSkillSlots(meta, slots)
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        return createModItem(id, 1, 0) ?: fallbackModItem(id)
+    }
+
     private fun fallbackModItem(id: String): ItemStack {
         val item = ItemStack(Material.GRAY_DYE, 1)
         val meta = item.itemMeta
@@ -330,6 +434,14 @@ class ModService(
             for (affixId in mod.effects.keys) {
                 if (affixId !in affixById) continue
                 deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + mod.effectAtRank(affixId, rank)
+            }
+        }
+        // 技能槽：技能MOD 也可带词条（段位固定取满）。
+        for (id in readSkillSlots(item)) {
+            val mod = id?.let { mods[it] } ?: continue
+            for (affixId in mod.effects.keys) {
+                if (affixId !in affixById) continue
+                deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + mod.effectAtRank(affixId, mod.maxRank)
             }
         }
         for ((affixId, delta) in deltaMap) {
@@ -374,6 +486,9 @@ class ModService(
             if (combat == "health" || combat == "shield_capacity") value else 0.0
         }
         plugin.itemService.applyModVanillaAttributes(item, armorDelta, healthDelta)
+
+        // MM 物品身份：按第一个占用的技能槽盖身份（无技能MOD 则清除）。
+        mythicHook.applyIdentity(item, activeMmIdentity(item))
     }
 
     private fun format(value: Double, decimals: Int): String {

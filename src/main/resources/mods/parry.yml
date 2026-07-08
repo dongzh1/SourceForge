@@ -1,0 +1,18 @@
+# 技能MOD · 震刀（parry）— SF 原生格挡，不走 MythicMobs
+# 右键持有该武器 展开架势窗口；窗口内被命中 完全免疫该次伤害（单次格挡）。
+# 参数(窗口时长/MANA消耗/冷却/减速)在 config.yml 的 parry 段调整。
+id: parry
+display-name: "&b震刀"
+item: "minecraft:prismarine_crystals"
+cost: 12
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill]
+item-lore:
+  - "&8MOD · 技能"
+  - "&7容量消耗: &e%cost%"
+  - ""
+  - "&7右键 &f展开架势 &8(消耗 §bMANA§8)"
+  - "&7架势窗口内被命中 &a完全免疫 &7该次伤害"
+  - ""
+  - "&7适用: 近战武器"

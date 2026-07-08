@@ -1,0 +1,15 @@
+id: skill_leap
+display-name: "&d技能：跃迁"
+item: "minecraft:feather"
+cost: 0
+max-per-equipment: 1
+# 技能MOD：装进技能槽后给装备盖上 MM 物品身份 sf_skill_leap（见 MythicMobs/Packs/源质技能）
+skill: true
+mm-item: sf_skill_leap
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill]
+item-lore:
+  - "&8技能MOD · 装进技能槽"
+  - "&7右键 &f纵身一跃 (MM)"
+  - ""
+  - "&7适用: 近战武器"

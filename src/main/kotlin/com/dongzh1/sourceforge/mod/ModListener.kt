@@ -93,6 +93,44 @@ class ModListener(
                 return
             }
         }
+        // 技能槽：装/取技能MOD（独立于普通MOD槽）
+        val si = menu.skillSlotGuiIndices.indexOf(rawSlot)
+        if (si >= 0) {
+            event.isCancelled = true
+            if (si >= modService.skillSlotCount(live)) {
+                player.sendMessage("§c该装备不支持更多技能槽")
+                playDeny(player)
+                return
+            }
+            val sslots = modService.readSkillSlots(live)
+            if (sslots.getOrNull(si) != null) {
+                val returned = modService.tryRemoveSkill(live, si)
+                if (returned != null) {
+                    player.inventory.addItem(returned).values.forEach {
+                        player.world.dropItemNaturally(player.location, it)
+                    }
+                }
+                itemService.invalidateStatCache(player)
+                menu.populate()
+            } else {
+                val cursor = event.cursor
+                if (cursor == null || cursor.type == Material.AIR) {
+                    player.sendMessage("§e光标上没有技能MOD")
+                    return
+                }
+                val result = modService.tryInstallSkill(live, cursor, si)
+                if (result == ModService.InstallResult.SUCCESS) {
+                    player.setItemOnCursor(if (cursor.amount <= 0) ItemStack(Material.AIR) else cursor)
+                    itemService.invalidateStatCache(player)
+                    menu.populate()
+                    playPlace(player)
+                } else {
+                    player.sendMessage(reasonMessage(result))
+                    playDeny(player)
+                }
+            }
+            return
+        }
         val i = menu.modSlotGuiIndices.indexOf(rawSlot)
         if (i < 0) {
             // filler 等
@@ -166,6 +204,9 @@ class ModListener(
             ModService.InstallResult.INVALID_MOD -> "§c光标上的物品不是有效 MOD"
             ModService.InstallResult.NOT_EQUIPMENT -> "§c目标不是 SourceForge 装备"
             ModService.InstallResult.SEALED_NIGHTMARE -> "§c该梦魇MOD 尚未鉴定，无法安装"
+            ModService.InstallResult.SKILL_SLOT_REQUIRED -> "§c技能槽只能安装技能MOD"
+            ModService.InstallResult.SKILL_MOD_WRONG_SLOT -> "§c技能MOD 只能装进技能槽"
+            ModService.InstallResult.TRIGGER_NOT_ALLOWED -> "§c该技能MOD 不能装进这个触发栏"
         }
     }
 

@@ -24,6 +24,9 @@ class ModInstallMenu(
     private val modService = plugin.modService
 
     val modSlotGuiIndices = listOf(9, 10, 11, 12, 18, 19, 20, 21)
+    // 技能触发栏（独立区域，6 个；GUI 下标顺序 == TriggerSlot 下标，见 ModService.maxSkillSlots=TriggerSlot.COUNT）。
+    // 右侧两排：14,15,16 = 左键/右键/Shift+左键；23,24,25 = Shift+右键/Shift+F/空中。
+    val skillSlotGuiIndices = listOf(14, 15, 16, 23, 24, 25)
     val infoSlot = 4
     val equipDisplaySlot = 31
     val backSlot = 45
@@ -74,6 +77,40 @@ class ModInstallMenu(
                 inventory.setItem(gui, display)
             } else {
                 inventory.setItem(gui, pane(Material.LIME_STAINED_GLASS_PANE, "&7空 MOD 槽", listOf("&7将 MOD 物品拖入安装")))
+            }
+        }
+
+        // 技能触发栏（独立于普通 MOD 槽）：每个 GUI 格固定对应一种触发方式（TriggerSlot），
+        // 下标 i == 触发栏下标；技能MOD 放进哪格，就由那种操作(左键/右键/Shift组合/空中)触发 onActivate。
+        val skillCount = modService.skillSlotCount(item)
+        val skillSlots = modService.readSkillSlots(item)
+        for (i in skillSlotGuiIndices.indices) {
+            val gui = skillSlotGuiIndices[i]
+            val trigger = TriggerSlot.byIndex(i)
+            if (trigger == null || i >= skillCount) {
+                inventory.setItem(gui, pane(Material.GRAY_STAINED_GLASS_PANE, "&8锁定触发栏", listOf("&8此装备不支持更多技能触发栏")))
+                continue
+            }
+            val id = skillSlots.getOrNull(i)
+            if (id != null) {
+                val display = modService.createModItem(id, 1, 0) ?: unknownModDisplay(id)
+                val meta = display.itemMeta
+                val lore = (meta.lore ?: mutableListOf()).toMutableList()
+                lore += color("&8—— 触发方式 ——")
+                lore += color("&d${trigger.display} &7触发")
+                lore += color("&e左键取出")
+                meta.lore = lore
+                display.itemMeta = meta
+                inventory.setItem(gui, display)
+            } else {
+                inventory.setItem(gui, pane(
+                    Material.MAGENTA_STAINED_GLASS_PANE,
+                    "&d空触发栏 · &f${trigger.display}",
+                    listOf(
+                        "&7放入技能MOD → 由 &f${trigger.display} &7触发",
+                        "&8(MOD 的 allowed-triggers 决定能否放入此栏)"
+                    )
+                ))
             }
         }
 

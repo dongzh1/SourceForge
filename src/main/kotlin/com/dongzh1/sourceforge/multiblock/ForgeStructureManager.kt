@@ -22,8 +22,17 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ForgeStructureManager(
     private val plugin: SourceForge,
-    val config: ForgeStructureConfig
+    config: ForgeStructureConfig
 ) {
+    /** 当前结构配置；/sf reload 会经 reloadConfig 刷新（评审 #1）。 */
+    var config: ForgeStructureConfig = config
+        private set
+
+    /** 重载结构配置（forge-structure 段），供运行时 reload 使用。 */
+    fun reloadConfig(newConfig: ForgeStructureConfig) {
+        config = newConfig
+    }
+
     private val store = ForgeJobStore(java.io.File(plugin.dataFolder, "forge_jobs"))
     private val worlds = ConcurrentHashMap<String, WorldForgeJobs>()
     private val dirty = ConcurrentHashMap.newKeySet<String>()
@@ -207,6 +216,10 @@ class ForgeStructureManager(
                 player.world.dropItemNaturally(player.location, it)
             }
         }
+        val action = if (job.mode == ForgeJob.MODE_ENHANCE)
+            com.dongzh1.sourceforge.api.SourceForgeActionEvent.Action.ENHANCE
+        else com.dongzh1.sourceforge.api.SourceForgeActionEvent.Action.FORGE_COMPLETE
+        com.dongzh1.sourceforge.api.SourceForgeActionEvent(player, action, job.equipmentId).callEvent()
         return true
     }
 

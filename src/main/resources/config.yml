@@ -9,6 +9,80 @@ gui:
 debug:
   combat: false
 
+# 震刀（parry）技能MOD 参数（见 mods/parry.yml / ParryListener）
+# 右键展开架势窗口，窗口内被实体/弹射物命中则完全免疫该次伤害并累积「架势」。
+parry:
+  window-ticks: 100      # 架势窗口时长(tick)，100=5s
+  mana-cost: 8.0         # 展开架势消耗的 MANA(能量)
+  cooldown-ms: 500       # 一次格挡后再次展开的冷却(毫秒)
+  slow-amplifier: 4      # 展开瞬间的减速等级(amplifier，对齐原 MM SLOW level=4)
+  slow-ticks: 20         # 减速持续(tick)，20=1s；设 0 关闭
+
+# 三段斩（triple_slash）技能MOD 参数（见 mods/triple_slash.yml / skills/triple_slash.js）
+# 左键挥砍推进连段，对前方扇形造成「SF 基础伤害 × 段位倍率」的 AoE 斩击。
+triple-slash:
+  reset-ticks: 40        # 连段重置窗口(tick)，超过则从第1段重来，40=2s
+  cooldown-ms: 250       # 段内 CD(毫秒)，防止一次挥砍多段
+  radius: 3.0            # 斩击半径(格)
+  arc: 120.0             # 斩击扇形角度(度)
+  min-base: 1.0          # 基础伤害下限(无 SF 装备时的兜底基准)
+  dmg-mult-1: 1.0        # 第1段伤害倍率
+  dmg-mult-2: 1.2        # 第2段伤害倍率
+  dmg-mult-3: 1.8        # 第3段(收招重斩)伤害倍率
+
+# 月华斩（crescent_slash）技能MOD 参数（见 mods/crescent_slash.yml / skills/crescent_slash.js）。
+# 装进武器「左键」技能触发栏，左键挥砍斩出 180° 半圆弧(PacketEvents 一次性发包)，
+# 对扇形内目标造成「SF 基础伤害 × dmg-mult」并叠 1 层火(heat)元素。
+crescent-slash:
+  cooldown-ms: 600       # 挥砍冷却(毫秒)
+  radius: 4.5            # 半圆弧半径(格)
+  arc: 180.0             # 扇形角度(度)，180=正半圆
+  points: 28             # 弧线粒子点数(越多越密，发包量越大)
+  dmg-mult: 1.3          # 评审#9：1.6→1.3，配合联动倍率(dash×1.3/retreat×1.35)使连斩峰值 ≤1.8×base
+  min-base: 1.0          # 基础伤害下限(无 SF 装备时兜底基准)
+
+# ===== 触发栏技能套 · 剑客·机动 =====
+dash-thrust:            # 冲刺突进(右键栏)
+  cooldown-ms: 7000
+  power: 1.4            # 冲刺力度
+  up: 0.25             # 上抛
+  range: 6.0           # 前方光束射程
+  dmg-mult: 1.0        # 命中倍率(×base_damage)
+  mana: 18.0
+  combo-seconds: 3.0   # "突进"联动窗口
+wind-retreat:          # 疾风撤退(Shift+右键栏)
+  cooldown-ms: 6000
+  power: 1.2           # 后跃力度
+  up: 0.35
+  mana: 16.0
+  speed-ticks: 40      # 撤退后迅捷时长
+  combo-seconds: 2.5   # "撤退"联动窗口
+
+# ===== 触发栏技能套 · 守卫·防反 =====
+iron-stance:           # 铁壁架势(Shift+F栏，持续)
+  open-mana: 10.0      # 开架势一次性消耗
+  upkeep-per-sec: 4.0  # 每秒维持耗蓝
+  block-mana: 8.0      # 评审#3：每次完全格挡的能量代价(蓝不足则不免疫，仅减伤)
+  resistance-amp: 1    # 评审#3：减伤等级(Resistance II=-40%)
+  slow-amp: 0          # 架势自减速等级(0=关)
+  block-cooldown-ms: 1500  # 两次完全格挡最小间隔
+  parry-seconds: 1.0   # 评审#6：破绽窗口(< block-cooldown，须格挡后立即盾击才算完美反击)
+shield-bash:           # 盾击反震(右键栏)
+  cooldown-ms: 5000    # 评审#6：4s→5s，抑制强控链
+  mana: 12.0
+  radius: 3.0
+  arc: 120.0
+  dmg-mult: 0.8        # 基础倍率(完美反击时×2)
+  knockback: 0.9
+  stun-ticks: 15       # 命中硬直(缓慢)时长
+ground-slam:           # 震地(空中栏)
+  cooldown-ms: 6000
+  mana: 18.0
+  radius: 4.5
+  dmg-mult: 1.4
+  knockback: 0.7
+  slam-down: 1.6       # 向下猛砸力度
+
 # 附魔台抽奖（右键附魔台打开抽奖界面，放入空白 MOD + 消耗经验抽取随机 MOD）
 # required-bookshelves: 打开界面所需的环绕书架数（类似原版顶级附魔台）；在附魔台周围 5×5 外圈、上下两层统计书架。设 0 关闭此限制。
 lottery:
@@ -58,6 +132,11 @@ forge-structure:
 
 mods:
   gui-title: "&0源质改造"
+  # 技能触发栏数量（0..6）。每个触发栏固定对应一种操作：
+  #   0 左键 · 1 右键 · 2 Shift+左键 · 3 Shift+右键 · 4 Shift+F(换手) · 5 空中(跳跃时左键)
+  # 技能MOD 装进哪个触发栏就由那种操作触发(onActivate)；用 allowed-triggers 白名单约束能放哪些栏
+  # （例：mods/crescent_slash.yml 的砍击只允许 left）。默认 6=全开。
+  skill-slots: 6
   capacity:
     melee_light: {base: 30, tier-increment: 10}
     melee_heavy: {base: 30, tier-increment: 10}
@@ -65,6 +144,7 @@ mods:
     bow: {base: 30, tier-increment: 10}
     crossbow: {base: 30, tier-increment: 10}
     firearm: {base: 30, tier-increment: 10}
+    summon: {base: 30, tier-increment: 10}
     armor_physical: {base: 24, tier-increment: 8}
     armor_magic: {base: 24, tier-increment: 8}
     default: {base: 20, tier-increment: 5}
@@ -75,6 +155,7 @@ mods:
     bow: 8
     crossbow: 8
     firearm: 8
+    summon: 8
     armor_physical: 6
     armor_magic: 6
     default: 6
@@ -89,6 +170,7 @@ score:
   combat-weights:
     default: 5.0
     base_damage: 10.0
+    summon_damage: 10.0
     critical_chance: 120.0
     critical_damage: 90.0
     status_chance: 5.0
@@ -410,6 +492,32 @@ blueprints:
         amount: 1
 
 equipment:
+  whip:
+    display-name: "源质长鞭"
+    material: LEAD
+    weapon-category: summon
+    effective-slots:
+      - mainhand
+    base-lore:
+      - "&8源质召唤·专精长鞭"
+      - "&d召唤物伤害专精"
+    affixes:
+      - summon_damage
+      - base_damage
+      - critical_chance
+    tier-affixes:
+      1:
+        summon_damage: { chance: 1.0, min: 0.10, max: 0.20 }
+        base_damage: { chance: 1.0, min: 2.0, max: 4.0 }
+        critical_chance: { chance: 0.30, min: 0.02, max: 0.05 }
+      2:
+        summon_damage: { chance: 1.0, min: 0.15, max: 0.30 }
+        base_damage: { chance: 1.0, min: 3.0, max: 6.0 }
+        critical_chance: { chance: 0.35, min: 0.03, max: 0.07 }
+      3:
+        summon_damage: { chance: 1.0, min: 0.25, max: 0.45 }
+        base_damage: { chance: 1.0, min: 5.0, max: 9.0 }
+        critical_chance: { chance: 0.40, min: 0.04, max: 0.10 }
   # 原版剑（CE 物品 sourceforge:*），可经 /sf giveequipment <id> 给出 → 成为可改造的 SF 装备。
   wooden_sword:
     display-name: "木剑"

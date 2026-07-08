@@ -71,17 +71,17 @@ object SourceForgePapi : PlaceholderExpansion() {
             // 生存属性 (全身)
             key == "health" -> format(totalAffix(player, "health"), 0)
             key == "shield_capacity" -> format(plugin.itemService.readDisplayTotalAffix(player, "shield_capacity"), 0)
-            key == "shield_current" -> format(plugin.forgeListener.getCurrentShieldPublic(player), 0)
+            key == "shield_current" -> format(plugin.shieldService.getCurrentShieldPublic(player), 0)
             key == "total_health" -> format(totalAffix(player, "health") + totalAffix(player, "shield_capacity"), 0)
             key == "armor" -> format(totalAffix(player, "armor"), 0)
             key == "energy_max" -> format(totalAffix(player, "energy_max"), 0)
-            key == "energy_current" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
+            key == "energy_current" -> format(plugin.energyService.getEnergyCurrent(player), 0)
             // MANA（= energy 池，含基础值10）。BetterHud 用 %sourceforge_mana% / %sourceforge_mana_max% / %sourceforge_mana_percent%
-            key == "mana" -> format(plugin.forgeListener.getEnergyCurrent(player), 0)
-            key == "mana_max" -> format(plugin.forgeListener.getEnergyMax(player), 0)
+            key == "mana" -> format(plugin.energyService.getEnergyCurrent(player), 0)
+            key == "mana_max" -> format(plugin.energyService.getEnergyMax(player), 0)
             key == "mana_percent" -> {
-                val max = plugin.forgeListener.getEnergyMax(player)
-                percent(if (max > 0.0) plugin.forgeListener.getEnergyCurrent(player) / max else 0.0)
+                val max = plugin.energyService.getEnergyMax(player)
+                percent(if (max > 0.0) plugin.energyService.getEnergyCurrent(player) / max else 0.0)
             }
 
             // 技能 CD

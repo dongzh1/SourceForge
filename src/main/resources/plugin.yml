@@ -9,6 +9,8 @@ update-info: # inject
 depend-list: # inject
 relocate: # inject
 kotlin-version: # inject
+depend:
+  - SourceJS
 softdepend:
   - CraftEngine
   - ChunkWorld

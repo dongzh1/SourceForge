@@ -51,7 +51,7 @@ class SourceForgeMMPlaceholders(private val plugin: SourceForge) {
                 try {
                     val be = bukkitEntity(entity)
                     if (be is Player) {
-                        "%.0f".format(plugin.forgeListener.getEnergyCurrent(be))
+                        "%.0f".format(plugin.energyService.getEnergyCurrent(be))
                     } else "0"
                 } catch (_: Exception) { "0" }
             }

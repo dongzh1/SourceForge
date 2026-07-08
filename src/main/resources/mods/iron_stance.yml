@@ -1,0 +1,21 @@
+# 技能MOD · 铁壁架势（iron_stance）— 守卫·防反套。装进武器「Shift+F」技能触发栏。
+# Shift+F 开/关持续架势：耗蓝维持、减伤、可格挡(每1.2s挡下一击)。格挡成功开"破绽"→盾击反震完美反击。
+# 脚本: skills/iron_stance.js（钩子 onActivate/onTick/onDamaged）；数值在 config.yml 的 iron-stance 段。
+id: iron_stance
+display-name: "&e铁壁架势"
+item: "minecraft:diamond_sword"
+cost: 0
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm]
+tags: [skill, defense]
+skill: true
+allowed-triggers: [shift_f]
+item-lore:
+  - "&8MOD · 技能触发栏(Shift+F) · 防卫"
+  - ""
+  - "&7Shift+F &f开/关铁壁架势"
+  - "&7架势中：&f持续减伤 &7+ &f每1.2秒完全格挡一击"
+  - "&7持续消耗能量维持，能量耗尽自动解除"
+  - "&a格挡成功 &7→ 开『破绽』，盾击反震可完美反击"
+  - ""
+  - "&7适用: 近战武器"
