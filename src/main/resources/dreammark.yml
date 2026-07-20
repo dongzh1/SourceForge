@@ -1,0 +1,75 @@
+# 彼端遗纹：封缄时须完成试炼，苏醒后绑定至具体武器，并由共鸣度决定词条强度。
+material: "minecraft:paper"
+
+rank:
+  max: 8
+  base-drain: 10
+  drain-per-rank: 1
+  upgrade-costs: [180, 240, 320, 430, 580, 780, 1050, 1420]
+
+generation:
+  positive-count: { min: 2, max: 3 }
+  negative-chance: 0.5
+
+reroll:
+  dream-core-item: "sourceforge:dream_core"
+  # 梦织成本逐次提高，让重复改写词条始终伴随明确取舍。
+  costs: [9, 10, 12, 14, 17, 20, 24, 28, 32, 35]
+
+challenges:
+  hunt:
+    type: kill
+    goal: 30
+    display: "使用对应类型武器击杀 %goal% 名敌人"
+  shadow_hunt:
+    type: sneak_kill
+    goal: 12
+    display: "潜行时使用对应类型武器击杀 %goal% 名敌人"
+  aerial_hunt:
+    type: airborne_kill
+    goal: 8
+    display: "腾空时使用对应类型武器击杀 %goal% 名敌人"
+
+groups:
+  melee:
+    display-name: "近战"
+    categories: [melee_light, melee_heavy, polearm]
+    pool:
+      base_damage:     { positive: 2.4, negative: 1.5 }
+      critical_chance: { positive: 0.10, negative: 0.06 }
+      critical_damage: { positive: 0.18, negative: 0.12 }
+      status_chance:   { positive: 0.12, negative: 0.08 }
+      heat_damage:     { positive: 1.4, positive-only: true }
+      cold_damage:     { positive: 1.4, positive-only: true }
+      toxin_damage:    { positive: 1.4, positive-only: true }
+      electric_damage: { positive: 1.4, positive-only: true }
+      combo_potency:   { positive: 0.25, positive-only: true }
+  ranged:
+    display-name: "远程"
+    categories: [bow, crossbow, firearm]
+    pool:
+      base_damage:     { positive: 2.0, negative: 1.3 }
+      critical_chance: { positive: 0.12, negative: 0.07 }
+      critical_damage: { positive: 0.18, negative: 0.12 }
+      status_chance:   { positive: 0.14, negative: 0.09 }
+      heat_damage:     { positive: 1.4, positive-only: true }
+      cold_damage:     { positive: 1.4, positive-only: true }
+      toxin_damage:    { positive: 1.4, positive-only: true }
+      electric_damage: { positive: 1.4, positive-only: true }
+      splash_power:    { positive: 0.20, positive-only: true }
+
+# 共鸣度越高，彼端遗纹词条越强；高基础性能装备以更低共鸣度抵消，低性能装备得到补偿。
+disposition:
+  by-category:
+    melee_light: 1.05
+    melee_heavy: 0.75
+    polearm: 0.95
+    bow: 0.90
+    crossbow: 1.10
+    firearm: 1.00
+  by-equipment:
+    duskgold_sword: 1.05
+    duskgold_axe: 0.75
+    duskgold_trident: 0.95
+    duskgold_bow: 0.90
+    duskgold_crossbow: 1.10

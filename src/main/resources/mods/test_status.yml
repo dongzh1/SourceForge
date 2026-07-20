@@ -3,7 +3,8 @@
 id: test_status
 display-name: "&d[测试]满触发"
 item: "minecraft:nether_star"
-cost: 0
+cost: 1
+weight: 0   # 测试卡不进抽奖池，只能靠 /ce give 手动发放
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { status_chance: 1.0, heat_damage: 2.0 }

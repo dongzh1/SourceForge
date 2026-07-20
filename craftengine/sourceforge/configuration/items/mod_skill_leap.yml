@@ -1,0 +1,22 @@
+# MOD卡·技能：跃迁（skill_leap）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_skill_leap:
+    material: feather
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_skill_leap_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_skill_leap
+    data:
+      item_name: "<!i><light_purple>技能：跃迁"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>4"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>任意 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>右键 <gray>纵身一跃 <dark_gray>(MM 技能)"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器"

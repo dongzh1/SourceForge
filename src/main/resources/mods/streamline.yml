@@ -1,10 +1,10 @@
-# 基础MOD · 技能效率（法术护甲）— Warframe 精简
+# 基础MOD · 技能效率（护甲通用，2026-07-17 起物理/法术护甲合并）— Warframe 精简
 id: streamline
 display-name: "&e精简"
-item: "minecraft:sugar"
-cost: 9
+item: "sourceforge:mod_streamline"
+cost: 8
 max-per-equipment: 1
-applicable-categories: [armor_magic]
+applicable-categories: [armor_physical, armor_magic]
 effects: { ability_efficiency: 0.12 }
 max-rank: 5
 upgrade-cost: 1

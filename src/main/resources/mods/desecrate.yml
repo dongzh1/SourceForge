@@ -1,13 +1,16 @@
 # 技能MOD · 摸尸（desecrate）
+# 【触发栏技能】skill:true + allowed-triggers:[right] → 只能装进武器的「右键」技能触发栏。
 # 右键持有该武器 开/关；开启时持续消耗 MANA，范围内死亡生物掉落翻倍。
 # 范围吃 ability_range；每秒 MANA 消耗被 ability_efficiency 按百分比减少（基础耗蓝在 skills/desecrate.js 的 BASE_COST）。
 id: desecrate
 display-name: "&5摸尸"
-item: "minecraft:rotten_flesh"
-cost: 12
+item: "sourceforge:mod_desecrate"
+cost: 9
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 tags: [skill]
+skill: true
+allowed-triggers: [right]
 mana: "2 能量·每秒 &8(受技能效率减免)"
 description:
   - "&f右键 &7开/关"

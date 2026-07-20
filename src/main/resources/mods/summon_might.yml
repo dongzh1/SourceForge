@@ -1,7 +1,7 @@
 id: summon_might
 display-name: "&d役使"
-item: "minecraft:lead"
-cost: 9
+item: "sourceforge:mod_summon_might"
+cost: 8
 max-per-equipment: 1
 exclusivity-group: "summon_amp"
 applicable-categories: [summon]

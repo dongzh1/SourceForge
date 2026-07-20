@@ -1,0 +1,21 @@
+# 护甲专属被动技能MOD · 黑暗收割（英雄联盟 主宰系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制：①附近击杀生物永久收割一层灵魂(本局内累加，封顶，重登不持久化，见 onKillNearby)；②攻击命中
+# 生命值低于阈值(默认50%)的目标时打出"处决打击"，目标血量越低伤害倍率越高(阈值处1倍，濒死时最高
+# 2倍)，基础伤害随灵魂层数增长；对血量高于阈值的目标不触发额外伤害。2026-07-17 改版：新增
+# sf.targetHealthFraction()(SfScriptApi.kt)读目标血量比例，才让"低血量伤害更高"这个原版核心机制
+# 得以落地——此前版本脚本层读不到目标血量，只能按固定层数倍率无差别每击都打，不分对方血量高低。
+id: dark_harvest
+display-name: "&4黑暗收割"
+item: "sourceforge:mod_dark_harvest"
+cost: 11
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f附近击杀生物 &4收割一层灵魂 &7(本局内永久累加，封顶%cfg:keystone.dark-harvest.max-stacks|20%层)"
+  - "&7攻击 &c生命值低于%cfg:keystone.dark-harvest.hp-threshold-pct|50%% &7的目标 &4造成处决打击"
+  - "&8目标血量越低，伤害倍率越高(阈值处1倍 &8→&c 濒死时最高2倍&8)"
+  - "&8基础伤害 %cfg:keystone.dark-harvest.base-damage|2% &8+每层灵魂 &4+%cfg:keystone.dark-harvest.per-stack|0.6%"
+  - "&8灵魂层数不跨重登保留"

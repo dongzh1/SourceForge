@@ -1,0 +1,19 @@
+# 护甲专属被动技能MOD · 致命节奏（英雄联盟 精密系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制简化说明：原版LoL是"连续攻击叠加攻速直至突破攻速上限"，SF没有把"攻击速度"暴露成可脚本
+# 实时调整的属性(仅武器类别有固定的静态攻速值，见 ForgeItemService.attackSpeedModifier，不支持
+# 逐层动态加成)，故改用"连续攻击(不中断)伤害逐层递增"来还原"越打越猛"的节奏感——净效果(DPS随
+# 连续攻击上升)相近，只是载体从攻速换成了伤害。中断(2秒内没有下一击)则层数清零重新开始爬升。
+# 2026-07-17 削弱：单层加成 8%→5%，5层封顶总加成从 40% 降到 25%。
+id: lethal_tempo
+display-name: "&6致命节奏"
+item: "sourceforge:mod_lethal_tempo"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f持续攻击不中断，每次攻击伤害递增"
+  - "&8每层 &6+%cfg:keystone.lethal-tempo.per-stack-pct|5%% &8伤害，封顶 %cfg:keystone.lethal-tempo.max-stacks|5% 层(最高&6+25%&8)"
+  - "&8中断 &c2秒 &8未接上下一击则清零重新爬升"

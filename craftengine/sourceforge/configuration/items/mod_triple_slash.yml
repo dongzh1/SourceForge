@@ -1,0 +1,24 @@
+# MOD卡·三段斩（triple_slash）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_triple_slash:
+    material: iron_sword
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_triple_slash_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_triple_slash
+    data:
+      item_name: "<!i><red>三段斩"
+      lore:
+        - "<!i><dark_gray>◆ <gray>左键技能 MOD  <dark_gray>│  <gray>占用 <yellow>12"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>左键 <gray>挥砍推进连段 <dark_gray>(1→2→3)"
+        - "<!i>  <dark_gray>▪ 对前方扇形范围 <red>斩击<gray>，造成基础伤害"
+        - "<!i>  <dark_gray>▪ 第三段 <gold>收招重斩 <gray>×1.8"
+        - "<!i>  <dark_gray>▪ <dark_gray>连段 2 秒内未接续则重置"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器  <dark_gray>│  <gray>安装位置  <white>左键技能槽"

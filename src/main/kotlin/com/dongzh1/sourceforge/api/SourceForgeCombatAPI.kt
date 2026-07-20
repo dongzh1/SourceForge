@@ -6,6 +6,8 @@ import com.dongzh1.sourceforge.status.ElementType
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiFunction
+import java.util.function.Predicate
 
 /**
  * SourceForge 对外公开战斗 API（词缀临时加成 + 元素异常）。供 SourceWild 等外部插件
@@ -21,6 +23,8 @@ object SourceForgeCombatAPI {
 
     /** 外部插件按 key 注册的 Provider 包装（同 key 重复注册 = 替换）。 */
     private val keyed = ConcurrentHashMap<String, ExternalAffixProvider>()
+    private val damageMultipliers = ConcurrentHashMap<String, BiFunction<Player, LivingEntity, Double>>()
+    private val damageMultiplierActive = ConcurrentHashMap<String, Predicate<Player>>()
 
     @JvmStatic
     fun bind(instance: SourceForge) {
@@ -70,4 +74,45 @@ object SourceForgeCombatAPI {
     @JvmStatic
     fun stat(player: Player, affixId: String): Double =
         plugin?.itemService?.readTotalAffix(player, affixId) ?: 0.0
+
+    /** 注册一个临时输出倍率。回调返回 1.0 表示不改变输出；key 重复注册会替换旧回调。 */
+    @JvmStatic
+    fun registerDamageMultiplier(key: String, multiplier: BiFunction<Player, LivingEntity, Double>): Boolean {
+        return registerDamageMultiplier(key, multiplier, Predicate { true })
+    }
+
+    /** 注册输出倍率并提供按玩家判断的激活条件，未激活时不会劫持普通攻击进入 SF 战斗结算。 */
+    @JvmStatic
+    fun registerDamageMultiplier(
+        key: String,
+        multiplier: BiFunction<Player, LivingEntity, Double>,
+        active: Predicate<Player>
+    ): Boolean {
+        if (plugin == null || key.isBlank()) return false
+        damageMultipliers[key] = multiplier
+        damageMultiplierActive[key] = active
+        return true
+    }
+
+    @JvmStatic
+    fun unregisterDamageMultiplier(key: String): Boolean {
+        damageMultiplierActive.remove(key)
+        return damageMultipliers.remove(key) != null
+    }
+
+    @JvmStatic
+    fun hasDamageMultipliers(player: Player): Boolean = damageMultipliers.keys.any { key ->
+        runCatching { damageMultiplierActive[key]?.test(player) ?: true }.getOrDefault(false)
+    }
+
+    /** 读取当前玩家对目标的合并输出倍率；异常 Provider 会被忽略并回退到 1.0。 */
+    @JvmStatic
+    fun outgoingDamageMultiplier(player: Player, target: LivingEntity): Double =
+        damageMultipliers.entries.fold(1.0) { current, entry ->
+            if (!runCatching { damageMultiplierActive[entry.key]?.test(player) ?: true }.getOrDefault(false)) {
+                current
+            } else {
+                current * (runCatching { entry.value.apply(player, target) }.getOrDefault(1.0).coerceAtLeast(0.0))
+            }
+        }
 }

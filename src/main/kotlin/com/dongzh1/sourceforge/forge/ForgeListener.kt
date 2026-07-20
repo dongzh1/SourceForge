@@ -1,6 +1,7 @@
 package com.dongzh1.sourceforge.forge
 
 import com.dongzh1.sourceforge.SourceForge
+import com.dongzh1.sourceforge.api.SourceForgeCombatAPI
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
@@ -16,6 +17,7 @@ import org.bukkit.event.entity.EntityShootBowEvent
 import org.bukkit.event.entity.ProjectileLaunchEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.potion.PotionEffectType
 import kotlin.random.Random
 
 /**
@@ -26,6 +28,7 @@ class ForgeListener(
     private val plugin: SourceForge
 ) : Listener {
     private val skillDamageKey = NamespacedKey(plugin, "skill_damage")
+    private val lastRealHitKey = NamespacedKey(plugin, "invuln_last_hit")
 
     // ==================== 投射物事件 ====================
 
@@ -36,9 +39,11 @@ class ForgeListener(
         if (!plugin.itemService.isSourceEquipment(weapon)) return
         val projectile = event.projectile as? Projectile ?: return
         plugin.itemService.markProjectile(projectile, weapon)
-        if (plugin.forgeConfig.debugCombat) {
-            player.sendMessage("§8[SourceForge Debug] §7远程武器已注入词条数据: ${weapon.type.name}")
-        }
+        // 2026-07-13 改回原版行为：弓正常消耗箭矢，无限只走"附魔无限箭矢"这一条路——
+        // 不用写任何代码，原版对 Infinity 附魔的处理天然就是"不消耗但要求背包至少有1支箭"，
+        // SF只要不覆盖 consumeArrow 就自动继承这个行为(前提是 Infinity 在附魔白名单里，
+        // 默认放行除诅咒外全部附魔，见 EnchantBridgeConfig，本来就允许)。
+        plugin.combatDebug.send(player, "§8[SourceForge Debug] §7远程武器已注入词条数据: ${weapon.type.name}", plugin.forgeConfig.debugCombat)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -50,9 +55,7 @@ class ForgeListener(
         if (plugin.itemService.isSourceProjectile(projectile)) return
         if (weapon.type !in setOf(Material.TRIDENT, Material.SNOWBALL, Material.EGG)) return
         plugin.itemService.markProjectile(projectile, weapon)
-        if (plugin.forgeConfig.debugCombat) {
-            player.sendMessage("§8[SourceForge Debug] §7投射武器已注入词条数据: ${weapon.type.name}")
-        }
+        plugin.combatDebug.send(player, "§8[SourceForge Debug] §7投射武器已注入词条数据: ${weapon.type.name}", plugin.forgeConfig.debugCombat)
     }
 
     // ==================== 伤害事件 ====================
@@ -60,33 +63,63 @@ class ForgeListener(
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     fun onDamage(event: EntityDamageByEntityEvent) {
         val target = event.entity as? LivingEntity ?: return
+        // 投射物不伤害发射者本人：高速位移(冲刺/加速类MOD、以后的弩类右键MOD)可能追上自己射出的
+        // 箭矢，原版对此本来就有个短暂宽限期，但扛不住 SF 的位移速度，这里直接显式拦掉——
+        // 2026-07-13 用户明确要求(弩改右键直射后，追上自己箭矢秒死自己的风险更高)。
+        val damagerEntity = event.damager
+        if (damagerEntity is Projectile && damagerEntity.shooter === target) {
+            event.isCancelled = true
+            return
+        }
         // 原版盾牌格挡优先：玩家成功格挡这一击时，整段交还给原版处理，
         // 不做 SF 护盾吸收/护甲结算（避免清零 BLOCKING 减伤导致格挡失效）。
         if (isVanillaBlocked(event)) return
+        // 无敌帧优先：距上次算数的命中还没过半窗口，本次强制清零（连护盾都不吃），不再往下结算。
+        if (isInvulnerabilitySuppressed(target)) {
+            setCustomDamage(event, 0.0)
+            return
+        }
+        markRealHit(target)
         when (val damager = event.damager) {
             is Player -> {
                 val weapon = damager.inventory.itemInMainHand
                 val isSfWeapon = plugin.itemService.isSourceEquipment(weapon)
+                val isSfOffhand = plugin.itemService.isSourceEquipment(damager.inventory.itemInOffHand)
                 val hasSfArmor = plugin.itemService.hasSourceArmor(damager)
-                if (isSfWeapon || hasSfArmor) {
+                // 无真实SF装备但有外部词缀加成(如 PixelRPG 副本临时强化，纯靠 ExternalAffixProvider
+                // 生效、从不发真实SF物品)：这类玩家也要走战斗结算，否则暴击/元素/调试全部被跳过，
+                // 只有 readTotalAffix 查询能读到加成，实际命中却是"裸伤害"。
+                val hasExternalAffix = plugin.itemService.externalProviderCount() > 0 &&
+                    plugin.itemService.externalProviderTotals(damager).isNotEmpty()
+                val hasCombatModifier = SourceForgeCombatAPI.hasDamageMultipliers(damager)
+                if (isSfWeapon || isSfOffhand || hasSfArmor || hasExternalAffix || hasCombatModifier) {
                     if (isSfWeapon) plugin.itemService.stripVanillaEnchantments(weapon)
                     applyCombat(
                         player = damager,
                         target = target,
                         weapon = weapon.takeIf { isSfWeapon },
-                        baseDamage = event.damage
+                        baseDamage = normalizeGoldenWineIndicatorDamage(damager, event.damage)
                     ) { event.damage = it }
                 }
             }
             is Projectile -> {
                 val player = damager.shooter as? Player
-                if (player != null && plugin.itemService.isSourceProjectile(damager)) {
+                val isSfProjectile = plugin.itemService.isSourceProjectile(damager)
+                val hasSfOffhand = player?.let { plugin.itemService.isSourceEquipment(it.inventory.itemInOffHand) } == true
+                if (player != null && (isSfProjectile || hasSfOffhand ||
+                        SourceForgeCombatAPI.hasDamageMultipliers(player))) {
+                    val projectileBaseDamage = if (isSfProjectile) {
+                        plugin.itemService.readAffixValue(damager.persistentDataContainer, "base_damage")
+                            .takeIf { it > 0.0 } ?: event.damage
+                    } else {
+                        event.damage
+                    }
                     applyCombat(
                         player = player,
                         target = target,
                         weapon = null,
                         projectilePdc = damager.persistentDataContainer,
-                        baseDamage = event.damage
+                        baseDamage = projectileBaseDamage
                     ) { event.damage = it }
                 }
             }
@@ -102,6 +135,12 @@ class ForgeListener(
         val target = event.entity as? LivingEntity ?: return
         // 原版盾牌格挡优先：交还给原版处理，跳过 SF 护盾/护甲结算。
         if (isVanillaBlocked(event)) return
+        // 无敌帧优先：岩浆/烈焰/仙人掌等每 tick 触发的重复伤害，距上次算数命中还没过半窗口就强制清零。
+        if (isInvulnerabilitySuppressed(target)) {
+            setCustomDamage(event, 0.0)
+            return
+        }
+        markRealHit(target)
         plugin.shieldService.applyShield(target, event)
         applyDefense(target, event)
     }
@@ -121,16 +160,11 @@ class ForgeListener(
         baseDamage: Double,
         applyDamage: (Double) -> Unit
     ): Float {
-        // 读取词条值。武器路径只克隆一次 itemMeta，避免每个词条都克隆。
-        val weaponPdc = weapon?.itemMeta?.persistentDataContainer
-        val readValue: (String) -> Double = when {
-            projectilePdc != null -> { affixId -> plugin.itemService.readAffixValue(projectilePdc, affixId) }
-            weaponPdc != null -> { affixId -> plugin.itemService.readAffixValue(weaponPdc, affixId) }
-            else -> {
-                // 无SF武器但有SF防具 — 从全身读取（走缓存）
-                { affixId -> plugin.itemService.readTotalAffix(player, affixId) }
-            }
-        }
+        // 元素/暴击/技能属性一律按【全身合计】读取（readTotalAffix，含防具 / 各槽位 MOD / 外部 Provider
+        // 如 PixelRPG 副本临时强化），与 /sf stats、暴击、MythicMobs 触发路径口径完全一致。
+        // 旧版元素块曾误用「只读手持武器 PDC」的 readValue：外部 Provider 注入的 status_chance / 基础元素
+        // 在近战与弹射物命中时都读到 0，导致异常【完全不触发】，尽管 /sf stats 显示 150%。暴击当初踩过
+        // 同一个坑（见下方注释）并已切到 readTotalAffix，这里把最后一个还在旧路径上的消费者（元素）也一并归位。
 
         // 暴击率 / 暴击伤害按【全身合计】读取，与 /sf stats 显示口径一致。
         // 旧版只读手持武器 PDC（readValue）——若暴击来自防具/MOD，武器上读到 0，导致即使总暴击率 100% 也永不暴击。
@@ -161,7 +195,7 @@ class ForgeListener(
             var elemSum = 0.0
             for (def in ec.active) {
                 if (!def.type.isBase) continue   // 组合元素由怪物侧检测得到，不直接从装备读
-                val v = readValue(def.affix)
+                val v = plugin.itemService.readTotalAffix(player, def.affix)
                 if (v > 0.0) { baseVals[def.type] = v; elemSum += v }
             }
             if (elemSum > 0.0) {
@@ -170,7 +204,7 @@ class ForgeListener(
                 totalDamage += elementDirect
                 // 注：AMP 增伤（病毒/腐蚀）改由通用伤害监听 ElementDamageListener 统一放大，
                 // 覆盖 SF 近战/MM/原版/DoT 所有来源，这里不再单独乘，避免双重。
-                val statusChance = readValue("status_chance")
+                val statusChance = plugin.itemService.readTotalAffix(player, "status_chance")
                 val guaranteed = kotlin.math.floor(statusChance).toInt()
                 val frac = statusChance - guaranteed
                 val debugOn = plugin.statusManager.isDebug(player.uniqueId)
@@ -203,41 +237,57 @@ class ForgeListener(
             }
         }
 
+        val outputMultiplier = SourceForgeCombatAPI.outgoingDamageMultiplier(player, target)
+        totalDamage *= outputMultiplier
+
         applyDamage(totalDamage)
 
-        if (plugin.forgeConfig.debugCombat) {
+        if (plugin.forgeConfig.debugCombat || plugin.combatDebug.isWatched(player)) {
             val srcDesc = when {
                 projectilePdc != null -> "弹射物"
-                weaponPdc != null -> "武器(${weapon?.type?.name ?: "?"})"
+                weapon != null -> "武器(${weapon.type.name})"
                 else -> "全身防具(无SF武器)"
             }
             val targetName = (target as? Player)?.name ?: target.type.name
-            player.sendMessage("§6[SF战斗] §f${player.name} §7→ §f$targetName  §8| 来源: $srcDesc")
-            player.sendMessage("  §7① 传入伤害(MM/原版): §f${"%.2f".format(incomingDamage)}")
+            plugin.combatDebug.send(player, "§6[SF战斗] §f${player.name} §7→ §f$targetName  §8| 来源: $srcDesc", plugin.forgeConfig.debugCombat)
+            plugin.combatDebug.send(player, "  §7① 传入伤害(MM/原版): §f${"%.2f".format(incomingDamage)}", plugin.forgeConfig.debugCombat)
             if (critTriggered) {
-                player.sendMessage(
+                plugin.combatDebug.send(player,
                     "  §7② 暴击: §f${"%.1f".format(critChance * 100)}%§7 掷骰 §f${"%.3f".format(critRoll)} §7→ §a暴击! " +
                         "§7倍率 §f×${"%.2f".format(critMultiplier)} §7(+${"%.0f".format(critDamageBonus * 100)}%)  " +
-                        "§f${"%.2f".format(damageBeforeCrit)}§7→§f${"%.2f".format(damageBeforeCrit * critMultiplier)}"
+                        "§f${"%.2f".format(damageBeforeCrit)}§7→§f${"%.2f".format(damageBeforeCrit * critMultiplier)}",
+                    plugin.forgeConfig.debugCombat
                 )
             } else {
-                player.sendMessage(
-                    "  §7② 暴击: §f${"%.1f".format(critChance * 100)}%§7 掷骰 §f${"%.3f".format(critRoll)} §7→ §c未暴击"
+                plugin.combatDebug.send(
+                    player,
+                    "  §7② 暴击: §f${"%.1f".format(critChance * 100)}%§7 掷骰 §f${"%.3f".format(critRoll)} §7→ §c未暴击",
+                    plugin.forgeConfig.debugCombat
                 )
             }
-            if (elementDirect > 0.0) player.sendMessage("  §7③ 元素直伤: §f+${"%.2f".format(elementDirect)}")
-            player.sendMessage("  §8· 技能强度(全身)=${"%.1f".format(abilityStrength * 100)}% §8[仅PAPI, 不计入伤害]")
-            player.sendMessage("  §e最终伤害: §c${"%.2f".format(totalDamage)}")
+            if (elementDirect > 0.0) plugin.combatDebug.send(player, "  §7③ 元素直伤: §f+${"%.2f".format(elementDirect)}", plugin.forgeConfig.debugCombat)
+            if (outputMultiplier != 1.0) plugin.combatDebug.send(player, "  §7输出倍率: §e×${"%.2f".format(outputMultiplier)}", plugin.forgeConfig.debugCombat)
+            plugin.combatDebug.send(player, "  §8· 技能强度(全身)=${"%.1f".format(abilityStrength * 100)}% §8[仅PAPI, 不计入伤害]", plugin.forgeConfig.debugCombat)
+            plugin.combatDebug.send(player, "  §e最终伤害: §c${"%.2f".format(totalDamage)}", plugin.forgeConfig.debugCombat)
         }
 
         return totalDamage.toFloat()
+    }
+
+    private fun normalizeGoldenWineIndicatorDamage(player: Player, damage: Double): Double {
+        if (!plugin.sectService.hasGoldenWineIndicator(player)) return damage
+        val strength = player.getPotionEffect(PotionEffectType.STRENGTH) ?: return damage
+        val vanillaStrengthBonus = 3.0 * (strength.amplifier + 1)
+        return (damage - vanillaStrengthBonus).coerceAtLeast(0.0)
     }
 
     /**
      * 防御结算：
      * - 读取目标护甲值 (Attribute.ARMOR)
      * - 使用攻防公式: attackPower / (attackPower + armor)
-     * - 所有原版减伤阶段归零
+     * - 所有原版减伤阶段归零，换成上面这条自研公式
+     * - 公式算完后，再乘一层原版"保护"附魔家族的减伤（VanillaEnchantBridge.armorDamageMultiplier）——
+     *   这层是独立叠加的原版增益，不是自研公式的一部分，顺序与原版真实计算顺序一致（先护甲值、后附魔）。
      */
     private fun applyDefense(target: LivingEntity, event: EntityDamageEvent) {
         // 自定义护甲减伤公式只对玩家生效；非玩家实体保持原版减伤
@@ -253,14 +303,17 @@ class ForgeListener(
         val attackPower = attackPower(event, incoming)
 
         val defended = calculateDefendedDamage(incoming, attackPower, armor)
-        setCustomDamage(event, defended)
+        val protMult = com.dongzh1.sourceforge.enchant.VanillaEnchantBridge.armorDamageMultiplier(plugin, target, event.cause)
+        val final = (defended * protMult).coerceAtLeast(0.0)
+        setCustomDamage(event, final)
 
-        if (plugin.forgeConfig.debugCombat) {
+        if (plugin.forgeConfig.debugCombat || plugin.combatDebug.isWatched(target as? Player ?: return)) {
             val msg = "§8[SourceForge Debug] §7防御结算: " +
                 "攻击力=${"%.2f".format(attackPower)}, " +
                 "护甲=${"%.2f".format(armor)}, " +
-                "伤害=${"%.2f".format(incoming)} -> ${"%.2f".format(defended)}"
-            (target as? Player)?.sendMessage(msg)
+                "伤害=${"%.2f".format(incoming)} -> ${"%.2f".format(defended)} " +
+                "-> 附魔保护×${"%.2f".format(protMult)} -> ${"%.2f".format(final)}"
+            (target as? Player)?.let { player -> plugin.combatDebug.send(player, msg, plugin.forgeConfig.debugCombat) }
         }
     }
 
@@ -298,6 +351,35 @@ class ForgeListener(
         } catch (_: UnsupportedOperationException) {
             false
         }
+    }
+
+    /**
+     * 本次伤害是否落在原版"无敌帧"窗口内，应被压制。
+     *
+     * 第一版实现读 Bukkit EntityDamageEvent 的 INVULNERABILITY_REDUCTION 修正阶段，结果实测无效——
+     * 服务器是否往这个阶段的 modifiers map 里塞值、塞的符号是什么，是混淆过的 Paper 服务端内部行为，
+     * Bukkit API 本身不保证、我们也验证不了，岩浆这个 cause 大概率根本没走这条路径。
+     *
+     * 现在改成完全不依赖该 modifier：用插件自己的 PDC 时间戳独立记录"上一次算数的命中是什么时候"，
+     * 距今不到半个无敌帧窗口（maximumNoDamageTicks/2 个 tick，换算成毫秒）就判定为压制。窗口时长跟着
+     * 玩家当前的 maximumNoDamageTicks 走（正常是原版默认 20 tick → 500ms），不用魔法数字硬编码窗口。
+     * 只做时间门控，不复刻原版"更强一击能提前打破无敌帧"的极少见分支——同伤害源重复 tick(岩浆/烈焰/
+     * 仙人掌)本来就是同一伤害量的重复命中，纯时间门控已经够用，且偏向"判压制"对玩家更安全。
+     */
+    private fun isInvulnerabilitySuppressed(target: LivingEntity): Boolean {
+        val player = target as? Player ?: return false
+        val maxTicks = player.maximumNoDamageTicks
+        if (maxTicks <= 0) return false
+        val windowMs = (maxTicks / 2) * 50L
+        if (windowMs <= 0L) return false
+        val last = player.persistentDataContainer.get(lastRealHitKey, PersistentDataType.LONG) ?: return false
+        return System.currentTimeMillis() - last < windowMs
+    }
+
+    /** 记录本次是"算数"的命中，作为下一次无敌帧压制判定的基准时间点。 */
+    private fun markRealHit(target: LivingEntity) {
+        val player = target as? Player ?: return
+        player.persistentDataContainer.set(lastRealHitKey, PersistentDataType.LONG, System.currentTimeMillis())
     }
 
     @Suppress("DEPRECATION")

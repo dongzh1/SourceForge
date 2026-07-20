@@ -1,0 +1,17 @@
+# 护甲专属被动技能MOD · 强攻（英雄联盟 精密系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制：3秒内连续命中(简化口径同 electrocute/triple_slash，见各自注释)3次攻击后，第3击造成额外
+# 伤害并给周围目标一段减速(代替原版"接下来受到的所有伤害提高"这种全局易伤——脚本层没有"修改
+# 目标接下来受到的伤害"这个钩子，用减速近似"更容易被集火"的效果)。3秒内挥空(超时)则从头计。
+id: press_the_attack
+display-name: "&6强攻"
+item: "sourceforge:mod_press_the_attack"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f3秒内连续命中 &63次攻击 &7后，第3击造成额外伤害"
+  - "&8额外伤害 %cfg:keystone.press-the-attack.damage|10%，并令目标短暂减速"
+  - "&8连续攻击 &c超时(3秒)未接上 &8则重新计数"

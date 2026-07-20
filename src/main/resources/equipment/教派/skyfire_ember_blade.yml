@@ -1,0 +1,28 @@
+skyfire_ember_blade:
+  material: NETHERITE_SWORD
+  display-name: "天火教·烬星副刃"
+  ce-id: "sourceforge:skyfire_ember_blade"
+  weapon-category: melee_light
+  effective-slots: [ offhand ]
+  chunkworld-level: "15"
+  affixes: [ base_damage, critical_chance, critical_damage, heat_damage, status_chance ]
+  tier-affixes:
+    1:
+      base_damage: 3.6
+      critical_chance: 0.08
+      critical_damage: 0.15
+      heat_damage: 1.5
+      status_chance: 0.20
+    2:
+      base_damage: 4.6
+      critical_chance: 0.10
+      critical_damage: 0.20
+      heat_damage: 2.0
+      status_chance: 0.25
+    3:
+      base_damage: 5.6
+      critical_chance: 0.12
+      critical_damage: 0.25
+      heat_damage: 2.5
+      status_chance: 0.30
+  free-anvil-edit: true

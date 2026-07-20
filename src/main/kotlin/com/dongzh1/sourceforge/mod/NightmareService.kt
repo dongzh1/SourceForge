@@ -248,12 +248,13 @@ class NightmareService(
         Text.lore(
             meta,
             listOf(
-                "&5梦魇MOD &8| &7未鉴定",
-                "&7揭示进度 &f$progress&7/&f$goal",
+                "&8◆ &5梦魇 MOD  &8│  &7未鉴定",
+                "&8◆ &7揭示进度  &f$progress&7/&f$goal",
                 "",
-                "  &8击杀怪物推进揭示",
+                "&5✦ 鉴定条件",
+                "  &8▪ &7击杀怪物推进揭示",
                 "",
-                "&8⚑ 适用: &7${categoryName(cat)}"
+                "&7适用装备  &f${categoryName(cat)}"
             )
         )
     }
@@ -263,15 +264,15 @@ class NightmareService(
         val instance = raw?.let { parseDataString(it) } ?: NightmareInstance(config.baseCost, category(item) ?: "melee", emptyMap())
         Text.name(meta, "&5梦魇MOD")
         val lines = mutableListOf(
-            "&5梦魇MOD &8| &7容量 &e${instance.cost}",
+            "&8◆ &5梦魇 MOD  &8│  &7占用 &e${instance.cost}",
             "",
-            "&d● 属性&7:"
+            "&d✦ 属性增幅"
         )
         for ((affixId, value) in instance.affixes) {
             lines += affixLine(affixId, value)
         }
         lines += ""
-        lines += "&8⚑ 适用: &7${categoryName(instance.category)}"
+        lines += "&7适用装备  &f${categoryName(instance.category)}"
         Text.lore(meta, lines)
     }
 
@@ -281,7 +282,7 @@ class NightmareService(
         val decimals = affix?.decimals ?: 2
         val positive = value >= 0
         val formatted = formatValue(affixId, kotlin.math.abs(value), decimals)
-        return if (positive) "  &7$name &a+$formatted" else "  &7$name &c-$formatted"
+        return if (positive) "  &8▪ &7$name  &a+$formatted" else "  &8▪ &7$name  &c-$formatted"
     }
 
     private fun formatValue(affixId: String, absValue: Double, decimals: Int): String {

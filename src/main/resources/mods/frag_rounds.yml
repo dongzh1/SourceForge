@@ -1,0 +1,21 @@
+# 基础MOD · 破片弹（远程武器专属）— 命中后向命中点周围溅射一部分本次伤害。
+# 溅射伤害走 mod/FragRoundsListener.kt 硬编码结算(命中判定/半径筛选/额外目标数上限属于自定义逻辑，
+# 不是简单的"叠加到SF内部战斗数值"，故不用纯 effects 数值缩放了事)——effects 里的 splash_power
+# 仅用于：① reapplyModEffects 按段位把数值写进武器 PDC ② markProjectile 把该值原样复制到弹射物 PDC，
+# 实际拿它做溅射的地方在 FragRoundsListener 里读弹射物 PDC。
+#
+# 需要新 affix "splash_power"（本文件不改 affixes.yml，见任务报告【需要共享文件改动】）。
+id: frag_rounds
+display-name: "&6破片弹"
+item: "sourceforge:mod_frag_rounds"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [bow, crossbow, firearm]
+effects: { splash_power: 0.30 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8远程武器命中目标后，对命中点周围 &f2.5 &8格内其余目标"
+  - "&8造成 &f本次伤害×词条数值 &8的溅射伤害"
+  - "&8单次最多波及 &f5 &8个额外目标(不含原目标)"

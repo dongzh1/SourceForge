@@ -1,0 +1,26 @@
+# MOD卡·处决本能（execution）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_execution:
+    material: iron_sword
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_execution_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_execution
+    data:
+      item_name: "<!i><dark_red>处决本能"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>处决  <white>+10% <dark_gray>→ <green>+20%"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>目标生命值 <red>≤25%<dark_gray> 时，本次伤害额外提升"
+        - "<!i>  <dark_gray>▪ <dark_gray>远程武器在开火瞬间锁定段位，箭矢/弩矢飞行途中换武器不影响已命中的这一发"
+        - ""
+        - "<!i><gray>适用装备  <white>武器通用"

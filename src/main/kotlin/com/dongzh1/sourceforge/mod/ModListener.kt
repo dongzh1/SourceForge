@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack
 class ModListener(
     private val plugin: SourceForge
 ) : Listener {
-    private val itemService = plugin.itemService
+    private val itemService get() = plugin.itemService
     private val modService get() = plugin.modService
 
     @EventHandler
@@ -92,11 +92,50 @@ class ModListener(
                 event.isCancelled = true
                 return
             }
+            menu.appearanceToggleSlot -> {
+                event.isCancelled = true
+                if (modService.canToggleAppearance(live)) {
+                    modService.toggleAppearanceHidden(live)
+                    itemService.invalidateStatCache(player)
+                    menu.populate()
+                }
+                return
+            }
         }
-        // 技能槽：装/取技能MOD（独立于普通MOD槽）
+        // 技能槽：装/取技能MOD（独立于普通MOD槽）——护甲走被动技能槽(仅第0格生效)，武器走6格触发栏
         val si = menu.skillSlotGuiIndices.indexOf(rawSlot)
         if (si >= 0) {
             event.isCancelled = true
+            if (modService.isArmorCategory(live)) {
+                if (si != 0) return  // 其余5格是留白融入背景，不响应点击
+                if (modService.readPassiveSkill(live) != null) {
+                    val returned = modService.tryRemovePassiveSkill(live)
+                    if (returned != null) {
+                        player.inventory.addItem(returned).values.forEach {
+                            player.world.dropItemNaturally(player.location, it)
+                        }
+                    }
+                    itemService.invalidateStatCache(player)
+                    menu.populate()
+                } else {
+                    val cursor = event.cursor
+                    if (cursor == null || cursor.type == Material.AIR) {
+                        player.sendMessage("§e光标上没有被动技能MOD")
+                        return
+                    }
+                    val result = modService.tryInstallPassiveSkill(live, cursor)
+                    if (result == ModService.InstallResult.SUCCESS) {
+                        player.setItemOnCursor(if (cursor.amount <= 0) ItemStack(Material.AIR) else cursor)
+                        itemService.invalidateStatCache(player)
+                        menu.populate()
+                        playPlace(player)
+                    } else {
+                        player.sendMessage(reasonMessage(result))
+                        playDeny(player)
+                    }
+                }
+                return
+            }
             if (si >= modService.skillSlotCount(live)) {
                 player.sendMessage("§c该装备不支持更多技能槽")
                 playDeny(player)
@@ -204,6 +243,10 @@ class ModListener(
             ModService.InstallResult.INVALID_MOD -> "§c光标上的物品不是有效 MOD"
             ModService.InstallResult.NOT_EQUIPMENT -> "§c目标不是 SourceForge 装备"
             ModService.InstallResult.SEALED_NIGHTMARE -> "§c该梦魇MOD 尚未鉴定，无法安装"
+            ModService.InstallResult.SEALED_RIVEN -> "§c该彼端遗纹仍处于封缄状态，无法安装"
+            ModService.InstallResult.PENDING_RIVEN_SELECTION -> "§c请先确认彼端遗纹的梦织候选词条"
+            ModService.InstallResult.RIVEN_WEAPON_MISMATCH -> "§c彼端遗纹仅适用于它绑定的具体武器"
+            ModService.InstallResult.RIVEN_ALREADY_INSTALLED -> "§c同一件装备只能安装一张彼端遗纹"
             ModService.InstallResult.SKILL_SLOT_REQUIRED -> "§c技能槽只能安装技能MOD"
             ModService.InstallResult.SKILL_MOD_WRONG_SLOT -> "§c技能MOD 只能装进技能槽"
             ModService.InstallResult.TRIGGER_NOT_ALLOWED -> "§c该技能MOD 不能装进这个触发栏"

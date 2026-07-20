@@ -1,0 +1,24 @@
+# MOD卡·电刑（electrocute，英雄联盟基石天赋）独立物品文件，不并入其它文件，避免并行任务冲突。
+# 2026-07-18：64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_electrocute:
+    material: lightning_rod
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_electrocute_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_electrocute
+    data:
+      item_name: "<!i><red>电刑"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>4秒内命中 <red>3次攻击 <gray>后，引爆额外伤害"
+        - "<!i>  <dark_gray>▪ <dark_gray>引爆伤害 8（真实数值走 SF 基础伤害加成）"
+        - "<!i>  <dark_gray>▪ <dark_gray>引爆后进入 20 <dark_gray>秒冷却，冷却中不再计数"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

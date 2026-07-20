@@ -1,0 +1,16 @@
+# 护甲专属被动技能MOD · 征服者（英雄联盟 精密系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制：战斗中攻击叠层(8秒内没有下一次攻击则层数开始清空)，每层攻击附带回复生命——即"持续输出
+# 换续航"的乱斗天赋。层数越高单次回复越多，鼓励贴脸缠斗而非打一下就跑。
+id: conqueror
+display-name: "&6征服者"
+item: "sourceforge:mod_conqueror"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f持续攻击叠层，每层攻击回复生命"
+  - "&8每层回复自身最大生命值 &a%cfg:keystone.conqueror.heal-per-stack-pct|0.4%% &8，封顶 %cfg:keystone.conqueror.max-stacks|5% 层"
+  - "&8&c8秒 &8内没有下一次攻击则层数清零"

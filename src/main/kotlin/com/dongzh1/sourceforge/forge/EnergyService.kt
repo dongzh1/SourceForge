@@ -10,13 +10,14 @@ import org.bukkit.persistence.PersistentDataType
 
 /**
  * 能量(MANA)系统。从 ForgeListener 拆出（评审 #5），行为不变。
- * MANA = config.yml mana.base（默认10）+ 装备 energy_max。存玩家 PDC key "energy_current"。
+ * MANA = config.yml mana.base（默认100，数值策划 2026-07-08 由 10 上调）+ 装备 energy_max。
+ * 存玩家 PDC key "energy_current"。
  */
 class EnergyService(private val plugin: SourceForge) : Listener {
     private val energyCurrentKey = NamespacedKey(plugin, "energy_current")
 
     fun getEnergyMax(player: Player): Double {
-        val base = plugin.config.getDouble("mana.base", 10.0)
+        val base = plugin.config.getDouble("mana.base", 100.0)
         return base + plugin.itemService.readDisplayTotalAffix(player, "energy_max")
     }
 

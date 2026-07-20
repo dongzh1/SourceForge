@@ -2,12 +2,18 @@ package com.dongzh1.sourceforge.config
 
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
+import kotlin.math.pow
 
-/** 单段强化所需材料 + 加成。levels[i] 表示升到 level i+1 的需求与收益。 */
+/**
+ * 单段强化所需花费 + 加成。levels[i] 表示升到 level i+1 的需求与收益。
+ * 强化只花钱(Vault经济)不消耗材料(用户明确要求)——[cost] 单位是货币，不是 CE 材料数量。
+ */
 data class EnhanceLevel(
-    val materials: List<RecipeMaterial>,
+    val cost: Double,
     val baseDamage: Double,
-    val modCapacity: Int
+    val modCapacity: Int,
+    val shieldCapacity: Double = 0.0,
+    val health: Double = 0.0
 )
 
 data class EnhanceCategory(
@@ -15,12 +21,42 @@ data class EnhanceCategory(
     val levels: List<EnhanceLevel>
 )
 
+data class EnhancementCostModel(
+    val startCost: Double,
+    val endCost: Double
+) {
+    fun costFor(index: Int, lastIndex: Int): Double {
+        if (lastIndex <= 0) return endCost
+        val progress = (index.toDouble() / lastIndex).coerceIn(0.0, 1.0)
+        return startCost * (endCost / startCost).pow(progress)
+    }
+}
+
+/**
+ * MOD 段位升级花费曲线（enhancement.yml 的 mod-upgrade 段）。MOD 段位提升复用锻炉"强化"流程
+ * （钱+时间，不耗材料，见 [EnhancementConfig.enhanceTimeSeconds]），不再走旧的"升级核心"实物消耗。
+ * 单级花费 = baseCostPerSlotCost × 该MOD的cost(改造容量点数，越贵代表越强) ×
+ * upgradeCostBase(该MOD自身稀有度系数) × levelMultiplier[rank]。
+ */
+data class ModUpgradeCurve(
+    val baseCostPerSlotCost: Double,
+    val levelMultiplier: List<Double>
+) {
+    /** rank -> rank+1 所需金币花费。rank 超出表长时沿用最后一档倍率。 */
+    fun costFor(mod: com.dongzh1.sourceforge.mod.ModConfig, rank: Int): Double {
+        val multiplier = levelMultiplier.getOrNull(rank) ?: levelMultiplier.lastOrNull() ?: 1.0
+        return baseCostPerSlotCost * mod.cost * mod.upgradeCostBase * multiplier
+    }
+}
+
 /**
  * 武器强化配置（enhancement.yml）。按武器 weaponCategory 查询；缺失时回退 default。
  */
 data class EnhancementConfig(
     val enhanceTimeSeconds: Double,
-    val categories: Map<String, EnhanceCategory>
+    val categories: Map<String, EnhanceCategory>,
+    val modUpgrade: ModUpgradeCurve = ModUpgradeCurve(8.0, listOf(1.0, 1.4, 2.0, 2.9, 4.2)),
+    val weaponCostModel: EnhancementCostModel? = null
 ) {
     fun category(weaponCategory: String?): EnhanceCategory? {
         val key = weaponCategory?.lowercase()
@@ -46,27 +82,43 @@ data class EnhancementConfig(
             if (!file.isFile) return EnhancementConfig(30.0, emptyMap())
             val yaml = YamlConfiguration.loadConfiguration(file)
             val time = yaml.getDouble("enhance-time-seconds", 30.0).coerceAtLeast(0.0)
+            val weaponCostModel = yaml.getConfigurationSection("weapon-cost-model")?.let { section ->
+                val type = section.getString("type", "")?.lowercase()
+                val start = section.getDouble("start-cost", 0.0)
+                val end = section.getDouble("end-cost", 0.0)
+                if (type == "exponential" && start > 0.0 && end > 0.0) {
+                    EnhancementCostModel(start, end)
+                } else {
+                    null
+                }
+            }
             val categories = linkedMapOf<String, EnhanceCategory>()
             yaml.getConfigurationSection("categories")?.getKeys(false)?.forEach { cat ->
                 val path = "categories.$cat"
                 val maxLevel = yaml.getInt("$path.max-level", 0).coerceAtLeast(0)
-                val levels = yaml.getMapList("$path.levels").map { map ->
-                    @Suppress("UNCHECKED_CAST")
-                    val matsRaw = (map["materials"] as? List<Map<*, *>>) ?: emptyList()
-                    val mats = matsRaw.mapNotNull { m ->
-                        val item = m["item"]?.toString() ?: return@mapNotNull null
-                        val amount = (m["amount"] as? Number)?.toInt() ?: m["amount"]?.toString()?.toIntOrNull() ?: 1
-                        RecipeMaterial(item, amount)
-                    }
+                val rawLevels = yaml.getMapList("$path.levels")
+                val levels = rawLevels.mapIndexed { index, map ->
+                    val cost = (map["cost"] as? Number)?.toDouble()
+                        ?: map["cost"]?.toString()?.toDoubleOrNull() ?: 0.0
+                    val modeledCost = weaponCostModel?.costFor(index, rawLevels.lastIndex) ?: cost
                     val baseDamage = (map["base-damage"] as? Number)?.toDouble()
                         ?: map["base-damage"]?.toString()?.toDoubleOrNull() ?: 0.0
                     val modCapacity = (map["mod-capacity"] as? Number)?.toInt()
                         ?: map["mod-capacity"]?.toString()?.toIntOrNull() ?: 0
-                    EnhanceLevel(mats, baseDamage, modCapacity)
+                    val shieldCapacity = (map["shield-capacity"] as? Number)?.toDouble()
+                        ?: map["shield-capacity"]?.toString()?.toDoubleOrNull() ?: 0.0
+                    val health = (map["health"] as? Number)?.toDouble()
+                        ?: map["health"]?.toString()?.toDoubleOrNull() ?: 0.0
+                    EnhanceLevel(modeledCost, baseDamage, modCapacity, shieldCapacity, health)
                 }
                 categories[cat.lowercase()] = EnhanceCategory(maxLevel, levels)
             }
-            return EnhancementConfig(time, categories)
+            val modUpgrade = ModUpgradeCurve(
+                baseCostPerSlotCost = yaml.getDouble("mod-upgrade.base-cost-per-slot-cost", 8.0).coerceAtLeast(0.0),
+                levelMultiplier = yaml.getDoubleList("mod-upgrade.level-multiplier")
+                    .takeIf { it.isNotEmpty() } ?: listOf(1.0, 1.4, 2.0, 2.9, 4.2)
+            )
+            return EnhancementConfig(time, categories, modUpgrade, weaponCostModel)
         }
     }
 }

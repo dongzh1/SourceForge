@@ -3,8 +3,8 @@
 # 脚本: skills/shield_bash.js（钩子 onActivate）；数值在 config.yml 的 shield-bash 段。
 id: shield_bash
 display-name: "&e盾击反震"
-item: "minecraft:diamond_sword"
-cost: 0
+item: "sourceforge:mod_shield_bash"
+cost: 8
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, defense]

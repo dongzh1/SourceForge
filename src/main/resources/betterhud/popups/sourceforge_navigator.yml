@@ -1,0 +1,29 @@
+# 坐标追踪导航 popup。名字必须 = SF config.yml 的 betterhud.navigator-popup
+# （默认 sourceforge_navigator）。由 SourceForge 通过 /sf track 主动显示并每 2 tick
+# 更新，停止追踪时移除——因此无 triggers，duration 仅作兜底上限。
+sourceforge_navigator:
+  push: true
+  # 关闭 key-mapping：本弹窗每玩家仅一条（max-stack:1 + SF 侧 navActive 去重），不需要
+  # 按 key 去重。开着会导致 reload 后 show() 一直走"已存在→更新旧条目→返回 null"路径，
+  # 既拿不到 updater 句柄（navActive 永远空、每 tick 重试），又只更新旧 event 的旧变量
+  # （距离冻结、新目标不显示）。关掉后 show() 每次都返回真 updater，可干净重建。
+  key-mapping: false
+  max-stack: 1
+  move:
+    duration: 1
+    pixel:
+      x-equation: 0
+      y-equation: 0
+  layouts:
+    1:
+      name: sourceforge_navigator_layout
+      # 跟随客户端 GUI 缩放：gui 锚点只用端点/中心(0/50/100)，再用 pixel 做固定像素微调。
+      # 这里锚在右上角(x:100 右, y:0 上)，向左/向下偏移到暴露值下方。
+      gui:
+        x: 100
+        y: 0
+      pixel:
+        x: -75
+        y: 68
+  # 兜底上限(1小时)。实际显示/移除由 SourceForge 控制；过期会被自动重建。
+  duration: 72000

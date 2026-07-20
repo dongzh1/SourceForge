@@ -1,0 +1,16 @@
+# 护甲专属被动技能MOD · 相位骤袭（英雄联盟 巫术系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制：4秒内连续命中3次攻击(简化口径同 electrocute)后，获得一段极速冲刺(移速加成)并驱散自身减速，
+# 之后进入独立冷却重新计数。用于换线/追击/脱战的机动型天赋。
+id: phase_rush
+display-name: "&b相位骤袭"
+item: "sourceforge:mod_phase_rush"
+cost: 8
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f4秒内命中 &b3次攻击 &7后，获得急速冲刺并驱散减速"
+  - "&8速度加成持续 %cfg:keystone.phase-rush.duration-sec|3% &8秒"
+  - "&8触发后进入 %cfg:keystone.phase-rush.cooldown-sec|15% &8秒冷却"

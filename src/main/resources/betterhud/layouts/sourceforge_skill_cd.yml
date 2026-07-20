@@ -1,0 +1,34 @@
+# SourceForge skill-cd: layout for ONE cooldown entry.
+# BetterHud placeholder syntax is [ ... ] (square brackets), NOT ( ... ).
+# Entry variables are pushed by SourceForge per skill (NOT papi):
+#   [custom_variable:skill]          skill internal name
+#   [custom_variable:cooldown]       cooldown seconds (1 decimal)
+#   [custom_variable:cooldown_ticks] total cooldown ticks (for your bar)
+sourceforge_skill_cd_layout:
+  texts:
+    1:
+      name: sourceforge_skill_cd_font
+      pattern: "<#ffffff>[custom_variable:skill]"
+      layer: 1
+      x: 0
+      y: 0
+      scale: 1.0
+      align: center
+    2:
+      name: sourceforge_skill_cd_font
+      pattern: "<#ffffff>[custom_variable:cooldown]s"
+      layer: 1
+      x: 0
+      y: 12
+      scale: 0.7
+      align: center
+
+  # 25 段 CD 冷却条：填充 = remaining_ticks / cooldown_ticks，随 CD 排空。
+  # 图像定义见 images/sourceforge_cd.yml。位置/缩放按你的贴图调整。
+  images:
+    1:
+      name: cd_bar_image
+      layer: 0
+      x: 0
+      y: 26
+      scale: 1

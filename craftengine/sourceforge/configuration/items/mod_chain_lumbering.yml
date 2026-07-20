@@ -1,0 +1,25 @@
+# MOD卡·连锁砍树（chain_lumbering）独立物品文件。
+items:
+  sourceforge:mod_chain_lumbering:
+    material: iron_axe
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_chain_lumbering_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_chain_lumbering
+    data:
+      item_name: "<!i><green>连锁砍树"
+      lore:
+        - "<!i><dark_gray>▪ <gray>属性 MOD  <dark_gray>│ <gray>占用 <yellow>6"
+        - "<!i><dark_gray>▪ <gray>段位  <aqua>●○○○○ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>砍树连锁  <white>+3 <dark_gray>→ <green>+15"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <gray>砍树时自动破坏相邻的同材质原木"
+        - "<!i>  <dark_gray>▪ <gray>只对树木原木生效，不影响树叶、木板及其他方块"
+        - ""
+        - "<!i><gray>适用装备  <white>下界暗金战斧"

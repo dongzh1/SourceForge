@@ -1,0 +1,24 @@
+# MOD卡·黑曜石爆破（obsidian_blast）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_obsidian_blast:
+    material: fire_charge
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_obsidian_blast_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_obsidian_blast
+    data:
+      item_name: "<!i><dark_purple>黑曜石爆破"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>4"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>右键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>0.2秒"
+        - "<!i>  <dark_gray>▪ <dark_gray>右键瞬间破坏瞄准的黑曜石方块"
+        - "<!i>  <dark_gray>▪ <dark_gray>射程 <white>6 <dark_gray>格"
+        - ""
+        - "<!i><gray>适用装备  <white>镐"

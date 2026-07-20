@@ -1,0 +1,21 @@
+# 基础MOD · 技能强度/效率取舍（护甲通用，2026-07-17 起物理/法术护甲合并，不再限法术护甲）— Warframe 暴戾无常(Blind Rage)
+# 纯被动词条，复用已有 affix，不新增任何新词条。effects 字段写的是【满段位(rank=maxRank)时的最终数值】，
+# 会经 ModConfig.rankRatio 按 (rank+1)/(maxRank+1) 线性缩放到低段位——
+# 这里 max-rank=4（5级：rank 0~4），rankRatio 范围 1/5~5/5=0.2~1.0，
+# 故 effects 填 1.10 / -0.80 才能让实际生效值落在 设计要求的 +22%~+110% / -16%~-80% 区间：
+#   rank0: 1.10*0.2=+0.22, -0.80*0.2=-0.16 ；rank4(满): 1.10*1.0=+1.10, -0.80*1.0=-0.80
+# 注意：不要照搬"+22%/-16%"字面数字直接当 effects 值，那是 rank0（最低段位）的展示值，
+# 不是喂给 rankRatio 缩放公式的基准值，字面填会导致满级只有 +22%/-16%，缩了 5 倍。
+id: blind_rage
+display-name: "&c暴戾无常"
+item: "sourceforge:mod_blind_rage"
+cost: 12
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+effects: { ability_strength: 1.10, ability_efficiency: -0.80 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8技能强度大幅提升，但技能效率(耗蓝&8/&8冷却缩减)大幅下降"
+  - "&8高伤害输出与高耗蓝&8/&8长冷却并存的极端配置，需谨慎搭配技能循环"

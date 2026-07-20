@@ -1,0 +1,24 @@
+# MOD卡·征服者（conqueror）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_conqueror:
+    material: golden_helmet
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_conqueror_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_conqueror
+    data:
+      item_name: "<!i><gold>征服者"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>10"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>持续攻击叠层，每层攻击回复生命"
+        - "<!i>  <dark_gray>▪ <dark_gray>每层回复自身最大生命值 <green>0.4% <dark_gray>，封顶 5 层"
+        - "<!i>  <dark_gray>▪ <dark_gray><red>8秒 <dark_gray>内没有下一次攻击则层数清零"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

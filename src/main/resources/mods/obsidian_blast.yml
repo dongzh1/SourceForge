@@ -1,0 +1,16 @@
+# 黑曜石爆破：装在镐子的右键触发栏，瞬间破坏瞄准的黑曜石方块。
+# 2026-07-17：JS技能(见 skills/obsidian_blast.js)，走已有的技能MOD·触发栏路径(B类)，
+# 单次只处理1个方块，没有连锁挖矿那样的性能敏感度，跟其余触发栏技能一样用脚本实现即可。
+id: obsidian_blast
+display-name: "&5黑曜石爆破"
+item: "sourceforge:mod_obsidian_blast"
+cost: 4
+max-per-equipment: 1
+applicable-categories: [pickaxe]
+skill: true
+allowed-triggers: [right]
+tags: [skill]
+cooldown: "%cfgs:obsidian_blast.cooldown-ms|200%秒"
+description:
+  - "&8右键瞬间破坏瞄准的黑曜石方块"
+  - "&8射程 &f%cfg:obsidian_blast.range|6% &8格"

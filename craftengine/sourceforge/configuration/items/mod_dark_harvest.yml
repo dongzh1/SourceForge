@@ -1,0 +1,26 @@
+# MOD卡·黑暗收割（dark_harvest）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_dark_harvest:
+    material: wither_rose
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_dark_harvest_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_dark_harvest
+    data:
+      item_name: "<!i><dark_red>黑暗收割"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>11"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>附近击杀生物 <dark_red>收割一层灵魂 <gray>(本局内永久累加，封顶20层)"
+        - "<!i>  <dark_gray>▪ <gray>攻击 <red>生命值低于50% <gray>的目标 <dark_red>造成处决打击"
+        - "<!i>  <dark_gray>▪ <dark_gray>目标血量越低，伤害倍率越高(阈值处1倍 <dark_gray>→<red> 濒死时最高2倍<dark_gray>)"
+        - "<!i>  <dark_gray>▪ <dark_gray>基础伤害 2 <dark_gray>+每层灵魂 <dark_red>+0.6"
+        - "<!i>  <dark_gray>▪ <dark_gray>灵魂层数不跨重登保留"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

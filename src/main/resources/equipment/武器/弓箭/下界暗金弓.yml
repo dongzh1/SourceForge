@@ -1,0 +1,21 @@
+duskgold_bow:
+  material: BOW
+  display-name: "&7下界暗金弓"
+  ce-id: "sourceforge:duskgold_bow"
+  weapon-category: bow
+  effective-slots: [ mainhand ]
+  chunkworld-level: "15"
+  affixes: [ base_damage, critical_damage ]
+  # 2026-07-13：弓弩攻击方式分化，弓基础伤害×1.5(原5.8→8.7)，右键机制不变(拉弓蓄力)。
+  # 2026-07-17 新增 tier2/3：数值设计见 docs/数值设计.md §8，规则同下界暗金剑。
+  tier-affixes:
+    1:
+      base_damage: 8.7
+    2:
+      base_damage: 11.3
+    3:
+      base_damage: 13.9
+      critical_damage: 0.15
+  # CE战斗装备分类下的装备要求(用户2026-07-13)：允许铁砧完全自由操作(改名/修复/合并/附魔书附魔)，
+  # 不受 SourceEnchantListener 的白名单限制——以后新增的战斗装备也要照抄这一条。
+  free-anvil-edit: true

@@ -20,6 +20,16 @@ function onToggle(p) {
     }
 }
 
+function onActivate(p) {
+    onToggle(p);
+}
+
+function onDeactivate(p) {
+    if (!sf.isActive(SKILL, p)) return;
+    sf.setActive(SKILL, p, false);
+    sf.msg(p, "&7[摸尸] &c主手已切换，自动关闭");
+}
+
 function onTick(p) { // 每秒，仅对开启的玩家
     var eff = Math.min(sf.stat(p, "ability_efficiency"), 0.9); // 效率封顶90%
     var cost = BASE_COST * (1.0 - eff);

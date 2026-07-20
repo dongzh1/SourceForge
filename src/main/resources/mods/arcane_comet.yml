@@ -1,0 +1,17 @@
+# 护甲专属被动技能MOD · 秘法交汇（英雄联盟 巫术系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制简化说明：原版是"命中后延迟落下彗星造成额外伤害"，SF脚本引擎(GraalJS)拿不到 Bukkit 调度器
+# (HostAccess.EXPLICIT 只放行 SfScriptApi 标了 @JsExport 的方法，没有暴露延迟回调原语)，故改成
+# 命中即时结算，用冲击波扩散(waveRing)表现"彗星砸地"的视觉，冷却防止连点刷伤害。
+id: arcane_comet
+display-name: "&b秘法交汇"
+item: "sourceforge:mod_arcane_comet"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f攻击命中触发彗星冲击，造成额外魔法伤害"
+  - "&8彗星伤害 %cfg:keystone.arcane-comet.damage|9%"
+  - "&8冷却 %cfg:keystone.arcane-comet.cooldown-sec|6% &8秒"

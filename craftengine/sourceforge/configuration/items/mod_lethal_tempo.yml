@@ -1,0 +1,24 @@
+# MOD卡·致命节奏（lethal_tempo）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_lethal_tempo:
+    material: feather
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_lethal_tempo_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_lethal_tempo
+    data:
+      item_name: "<!i><gold>致命节奏"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>10"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>持续攻击不中断，每次攻击伤害递增"
+        - "<!i>  <dark_gray>▪ <dark_gray>每层 <gold>+5% <dark_gray>伤害，封顶 5 层(最高<gold>+25%<dark_gray>)"
+        - "<!i>  <dark_gray>▪ <dark_gray>中断 <red>2秒 <dark_gray>未接上下一击则清零重新爬升"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

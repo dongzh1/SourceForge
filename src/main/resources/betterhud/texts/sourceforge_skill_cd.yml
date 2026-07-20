@@ -1,0 +1,5 @@
+# SourceForge skill-cd: font element for the skill name.
+# Swap 'file' to your own .ttf in BetterHud/fonts/ if you want a different font.
+sourceforge_skill_cd_font:
+  file: pixel_font.ttf
+  scale: 24

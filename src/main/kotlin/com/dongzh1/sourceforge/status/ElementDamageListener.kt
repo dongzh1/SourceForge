@@ -23,15 +23,20 @@ class ElementDamageListener(private val plugin: SourceForge) : Listener {
     fun onDamage(event: EntityDamageEvent) {
         val victim = event.entity as? LivingEntity ?: return
         if (victim is Player) return
-        val mult = plugin.statusManager.outgoingDamageMultiplier(victim)
+
+        // 解析攻击者：直接近战是 Player；弓/弩/枪械命中是 Projectile，取其 shooter。
+        // 用于读取攻击者身上"相位催化(phase_catalyst)"的 combo_potency，放大组合元素(AMP)增伤。
+        val dmgr = (event as? org.bukkit.event.entity.EntityDamageByEntityEvent)?.damager
+        val attacker = dmgr as? Player ?: (dmgr as? org.bukkit.entity.Projectile)?.shooter as? Player
+
+        val mult = plugin.statusManager.outgoingDamageMultiplier(victim, attacker)
         if (mult <= 1.0) return
         val before = event.damage
         event.damage = before * mult
 
         // debug：若造成本次伤害的是开了调试的玩家，打出放大前后与伤害类型
-        val dmgr = (event as? org.bukkit.event.entity.EntityDamageByEntityEvent)?.damager
-        if (dmgr is Player && plugin.statusManager.isDebug(dmgr.uniqueId)) {
-            dmgr.sendMessage(
+        if (attacker != null && plugin.statusManager.isDebug(attacker.uniqueId)) {
+            attacker.sendMessage(
                 "§8[元素] §d增伤×${"%.2f".format(mult)}: §f${"%.1f".format(before)}→§c${"%.1f".format(event.damage)} §8(${event.cause})"
             )
         }

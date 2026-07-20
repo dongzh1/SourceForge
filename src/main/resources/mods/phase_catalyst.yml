@@ -1,0 +1,20 @@
+# 元素MOD · 相位催化（武器通用）— 组合元素强度催化剂
+# 佩戴者触发 viral(病毒)/corrosive(腐蚀)/gas(毒气)/radiation(辐射)/blast(爆裂) 等【组合】元素异常时，
+# 该次组合的效果强度（增伤倍率/DoT/击退硬直）与持续时间额外 ×(1+combo_potency)。不含 magnetic(磁力)。
+#
+# 依赖新词条 combo_potency（本文件不生效，需先在 affixes.yml 注册；见任务报告【需要共享文件改动】），
+# 且需要 StatusEffectManager.kt 读取触发者(source)的 combo_potency 并乘进组合元素结算——纯数值叠加
+# (effects 字段) 无法覆盖这种"改变共享结算逻辑"的效果，已在报告中详细给出建议 diff，未直接改动共享文件。
+id: phase_catalyst
+display-name: "&d相位催化"
+item: "sourceforge:mod_phase_catalyst"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { combo_potency: 0.40 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat, elemental]
+description:
+  - "&8对病毒/腐蚀/毒气/辐射/爆裂等组合元素异常生效(不含磁力)"
+  - "&7组合触发时,该组合的强度与持续时间按相位强度加成"

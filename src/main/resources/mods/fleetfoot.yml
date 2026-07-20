@@ -1,0 +1,24 @@
+# 基础MOD · 护甲（护甲通用，但按部位精确限定仅靴子）— 疾风之靴：提升该件护甲的移动速度。
+# 2026-07-17：新增 applicable-slots: [feet] ——名字就叫"靴子"，装到头盔/胸甲上没有道理，用
+# ModConfig.applicableSlots + ForgeItemService.armorSlotKey(复用 equipment 的 effective-slots，
+# 不看具体装备id，未来新出的护甲套装自动适配，不用逐套追加 applicable-equipment 白名单)精确卡住。
+# effects.movement_speed 走 ModService.reapplyModEffects() 的常规 mod_delta_* 聚合路径
+# （affixes.yml 里 movement_speed 词条 combat: movement_speed 已登记），随后 reapplyModEffects
+# 在共享文件 ForgeItemService.applyModVanillaAttributes() 里新增的第三分支把聚合增量写为
+# 原版 Attribute.MOVEMENT_SPEED 的 AttributeModifier（ADD_SCALAR，独立 NamespacedKey
+# movement_speed_<equipmentId>），随装备穿脱自动生效/失效，不再需要独立 Listener。
+id: fleetfoot
+display-name: "&b疾风之靴"
+item: "sourceforge:mod_fleetfoot"
+cost: 8
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+applicable-slots: [feet]
+effects: { movement_speed: 0.30 }
+max-rank: 4
+upgrade-cost: 1
+tags: [stat]
+description:
+  - "&8提升该件护甲的移动速度"
+  - "&8效果按百分比直接叠加进原版移速属性"
+  - "&8仅限靴子部位安装"

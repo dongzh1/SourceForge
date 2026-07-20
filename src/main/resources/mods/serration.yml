@@ -1,6 +1,6 @@
 id: serration
 display-name: "&c锯齿"
-item: "minecraft:blaze_rod"
+item: "sourceforge:mod_serration"
 cost: 9
 max-per-equipment: 1
 exclusivity-group: "damage_amp"

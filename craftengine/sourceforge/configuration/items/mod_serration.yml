@@ -1,0 +1,22 @@
+# MOD卡·锯齿（serration）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_serration:
+    material: iron_sword
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_serration_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_serration
+    data:
+      item_name: "<!i><red>锯齿"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇◇ <gray>0/5"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>基础伤害  <white>+0.7 <dark_gray>→ <green>+1.3"
+        - ""
+        - "<!i><gray>适用装备  <white>武器通用"

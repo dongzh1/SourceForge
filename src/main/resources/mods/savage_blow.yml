@@ -1,7 +1,7 @@
 # 基础MOD · 暴击伤害（武器）— Warframe 凶蛮打击
 id: savage_blow
 display-name: "&6凶蛮打击"
-item: "minecraft:blaze_powder"
+item: "sourceforge:mod_savage_blow"
 cost: 9
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]

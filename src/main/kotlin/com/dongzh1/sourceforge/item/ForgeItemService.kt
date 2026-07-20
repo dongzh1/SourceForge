@@ -5,8 +5,12 @@ import com.dongzh1.sourceforge.config.AffixConfig
 import com.dongzh1.sourceforge.config.AffixRollConfig
 import com.dongzh1.sourceforge.config.EquipmentConfig
 import com.dongzh1.sourceforge.config.ForgeConfig
+import com.dongzh1.sourceforge.config.ForgeRecipe
+import com.dongzh1.sourceforge.config.ForgeRecipeMode
+import com.dongzh1.sourceforge.config.RecipeMaterial
 import com.dongzh1.sourceforge.util.Text
 import com.dongzh1.sourceforge.util.color
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
@@ -18,7 +22,6 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.persistence.PersistentDataContainer
-import java.text.DecimalFormat
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
@@ -41,11 +44,23 @@ class ForgeItemService(
     private val tierKey = NamespacedKey(plugin, "tier")
     private val enhanceLevelKey = NamespacedKey(plugin, "enhance_level")
     private val baseDamageKey = NamespacedKey(plugin, "base_damage")
+    private val enhanceShieldCapacityKey = NamespacedKey(plugin, "enhance_shield_capacity")
+    private val enhanceHealthKey = NamespacedKey(plugin, "enhance_health")
     private val modCapacityKey = com.dongzh1.sourceforge.mod.ModKeys.modCapacity(plugin)
     private val modCapacityMaxKey = NamespacedKey(plugin, "mod_capacity_max")
     private val affixesKey = NamespacedKey(plugin, "affixes")
     private val projectileMarkerKey = NamespacedKey(plugin, "projectile_source")
     private val scoreKey = NamespacedKey(plugin, "score")
+    // 蓝图配方数据：直接写在 CraftEngine 物品配置的 pdc: 块里（不再走 recipes.yml 这张单独的表，
+    // 用户要求把配方数据集中到 CE 物品定义本身，方便配置）。全部用 STRING 类型存取，绕开
+    // YAML->NBT 数字类型转换的不确定性，数值在这边自己 parse。
+    private val blueprintEquipmentKey = NamespacedKey(plugin, "blueprint_equipment")
+    private val blueprintTierKey = NamespacedKey(plugin, "blueprint_tier")
+    private val blueprintModeKey = NamespacedKey(plugin, "blueprint_mode")
+    private val blueprintTimeSecondsKey = NamespacedKey(plugin, "blueprint_time_seconds")
+    private val blueprintMaterialsKey = NamespacedKey(plugin, "blueprint_materials")
+    private val blueprintWeaponCategoryKey = NamespacedKey(plugin, "blueprint_weapon_category")
+    private val blueprintMinTierKey = NamespacedKey(plugin, "blueprint_min_tier")
     private val chunkWorldLevelKey = NamespacedKey("chunkworld", "level")
     private val pixelShopPriceKey = NamespacedKey("pixelshop", "price")
 
@@ -171,9 +186,47 @@ class ForgeItemService(
             val affix = config.affixes[id] ?: return@mapNotNull null
             val currentValue = readAffixValue(item, id)
             val roll = tierRolls.firstOrNull { it.affixId == id }
-            val candidate = if (roll != null) randomValue(roll, affix) * affix.scale else currentValue
+            val candidate = if (roll != null && !roll.value.isNaN()) roll.value * affix.scale else currentValue
             affix to maxOf(currentValue, candidate)
         }
+    }
+
+    /**
+     * 蓝图原地升级（Feature：蓝图重铸）：把 [oldItem] 换成 [targetEquipment] 在 [targetTier] 的
+     * 外观（CE身份/材质）与基础属性，但保留原物品的附魔、MOD 镶嵌（含梦魇MOD实例数据）与已投入的强化等级。
+     * 与 [upgradeEquipment]（同一 equipment id 只把 tier+1，不换外观）是两个不同的操作，互不影响。
+     * 调用方需自行校验武器类型/等级门槛（见 recipe.requiresWeaponCategory / recipe.minTier）。
+     */
+    fun reforgeEquipment(oldItem: ItemStack, targetEquipment: EquipmentConfig, targetTier: Int): ItemStack? {
+        val oldMeta = oldItem.itemMeta ?: return null
+        val base = targetEquipment.ceId?.let { CraftEngineHook.build(it, 1) } ?: ItemStack(targetEquipment.material, 1)
+        val meta = base.itemMeta
+
+        oldMeta.enchants.forEach { (ench, lvl) -> meta.addEnchant(ench, lvl, true) }
+        copyStringPdc(oldMeta, meta, com.dongzh1.sourceforge.mod.ModKeys.modInstalled(plugin))
+        copyStringPdc(oldMeta, meta, com.dongzh1.sourceforge.mod.ModKeys.modSkillInstalled(plugin))
+        com.dongzh1.sourceforge.mod.ModKeys.nmSlots(plugin).forEach { copyStringPdc(oldMeta, meta, it) }
+        com.dongzh1.sourceforge.mod.ModKeys.rivenSlots(plugin).forEach { copyStringPdc(oldMeta, meta, it) }
+        // 保留原版盔甲纹饰(锻造台Trim)：跟 CE 外观模型是两套独立渲染层，重铸换模型不该连带把纹饰丢了。
+        if (oldMeta is org.bukkit.inventory.meta.ArmorMeta && meta is org.bukkit.inventory.meta.ArmorMeta) {
+            oldMeta.trim?.let { meta.trim = it }
+        }
+        base.itemMeta = meta
+
+        val maxAffixes = maxOf(1, targetEquipment.tierAffixes[targetTier]?.size ?: targetEquipment.affixIds.size)
+        writeEquipment(base, targetEquipment, targetTier, rollAffixes(targetEquipment, targetTier, maxAffixes))
+
+        // 重铸后强化等级重新开始(用户明确要求)：不再继承旧武器的 enhance_level/base_damage/mod_capacity
+        // 强化增量——旧武器身上任何强化痕迹都不带进新装备，玩家需要重新从 0 级强化。base 本来就是
+        // writeEquipment 刚写好的全新装备，不用额外清理任何 PDC。
+
+        plugin.modService.reapplyModEffects(base)
+        return base
+    }
+
+    private fun copyStringPdc(from: org.bukkit.inventory.meta.ItemMeta, to: org.bukkit.inventory.meta.ItemMeta, key: NamespacedKey) {
+        from.persistentDataContainer.get(key, PersistentDataType.STRING)
+            ?.let { to.persistentDataContainer.set(key, PersistentDataType.STRING, it) }
     }
 
     private fun writeEquipment(
@@ -192,7 +245,7 @@ class ForgeItemService(
         val baseDamage = selected.sumOf { (affix, value) ->
             if (affix.combat == "base_damage") value * affix.scale else 0.0
         }
-        if (baseDamage > 0.0 && usesEquippedSlot(equipment)) {
+        if (baseDamage > 0.0 && isDamageBearingEquipment(equipment)) {
             meta.addAttributeModifier(
                 Attribute.ATTACK_DAMAGE,
                 AttributeModifier(
@@ -247,6 +300,22 @@ class ForgeItemService(
                     NamespacedKey(plugin, "health_${equipment.id.lowercase()}"),
                     healthValue,
                     AttributeModifier.Operation.ADD_NUMBER,
+                    equipmentSlotGroup(equipment)
+                )
+            )
+        }
+
+        meta.removeAttributeModifier(Attribute.MOVEMENT_SPEED)
+        val movementSpeedValue = selected.sumOf { (affix, value) ->
+            if (affix.combat == "movement_speed") value * affix.scale else 0.0
+        }
+        if (movementSpeedValue > 0.0 && usesEquippedSlot(equipment)) {
+            meta.addAttributeModifier(
+                Attribute.MOVEMENT_SPEED,
+                AttributeModifier(
+                    NamespacedKey(plugin, "equipment_movement_speed_${equipment.id.lowercase()}"),
+                    movementSpeedValue,
+                    AttributeModifier.Operation.ADD_SCALAR,
                     equipmentSlotGroup(equipment)
                 )
             )
@@ -357,18 +426,27 @@ class ForgeItemService(
         }
     }
 
+    private fun isDamageBearingEquipment(equipment: EquipmentConfig): Boolean {
+        return equipment.effectiveSlots.any { it in setOf("mainhand", "offhand", "hand") }
+    }
+
     /**
-     * 将 MOD 聚合后的护甲/生命增量写为装备上的原版属性修饰符（键固定，便于覆盖更新）。
+     * 将 MOD 聚合后的护甲/生命/移速增量写为装备上的原版属性修饰符（键固定，便于覆盖更新）。
      * base_damage / 暴击 / 技能 / 能量 / 护盾等 MOD 增量已通过 readAffixValue 的 delta 叠加在
-     * 战斗与 statTotals 路径生效，无需原版修饰符，故此处只处理护甲与生命。
+     * 战斗与 statTotals 路径生效，无需原版修饰符；movement_speed（如 fleetfoot 疾风之靴）是
+     * SF 12维属性系统里第三个、也是唯一直接落在原版 Attribute.MOVEMENT_SPEED 的例外词条——
+     * 用 ADD_SCALAR（多个来源之间线性相加再统一乘算一次）而非 MULTIPLY_SCALAR_1，避免跟其他
+     * 移速来源（药水/其它插件）产生指数级乘算。
      */
-    fun applyModVanillaAttributes(item: ItemStack, armorDelta: Double, healthDelta: Double) {
+    fun applyModVanillaAttributes(item: ItemStack, armorDelta: Double, healthDelta: Double, movementSpeedDelta: Double) {
         val equipment = equipmentConfig(item) ?: return
         val meta = item.itemMeta
         val armorKey = NamespacedKey(plugin, "mod_attr_armor_${equipment.id.lowercase()}")
         val healthKey = NamespacedKey(plugin, "mod_attr_health_${equipment.id.lowercase()}")
+        val movementSpeedKey = NamespacedKey(plugin, "movement_speed_${equipment.id.lowercase()}")
         removeModifierByKey(meta, Attribute.ARMOR, armorKey)
         removeModifierByKey(meta, Attribute.MAX_HEALTH, healthKey)
+        removeModifierByKey(meta, Attribute.MOVEMENT_SPEED, movementSpeedKey)
         if (usesEquippedSlot(equipment)) {
             if (armorDelta > 0.0) {
                 meta.addAttributeModifier(
@@ -380,6 +458,12 @@ class ForgeItemService(
                 meta.addAttributeModifier(
                     Attribute.MAX_HEALTH,
                     AttributeModifier(healthKey, healthDelta, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+                )
+            }
+            if (movementSpeedDelta > 0.0) {
+                meta.addAttributeModifier(
+                    Attribute.MOVEMENT_SPEED,
+                    AttributeModifier(movementSpeedKey, movementSpeedDelta, AttributeModifier.Operation.ADD_SCALAR, equipmentSlotGroup(equipment))
                 )
             }
         }
@@ -430,14 +514,31 @@ class ForgeItemService(
      * - mod_capacity(INT) += modCapacityBonus，受 mod_capacity_max 上限（若存在）
      * 并刷新 lore 中的强化等级行。
      */
-    fun applyEnhancement(item: ItemStack, targetLevel: Int, baseDamageBonus: Double, modCapacityBonus: Int) {
+    fun applyEnhancement(
+        item: ItemStack,
+        targetLevel: Int,
+        baseDamageBonus: Double,
+        modCapacityBonus: Int,
+        shieldCapacityBonus: Double = 0.0,
+        healthBonus: Double = 0.0
+    ) {
         val meta = item.itemMeta
         val pdc = meta.persistentDataContainer
+        val equipment = equipmentConfig(item)
+        val damageBearing = equipment?.let { isDamageBearingEquipment(it) } == true
 
         pdc.set(enhanceLevelKey, PersistentDataType.INTEGER, targetLevel)
 
-        val curDamage = pdc.get(baseDamageKey, PersistentDataType.DOUBLE) ?: 0.0
-        pdc.set(baseDamageKey, PersistentDataType.DOUBLE, curDamage + baseDamageBonus)
+        if (damageBearing) {
+            val baseDamage = equipment?.let { baseEquipmentDamage(it, equipmentTier(item)) } ?: 0.0
+            val currentTotal = pdc.get(baseDamageKey, PersistentDataType.DOUBLE) ?: baseDamage
+            val currentEnhancement = (currentTotal - baseDamage).coerceAtLeast(0.0)
+            pdc.set(baseDamageKey, PersistentDataType.DOUBLE, baseDamage + currentEnhancement + baseDamageBonus)
+        } else {
+            pdc.remove(baseDamageKey)
+            pdc.set(enhanceShieldCapacityKey, PersistentDataType.DOUBLE, (pdc.get(enhanceShieldCapacityKey, PersistentDataType.DOUBLE) ?: 0.0) + shieldCapacityBonus)
+            pdc.set(enhanceHealthKey, PersistentDataType.DOUBLE, (pdc.get(enhanceHealthKey, PersistentDataType.DOUBLE) ?: 0.0) + healthBonus)
+        }
 
         val curCap = pdc.get(modCapacityKey, PersistentDataType.INTEGER) ?: 0
         val capMax = pdc.get(modCapacityMaxKey, PersistentDataType.INTEGER)
@@ -445,23 +546,173 @@ class ForgeItemService(
         if (capMax != null) newCap = newCap.coerceAtMost(capMax)
         pdc.set(modCapacityKey, PersistentDataType.INTEGER, newCap)
 
-        // lore：刷新/追加强化行。插到「改造」分区之前，避免被 reapplyModEffects 重建时当作改造段丢弃。
-        val lore = (meta.lore ?: mutableListOf()).toMutableList()
-        val line = color("&7强化 &b+$targetLevel")
-        val idx = lore.indexOfFirst { it.contains("强化") }
-        if (idx >= 0) {
-            lore[idx] = line
-        } else {
-            val markerIdx = lore.indexOfFirst { it.contains("改造") }
-            when {
-                markerIdx > 0 && lore[markerIdx - 1].isBlank() -> lore.add(markerIdx - 1, line)
-                markerIdx >= 0 -> lore.add(markerIdx, line)
-                else -> lore.add(line)
+        if (equipment != null) {
+            val attackDamageKey = NamespacedKey(plugin, "attack_damage_${equipment.id.lowercase()}")
+            removeModifierByKey(meta, Attribute.ATTACK_DAMAGE, attackDamageKey)
+            val totalDamage = pdc.get(baseDamageKey, PersistentDataType.DOUBLE) ?: 0.0
+            if (damageBearing && totalDamage > 0.0) {
+                meta.addAttributeModifier(
+                    Attribute.ATTACK_DAMAGE,
+                    AttributeModifier(
+                        attackDamageKey,
+                        totalDamage,
+                        AttributeModifier.Operation.ADD_NUMBER,
+                        equipmentSlotGroup(equipment)
+                    )
+                )
             }
         }
-        meta.lore = lore
+        if (equipment != null) refreshEnhancementHealthAttribute(meta, equipment, pdc)
+
+        updateEnhancementLore(meta, targetLevel, pdc)
 
         item.itemMeta = meta
+        plugin.modService.reapplyModEffects(item)
+    }
+
+    fun rebalanceEnhancement(item: ItemStack?): Boolean {
+        if (!isSourceEquipment(item) || item == null) return false
+        val level = enhanceLevel(item)
+        val equipment = equipmentConfig(item) ?: return false
+        val category = if (isProtectionEquipment(item)) {
+            plugin.enhancementConfig.category("armor_physical")
+        } else {
+            plugin.enhancementConfig.category(weaponCategory(item))
+        } ?: return false
+        if (level <= 0 && isDamageBearingEquipment(equipment)) return false
+        val targetLevel = level.coerceIn(0, category.maxLevel)
+        val damageBearing = isDamageBearingEquipment(equipment)
+        val targetDamage = if (damageBearing) {
+            baseEquipmentDamage(equipment, equipmentTier(item)) + category.levels.take(targetLevel).sumOf { it.baseDamage }
+        } else 0.0
+        val targetShield = if (damageBearing) 0.0 else category.levels.take(targetLevel).sumOf { it.shieldCapacity }
+        val targetHealth = if (damageBearing) 0.0 else category.levels.take(targetLevel).sumOf { it.health }
+        val categoryId = weaponCategory(item) ?: "default"
+        val baseCapacity = plugin.forgeConfig.modCapacity.computeCapacity(categoryId, equipmentTier(item))
+        val targetCapacity = baseCapacity + category.levels.take(targetLevel).sumOf { it.modCapacity }
+        val meta = item.itemMeta
+        val pdc = meta.persistentDataContainer
+        pdc.set(enhanceLevelKey, PersistentDataType.INTEGER, targetLevel)
+        if (damageBearing && targetDamage > 0.0) pdc.set(baseDamageKey, PersistentDataType.DOUBLE, targetDamage)
+        else pdc.remove(baseDamageKey)
+        if (targetShield > 0.0) pdc.set(enhanceShieldCapacityKey, PersistentDataType.DOUBLE, targetShield)
+        else pdc.remove(enhanceShieldCapacityKey)
+        if (targetHealth > 0.0) pdc.set(enhanceHealthKey, PersistentDataType.DOUBLE, targetHealth)
+        else pdc.remove(enhanceHealthKey)
+        val capMax = pdc.get(modCapacityMaxKey, PersistentDataType.INTEGER)
+        pdc.set(modCapacityKey, PersistentDataType.INTEGER, if (capMax == null) targetCapacity else targetCapacity.coerceAtMost(capMax))
+
+        val attackDamageKey = NamespacedKey(plugin, "attack_damage_${equipment.id.lowercase()}")
+        removeModifierByKey(meta, Attribute.ATTACK_DAMAGE, attackDamageKey)
+        if (damageBearing && targetDamage > 0.0) {
+            meta.addAttributeModifier(
+                Attribute.ATTACK_DAMAGE,
+                AttributeModifier(attackDamageKey, targetDamage, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+            )
+        }
+        refreshEnhancementHealthAttribute(meta, equipment, pdc)
+        updateEnhancementLore(meta, targetLevel, pdc)
+        item.itemMeta = meta
+        plugin.modService.reapplyModEffects(item)
+        return true
+    }
+
+    fun downgradeEnhancement(item: ItemStack?, targetLevel: Int): Boolean {
+        if (!isSourceEquipment(item) || item == null) return false
+        val currentLevel = enhanceLevel(item)
+        if (currentLevel <= targetLevel) return false
+        val equipment = equipmentConfig(item) ?: return false
+        val categoryId = weaponCategory(item) ?: return false
+        val category = if (isProtectionEquipment(item)) {
+            plugin.enhancementConfig.category("armor_physical")
+        } else {
+            plugin.enhancementConfig.category(categoryId)
+        } ?: return false
+        val level = targetLevel.coerceIn(0, category.maxLevel)
+        val damageBearing = isDamageBearingEquipment(equipment)
+        val targetDamage = if (damageBearing) {
+            baseEquipmentDamage(equipment, equipmentTier(item)) + category.levels.take(level).sumOf { it.baseDamage }
+        } else 0.0
+        val targetShield = if (damageBearing) 0.0 else category.levels.take(level).sumOf { it.shieldCapacity }
+        val targetHealth = if (damageBearing) 0.0 else category.levels.take(level).sumOf { it.health }
+        val baseCapacity = plugin.forgeConfig.modCapacity.computeCapacity(categoryId, equipmentTier(item))
+        val targetCapacity = baseCapacity + category.levels.take(level).sumOf { it.modCapacity }
+
+        val meta = item.itemMeta
+        val pdc = meta.persistentDataContainer
+        pdc.set(enhanceLevelKey, PersistentDataType.INTEGER, level)
+        if (damageBearing && targetDamage > 0.0) pdc.set(baseDamageKey, PersistentDataType.DOUBLE, targetDamage)
+        else pdc.remove(baseDamageKey)
+        if (targetShield > 0.0) pdc.set(enhanceShieldCapacityKey, PersistentDataType.DOUBLE, targetShield)
+        else pdc.remove(enhanceShieldCapacityKey)
+        if (targetHealth > 0.0) pdc.set(enhanceHealthKey, PersistentDataType.DOUBLE, targetHealth)
+        else pdc.remove(enhanceHealthKey)
+        val capMax = pdc.get(modCapacityMaxKey, PersistentDataType.INTEGER)
+        pdc.set(modCapacityKey, PersistentDataType.INTEGER, if (capMax == null) targetCapacity else targetCapacity.coerceAtMost(capMax))
+
+        val attackDamageKey = NamespacedKey(plugin, "attack_damage_${equipment.id.lowercase()}")
+        removeModifierByKey(meta, Attribute.ATTACK_DAMAGE, attackDamageKey)
+        if (damageBearing && targetDamage > 0.0) {
+            meta.addAttributeModifier(
+                Attribute.ATTACK_DAMAGE,
+                AttributeModifier(attackDamageKey, targetDamage, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+            )
+        }
+        refreshEnhancementHealthAttribute(meta, equipment, pdc)
+        updateEnhancementLore(meta, level, pdc)
+        item.itemMeta = meta
+        plugin.modService.reapplyModEffects(item)
+        return true
+    }
+
+    private fun updateEnhancementLore(
+        meta: org.bukkit.inventory.meta.ItemMeta,
+        level: Int,
+        pdc: PersistentDataContainer
+    ) {
+        val plainText = PlainTextComponentSerializer.plainText()
+        val lore = (meta.lore() ?: meta.lore?.map { Text.comp(it) } ?: emptyList()).toMutableList()
+        val index = lore.indexOfFirst { plainText.serialize(it).contains("强化") }
+        if (level <= 0) {
+            if (index >= 0) lore.removeAt(index)
+        } else {
+            val line = Text.comp("&7强化等级 &b+$level")
+            if (index >= 0) lore[index] = line else lore.add(line)
+        }
+        for (affixId in readAffixIds(pdc)) {
+            val affix = config.affixes[affixId] ?: continue
+            val affixIndex = lore.indexOfFirst { plainText.serialize(it).contains(affix.displayName) }
+            if (affixIndex < 0) continue
+            val value = readAffixValue(pdc, affixId)
+            lore[affixIndex] = Text.comp("  &7${affix.displayName} ${affix.color}+${formatAffixValue(affix, value)}")
+        }
+        meta.lore(lore)
+    }
+
+    private fun refreshEnhancementHealthAttribute(
+        meta: org.bukkit.inventory.meta.ItemMeta,
+        equipment: EquipmentConfig,
+        pdc: PersistentDataContainer
+    ) {
+        val key = NamespacedKey(plugin, "enhance_attr_health_${equipment.id.lowercase()}")
+        removeModifierByKey(meta, Attribute.MAX_HEALTH, key)
+        if (!isDamageBearingEquipment(equipment)) {
+            val health = pdc.get(enhanceHealthKey, PersistentDataType.DOUBLE) ?: 0.0
+            if (health > 0.0) {
+                meta.addAttributeModifier(
+                    Attribute.MAX_HEALTH,
+                    AttributeModifier(key, health, AttributeModifier.Operation.ADD_NUMBER, equipmentSlotGroup(equipment))
+                )
+            }
+        }
+    }
+
+    private fun baseEquipmentDamage(equipment: EquipmentConfig, tier: Int): Double {
+        val rolls = equipment.tierAffixes[tier]
+            ?: equipment.tierAffixes.filterKeys { it <= tier }.maxByOrNull { it.key }?.value
+            ?: return 0.0
+        val scale = config.affixes["base_damage"]?.scale ?: 1.0
+        return rolls.filter { it.affixId == "base_damage" && !it.value.isNaN() }.sumOf { it.value * scale }
     }
 
     fun equipmentTier(item: ItemStack?): Int {
@@ -483,7 +734,12 @@ class ForgeItemService(
             else -> container.get(key, PersistentDataType.DOUBLE) ?: 0.0
         }
         val delta = modDeltaKeys[affixId]?.let { container.get(it, PersistentDataType.DOUBLE) } ?: 0.0
-        return baseValue + delta
+        val enhancement = when (affixId) {
+            "shield_capacity" -> container.get(enhanceShieldCapacityKey, PersistentDataType.DOUBLE) ?: 0.0
+            "health" -> container.get(enhanceHealthKey, PersistentDataType.DOUBLE) ?: 0.0
+            else -> 0.0
+        }
+        return baseValue + delta + enhancement
     }
 
     fun readScore(item: ItemStack?): Int {
@@ -531,9 +787,59 @@ class ForgeItemService(
         return item.itemMeta.persistentDataContainer.has(typeKey, PersistentDataType.STRING)
     }
 
+    fun isProtectionEquipment(item: ItemStack?): Boolean {
+        val equipment = equipmentConfig(item) ?: return false
+        return equipment.effectiveSlots.any { it in setOf("head", "chest", "legs", "feet", "armor") }
+    }
+
+
+    /**
+     * 数玩家背包内匹配某 CE id 的物品数量(仅 storageContents，含快捷栏)。锻炉GUI材料展示(ForgeMenu)
+     * 与实际扣料判定(ForgeMenuListener)统一走这一个口子，避免两边各自拷贝一份统计逻辑改漏导致
+     * "显示够了"和"实际扣不够"对不上。
+     */
+    fun countInInventory(player: Player, ceId: String): Int {
+        var total = 0
+        for (item in player.inventory.storageContents) {
+            if (item == null || item.type == Material.AIR) continue
+            if (CraftEngineHook.matches(item, ceId)) total += item.amount
+        }
+        return total
+    }
+
+    fun consumeFromInventory(player: Player, ceId: String, amount: Int): Boolean {
+        val required = amount.coerceAtLeast(1)
+        if (countInInventory(player, ceId) < required) return false
+        var remaining = required
+        val storage = player.inventory.storageContents
+        for (slot in storage.indices) {
+            if (remaining <= 0) break
+            val item = storage[slot] ?: continue
+            if (item.type == Material.AIR || !CraftEngineHook.matches(item, ceId)) continue
+            val taken = minOf(remaining, item.amount)
+            item.amount -= taken
+            remaining -= taken
+            player.inventory.setItem(slot, item.takeIf { it.amount > 0 })
+        }
+        return remaining == 0
+    }
+
+    /**
+     * SF 装备的原版附魔卫生检查：不在 [com.dongzh1.sourceforge.enchant.EnchantBridgeConfig] 白名单里的
+     * 一律清除；白名单内的按配置最高等级夹紧（防止管理员/NBT编辑塞进超范围等级）。每次伤害结算前调用，
+     * 确保白名单以外的原版附魔无论通过什么途径混进 PDC 都翻不起浪。
+     */
     fun stripVanillaEnchantments(item: ItemStack?) {
-        if (!isSourceEquipment(item)) return
-        item?.enchantments?.keys?.toList()?.forEach { item.removeEnchantment(it) }
+        if (!isSourceEquipment(item) || item == null) return
+        val cfg = config.enchantBridge
+        item.enchantments.entries.toList().forEach { (enchant, level) ->
+            if (!cfg.isAllowed(enchant)) {
+                item.removeEnchantment(enchant)
+            } else {
+                val capped = cfg.capLevel(enchant, level)
+                if (capped != level) item.addUnsafeEnchantment(enchant, capped)
+            }
+        }
     }
 
     fun weaponType(item: ItemStack?): String? {
@@ -551,6 +857,53 @@ class ForgeItemService(
         return config.equipment[weaponType(item)]
     }
 
+    /** 该护甲件的部位 key（head/chest/legs/feet），供 MOD applicable-slots 精确限定装备位用；
+     *  非护甲/无法识别返回 null。复用 equipment 的 effective-slots，不新开 PDC 字段。 */
+    fun armorSlotKey(item: ItemStack?): String? {
+        val slots = equipmentConfig(item)?.effectiveSlots ?: return null
+        return listOf("head", "chest", "legs", "feet").firstOrNull { it in slots }
+    }
+
+    /**
+     * 从蓝图物品自身的 PDC 解析锻造配方——数据源是 CraftEngine 物品配置里的 `pdc:` 块
+     * （见 relics_duskgold.yml），不再有单独的 recipes.yml。缺任意必填字段(equipment/materials)
+     * 视为"这不是一张有效蓝图"，返回 null（蓝图槽逻辑据此判定"无有效蓝图"）。
+     * blueprintId 取 CraftEngine 物品 id，仅用于调试消息标识来源，不参与查表。
+     */
+    fun readBlueprintRecipe(item: ItemStack?, blueprintId: String): ForgeRecipe? {
+        if (item == null || item.type == Material.AIR || !item.hasItemMeta()) return null
+        val pdc = item.itemMeta.persistentDataContainer
+        val equipmentId = pdc.get(blueprintEquipmentKey, PersistentDataType.STRING)?.takeIf { it.isNotBlank() } ?: return null
+        // 每段格式 "<命名空间>:<路径>:<数量>"，比如 "minecraft:netherite_ingot:1"——ceId 本身带冒号，
+        // 不能直接按 ':' 切成 2 段(会切出 3 段导致误判失败)，要按最后一个冒号切分。
+        val materials = pdc.get(blueprintMaterialsKey, PersistentDataType.STRING)
+            ?.split(',')
+            ?.mapNotNull { entry ->
+                val trimmed = entry.trim()
+                val lastColon = trimmed.lastIndexOf(':')
+                if (lastColon <= 0) return@mapNotNull null
+                val amount = trimmed.substring(lastColon + 1).toIntOrNull() ?: return@mapNotNull null
+                RecipeMaterial(trimmed.substring(0, lastColon), amount)
+            }
+            ?: emptyList()
+        if (materials.isEmpty()) return null
+        val mode = if (pdc.get(blueprintModeKey, PersistentDataType.STRING).equals("upgrade", ignoreCase = true)) {
+            ForgeRecipeMode.UPGRADE
+        } else {
+            ForgeRecipeMode.CREATE
+        }
+        return ForgeRecipe(
+            blueprintId = blueprintId,
+            equipmentId = equipmentId,
+            tier = pdc.get(blueprintTierKey, PersistentDataType.STRING)?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
+            timeSeconds = pdc.get(blueprintTimeSecondsKey, PersistentDataType.STRING)?.toDoubleOrNull()?.coerceAtLeast(0.0) ?: 60.0,
+            materials = materials,
+            mode = mode,
+            requiresWeaponCategory = pdc.get(blueprintWeaponCategoryKey, PersistentDataType.STRING)?.takeIf { it.isNotBlank() }?.lowercase(),
+            minTier = pdc.get(blueprintMinTierKey, PersistentDataType.STRING)?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+        )
+    }
+
     fun projectileWeaponType(projectile: Projectile): String? {
         return projectile.persistentDataContainer.get(typeKey, PersistentDataType.STRING)
     }
@@ -560,6 +913,11 @@ class ForgeItemService(
             ?: projectileWeaponType(projectile)?.let { config.equipment[it]?.weaponCategory }
     }
 
+    /**
+     * 按目标 tier 直接读取写死的词条值（不再随机采样）。
+     * `limit < 该tier词条总数` 只会在显式请求"只要前N条"时出现（如 `/sf giveequipment` 传了更小的 affixes 参数，
+     * 纯管理员调试用途，玩家锻造路径的 maxAffixes 恒等于该 tier 词条总数）——按配置原始顺序确定性裁剪，不做随机抽取。
+     */
     private fun rollAffixes(
         equipment: EquipmentConfig,
         tier: Int,
@@ -567,70 +925,33 @@ class ForgeItemService(
     ): List<Pair<AffixConfig, Double>> {
         val limit = maxAffixes.coerceAtLeast(0)
         if (limit <= 0) return emptyList()
-        val candidates = mutableListOf<AffixCandidate>()
 
         val tierRolls = equipment.tierAffixes[tier]
             ?: equipment.tierAffixes.filterKeys { it <= tier }.maxByOrNull { it.key }?.value
-            ?: equipment.affixIds.mapNotNull { id ->
-                config.affixes[id]?.let { AffixRollConfig(id, 1.0, it.min, it.max) }
-            }
-        tierRolls.forEach { candidates += AffixCandidate(it, "tier") }
+            ?: emptyList()
 
         val rolled = linkedMapOf<String, Pair<AffixConfig, Double>>()
-        for (candidate in candidates) {
-            if (!passesChance(candidate.roll.chance)) continue
-            applyCandidate(candidate, rolled)
+        for (roll in tierRolls) {
+            applyRoll(roll, rolled)
         }
-        val result = rolled.values.toMutableList()
+        val result = rolled.values.toList()
         if (result.size <= limit) return result
 
-        val weights = result.associate { (affix, _) ->
-            val chance = candidates.firstOrNull { it.roll.affixId == affix.id }?.roll?.chance ?: 1.0
-            affix.id to chance.coerceAtLeast(0.0001)
-        }
-        val limited = mutableListOf<Pair<AffixConfig, Double>>()
-        while (limited.size < limit && result.isNotEmpty()) {
-            val picked = weightedPick(result, weights) ?: break
-            limited += picked
-            result.remove(picked)
-        }
-        return limited
+        val order = tierRolls.map { it.affixId }
+        return result
+            .sortedBy { (affix, _) -> order.indexOf(affix.id).let { if (it < 0) Int.MAX_VALUE else it } }
+            .take(limit)
     }
 
-    private fun applyCandidate(
-        candidate: AffixCandidate,
+    /** value 为 NaN 表示该词条配置未迁移完成（还是老的 {chance,min,max} 结构），已在启动校验里报过警告，这里安全跳过不写入。 */
+    private fun applyRoll(
+        roll: AffixRollConfig,
         rolled: MutableMap<String, Pair<AffixConfig, Double>>
     ): Boolean {
-        val affix = config.affixes[candidate.roll.affixId] ?: return false
-        val value = randomValue(candidate.roll, affix) * affix.scale
-        val previous = rolled[affix.id]
-        if (previous == null || value > previous.second) {
-            rolled[affix.id] = affix to value
-        }
+        if (roll.value.isNaN()) return false
+        val affix = config.affixes[roll.affixId] ?: return false
+        rolled[affix.id] = affix to roll.value * affix.scale
         return true
-    }
-
-    private fun weightedPick(pool: List<Pair<AffixConfig, Double>>, weights: Map<String, Double>): Pair<AffixConfig, Double>? {
-        val total = pool.sumOf { weights[it.first.id] ?: 1.0 }.takeIf { it > 0.0 } ?: return pool.randomOrNull()
-        var roll = Random.nextDouble(total)
-        for (entry in pool) {
-            roll -= weights[entry.first.id] ?: 1.0
-            if (roll <= 0.0) return entry
-        }
-        return pool.lastOrNull()
-    }
-
-    private fun passesChance(chance: Double): Boolean {
-        if (chance <= 0.0) return false
-        if (chance >= 1.0) return true
-        return Random.nextDouble() < chance
-    }
-
-    private fun randomValue(roll: AffixRollConfig, affix: AffixConfig): Double {
-        val min = if (roll.max > roll.min) roll.min else affix.min
-        val max = if (roll.max > roll.min) roll.max else affix.max
-        if (max <= min) return min
-        return Random.nextDouble(min, max)
     }
 
     private fun writeAffixValue(
@@ -671,7 +992,11 @@ class ForgeItemService(
 
     private fun readAffixIds(item: ItemStack): List<String> {
         if (!item.hasItemMeta()) return emptyList()
-        return item.itemMeta.persistentDataContainer.get(affixesKey, PersistentDataType.STRING)
+        return readAffixIds(item.itemMeta.persistentDataContainer)
+    }
+
+    private fun readAffixIds(pdc: PersistentDataContainer): List<String> {
+        return pdc.get(affixesKey, PersistentDataType.STRING)
             ?.split(",")
             ?.map { it.trim() }
             ?.filter { it.isNotBlank() }
@@ -787,19 +1112,13 @@ class ForgeItemService(
         return equipmentConfig(item)?.effectiveSlots?.any { it == "inventory" || it == "backpack" } == true
     }
 
-    private fun format(value: Double, decimals: Int): String {
-        if (decimals <= 0) return value.toInt().toString()
-        return DecimalFormat("0." + "0".repeat(decimals)).format(value)
-    }
+    private fun format(value: Double, decimals: Int): String =
+        com.dongzh1.sourceforge.util.AffixFormat.number(value, decimals)
 
-    /** 词条数值：比例词条 ×100 加 %（小数位相应减 2），其余按 decimals；统一去掉尾随 0。与 MOD 卡口径一致。 */
-    private fun formatAffixValue(affix: AffixConfig, value: Double): String {
-        val v = if (affix.percent) value * 100.0 else value
-        val decimals = if (affix.percent) (affix.decimals - 2).coerceAtLeast(0) else affix.decimals
-        val s = format(v, decimals)
-        val trimmed = if ('.' in s) s.trimEnd('0').trimEnd('.') else s
-        return if (affix.percent) "$trimmed%" else trimmed
-    }
+    /** 词条数值：比例词条 ×100 加 %（小数位相应减 2），其余按 decimals；统一去掉尾随 0。与 MOD 卡口径一致
+     *（实现共用 [com.dongzh1.sourceforge.util.AffixFormat]，避免两边各自维护一份格式化逻辑改漏）。 */
+    private fun formatAffixValue(affix: AffixConfig, value: Double): String =
+        com.dongzh1.sourceforge.util.AffixFormat.affixValue(affix.percent, affix.decimals, value)
 
     private fun parseTier(raw: String?, min: Int, max: Int): Int {
         if (raw.isNullOrBlank()) return min
@@ -849,11 +1168,6 @@ class ForgeItemService(
         const val STAT_CACHE_TTL_MS = 250L
     }
 }
-
-private data class AffixCandidate(
-    val roll: AffixRollConfig,
-    val source: String
-)
 
 data class SourceForgeExpression(
     val kind: String,

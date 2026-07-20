@@ -1,0 +1,792 @@
+[
+ {
+  "id": "arcane_comet",
+  "name": "&b秘法交汇",
+  "item": "minecraft:fire_charge",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "blind_rage",
+  "name": "&c暴戾无常",
+  "item": "sourceforge:mod_blind_rage",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "ability_strength",
+   "ability_efficiency"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "blood_mist_onslaught",
+  "name": "&c血雾冲阵",
+  "item": "sourceforge:mod_blood_mist_onslaught",
+  "tags": [
+   "skill",
+   "mobility"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "chain_mining",
+  "name": "&b连锁挖矿",
+  "item": "minecraft:diamond_pickaxe",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "chain_mining_count"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "conqueror",
+  "name": "&6征服者",
+  "item": "minecraft:golden_apple",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "continuity",
+  "name": "&3延展",
+  "item": "minecraft:clock",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "ability_duration"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "corrosive_edge",
+  "name": "&2腐蚀刃",
+  "item": "minecraft:fermented_spider_eye",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "crescent_slash",
+  "name": "&b月华斩",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "critical_strike",
+  "name": "&e致命一击",
+  "item": "minecraft:spider_eye",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "critical_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "dark_harvest",
+  "name": "&4黑暗收割",
+  "item": "minecraft:wither_rose",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "dash_thrust",
+  "name": "&f冲刺突进",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill",
+   "mobility"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "desecrate",
+  "name": "&5摸尸",
+  "item": "minecraft:rotten_flesh",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "electrocute",
+  "name": "&c电刑",
+  "item": "minecraft:lightning_rod",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "execution",
+  "name": "&4处决本能",
+  "item": "sourceforge:mod_execution",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "execute_bonus"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "fleetfoot",
+  "name": "&b疾风之靴",
+  "item": "sourceforge:mod_fleetfoot",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "movement_speed"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "flow",
+  "name": "&9流体能量",
+  "item": "minecraft:glowstone_dust",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "energy_max"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "frag_rounds",
+  "name": "&6破片弹",
+  "item": "sourceforge:mod_frag_rounds",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "splash_power"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "frostbite",
+  "name": "&b寒霜",
+  "item": "minecraft:blue_ice",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "cold_damage",
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "grasp_of_the_undying",
+  "name": "&2不朽之握",
+  "item": "minecraft:vine",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "ground_slam",
+  "name": "&6震地",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill",
+   "defense"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "hearth_whisper",
+  "name": "&6篝火低语",
+  "item": "sourceforge:mod_hearth_whisper",
+  "tags": [
+   "passive",
+   "support"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": ""
+ },
+ {
+  "id": "hellfire",
+  "name": "&c炽焰",
+  "item": "minecraft:magma_cream",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "heat_damage",
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "intensify",
+  "name": "&d超能赋力",
+  "item": "minecraft:glowstone",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "ability_strength"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "iron_stance",
+  "name": "&e铁壁架势",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill",
+   "defense"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "legion_banner",
+  "name": "&5群魄图腾",
+  "item": "sourceforge:mod_legion_banner",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "summon_max_count"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "lethal_tempo",
+  "name": "&6致命节奏",
+  "item": "minecraft:rabbit_foot",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "miasma_core",
+  "name": "&d瘴毒核心",
+  "item": "sourceforge:mod_miasma_core",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "cold_damage",
+   "toxin_damage",
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "obsidian_blast",
+  "name": "&5黑曜石爆破",
+  "item": "minecraft:fire_charge",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "overcharge_shot",
+  "name": "&6超载重弹",
+  "item": "sourceforge:mod_overcharge_shot",
+  "tags": [
+   "skill",
+   "burst"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "parry",
+  "name": "&b震刀",
+  "item": "minecraft:prismarine_crystals",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "phase_catalyst",
+  "name": "&d相位催化",
+  "item": "sourceforge:mod_phase_catalyst",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "combo_potency"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "phase_rush",
+  "name": "&b相位骤袭",
+  "item": "minecraft:phantom_membrane",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "press_the_attack",
+  "name": "&6强攻",
+  "item": "minecraft:redstone",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "redirection",
+  "name": "&b导能护盾",
+  "item": "minecraft:prismarine_shard",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "shield_capacity"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "savage_blow",
+  "name": "&6凶蛮打击",
+  "item": "minecraft:blaze_powder",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "critical_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "serration",
+  "name": "&c锯齿",
+  "item": "minecraft:blaze_rod",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "base_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "shield_bash",
+  "name": "&e盾击反震",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill",
+   "defense"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "shock",
+  "name": "&e电击",
+  "item": "minecraft:lightning_rod",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "electric_damage",
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "siphon_rounds",
+  "name": "&c汲取导管",
+  "item": "sourceforge:mod_siphon_rounds",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "life_steal"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "skill_leap",
+  "name": "&d技能：跃迁",
+  "item": "minecraft:feather",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "soulmark",
+  "name": "&5夺魄印记",
+  "item": "sourceforge:mod_soulmark",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "vulnerability_amp"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "steel_fiber",
+  "name": "&f钢化纤维",
+  "item": "minecraft:iron_nugget",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "armor"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "streamline",
+  "name": "&e精简",
+  "item": "minecraft:sugar",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "ability_efficiency"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "stretch",
+  "name": "&b延伸",
+  "item": "minecraft:ender_pearl",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "ability_range"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "summon_aery",
+  "name": "&b灵光召唤",
+  "item": "minecraft:prismarine_crystals",
+  "tags": [
+   "passive",
+   "keystone"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": true,
+  "type_label": "基石天赋"
+ },
+ {
+  "id": "summon_might",
+  "name": "&d役使",
+  "item": "minecraft:lead",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "summon_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "suppression_barrage",
+  "name": "&6弹幕压制",
+  "item": "sourceforge:mod_suppression_barrage",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "test_cold",
+  "name": "&b[测试]冰",
+  "item": "minecraft:snowball",
+  "tags": [
+   "stat",
+   "test"
+  ],
+  "effects": [
+   "status_chance",
+   "cold_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "test_electric",
+  "name": "&e[测试]电",
+  "item": "minecraft:lightning_rod",
+  "tags": [
+   "stat",
+   "test"
+  ],
+  "effects": [
+   "status_chance",
+   "electric_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "test_heat",
+  "name": "&c[测试]火",
+  "item": "minecraft:blaze_powder",
+  "tags": [
+   "stat",
+   "test"
+  ],
+  "effects": [
+   "status_chance",
+   "heat_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "test_status",
+  "name": "&d[测试]满触发",
+  "item": "minecraft:nether_star",
+  "tags": [
+   "stat",
+   "test"
+  ],
+  "effects": [
+   "status_chance",
+   "heat_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "test_toxin",
+  "name": "&a[测试]毒",
+  "item": "minecraft:poisonous_potato",
+  "tags": [
+   "stat",
+   "test"
+  ],
+  "effects": [
+   "status_chance",
+   "toxin_damage"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "thorned_retribution",
+  "name": "&6荆棘反震",
+  "item": "sourceforge:mod_thorned_retribution",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "thorns_reflect"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "triple_slash",
+  "name": "&c三段斩",
+  "item": "minecraft:iron_sword",
+  "tags": [
+   "skill"
+  ],
+  "effects": [],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "venom",
+  "name": "&a剧毒",
+  "item": "minecraft:poisonous_potato",
+  "tags": [
+   "stat",
+   "elemental"
+  ],
+  "effects": [
+   "toxin_damage",
+   "status_chance"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "vitality",
+  "name": "&a活力",
+  "item": "minecraft:ghast_tear",
+  "tags": [
+   "stat"
+  ],
+  "effects": [
+   "health"
+  ],
+  "skill": false,
+  "passive_skill": false,
+  "type_label": ""
+ },
+ {
+  "id": "wind_retreat",
+  "name": "&b疾风撤退",
+  "item": "minecraft:diamond_sword",
+  "tags": [
+   "skill",
+   "mobility"
+  ],
+  "effects": [],
+  "skill": true,
+  "passive_skill": false,
+  "type_label": ""
+ }
+]

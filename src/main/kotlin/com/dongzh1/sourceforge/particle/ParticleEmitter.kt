@@ -296,9 +296,20 @@ class ParticleEmitter(private val plugin: SourceForge, private val renderer: Par
     /** 常用 [SkillAction] 工厂。都走 runCatching 兜底，绝不因单个目标异常打断整批命中。 */
     inner class ActionsFactory {
 
-        /** 造成 [amount] 点伤害（走 SF 战斗结算，damager=施法者）。 */
+        /**
+         * 造成 [amount] 点伤害（走 SF 战斗结算，damager=施法者）。
+         * 命中前补算施法者武器上的锋利/横扫/亡灵杀手/截肢杀手加成 + 火焰附加点燃——技能命中是脚本直接
+         * 调用 [LivingEntity.damage]，绕开了原版挥砍的 NMS 自动结算路径，这几个附魔不补算就形同虚设
+         * （见 [com.dongzh1.sourceforge.enchant.VanillaEnchantBridge]）。
+         */
         fun damage(amount: Double): SkillAction = SkillAction { caster, target ->
-            runCatching { target.damage(amount.coerceAtLeast(0.0), caster) }
+            runCatching {
+                val bonus = caster?.let {
+                    com.dongzh1.sourceforge.enchant.VanillaEnchantBridge.meleeBonusDamage(plugin, it, target)
+                } ?: 0.0
+                target.damage(amount.coerceAtLeast(0.0) + bonus, caster)
+                caster?.let { com.dongzh1.sourceforge.enchant.VanillaEnchantBridge.igniteIfFireAspect(plugin, it, target) }
+            }
         }
 
         /** 给目标叠 [stacks] 层元素 [typeId]（SF 原生“对目标执行技能”）。type 名无效则不做。 */

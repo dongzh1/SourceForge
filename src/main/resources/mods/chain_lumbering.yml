@@ -1,0 +1,16 @@
+# 连锁砍树：安装在斧头上时，砍下树木原木会自动连锁破坏相邻的同材质原木。
+id: chain_lumbering
+display-name: "&a连锁砍树"
+item: "sourceforge:mod_chain_lumbering"
+cost: 6
+weight: 1.0
+max-per-equipment: 1
+applicable-equipment: [duskgold_axe]
+effects: { chain_lumbering_count: 15 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8砍树时自动连锁破坏相邻的同材质原木"
+  - "&8只对树木原木生效，不会连锁破坏树叶、木板或其他方块"
+  - "&8连锁数量随段位提升，单次最多额外破坏15个方块"

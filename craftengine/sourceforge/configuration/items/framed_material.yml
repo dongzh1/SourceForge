@@ -1,0 +1,52 @@
+# 锻造材料格"够不够"边框：只登记【一个】共享物品 sourceforge:framed_material，
+# 不再像上一版那样给每个材料 x 每种颜色都注册一份完整的 composite item。
+#
+# 靠 1.21.4+ 的 CustomModelData 组件(flags/floats/colors/strings 四个可寻址数组)实时驱动：
+# - composite 第一层(底层，实测确认过 composite 列表顺序是"后面的在上层")用
+#   minecraft:condition 读 custom_model_data 的 flags[0]，true=绿框/false=红框。
+# - composite 第二层(上层)用 minecraft:select 读 custom_model_data 的 strings[0]，
+#   按材料 id(去掉命名空间) 选中对应材料的原版/CE模型。
+# FramedMaterialItems.build() 负责在运行时通过 Paper 的 CustomModelDataComponent
+# API 把这两个值实时设置到构建出来的 ItemStack 上，不用切换成不同的 CE 物品 id。
+#
+# 新增材料：只需要在下面 select 的 cases 列表里加一个 when/model 条目，
+# 不用新增整段 items 定义。fallback 是 select 找不到匹配 case 时的兜底模型
+# (比如 FramedMaterialItems 传了个还没在这里登记的材料 id)，用 barrier 方便一眼看出没配全。
+items:
+  sourceforge:framed_material:
+    material: paper
+    model:
+      type: minecraft:composite
+      models:
+        - type: minecraft:condition
+          property: minecraft:custom_model_data
+          index: 0
+          on_false:
+            type: minecraft:model
+            path: sourceforge:item/material_border_red
+            generation:
+              parent: minecraft:item/generated
+              textures: { layer0: sourceforge:item/material_border_red }
+          on_true:
+            type: minecraft:model
+            path: sourceforge:item/material_border_green
+            generation:
+              parent: minecraft:item/generated
+              textures: { layer0: sourceforge:item/material_border_green }
+        - type: minecraft:select
+          property: minecraft:custom_model_data
+          index: 0
+          cases:
+            - when: netherite_ingot
+              model:
+                type: minecraft:model
+                path: minecraft:item/netherite_ingot
+            - when: gold_block
+              # 用户已自行重新适配了 material_border_red/green 贴图以配合3D方块图标的等距轮廓，
+              # 改回直接引用原版方块模型(不拍平)。
+              model:
+                type: minecraft:model
+                path: minecraft:block/gold_block
+          fallback:
+            type: minecraft:model
+            path: minecraft:item/barrier

@@ -1,0 +1,150 @@
+# L15 第一套升级装备（"下界暗金"系列）。
+# 命名空间统一用 sourceforge:（贴图/模型都放在 assets/sourceforge/ 下），
+# 跟仓库里已有的 blueprint_astral_xxx 等物品保持一致。
+# data 用 item_name（下划线，不是 item-name——default 示例包 5 个文件全部用下划线，之前写错了，
+# 这是黑紫块问题里唯一确认的真配置 bug；命名空间不是问题，已用测试服验证过）。
+# 弓/弩用 textures 列表 + "基础名_pulling_0/1/2"（弓）/ 额外 "_arrow"/"_firework"（弩）命名约定，
+# CraftEngine 会自动识别拉弓状态，不需要手写 model 条件块。
+# 护甲的 settings.equipment.asset_id 关联到下面 equipments: 段，控制"穿在身上"时人物模型上的贴图
+# （跟 texture: 控制的物品图标是两套独立系统），写法照抄 topaz_armor.yml 的 equipments: 块。
+# 贴图 PNG 由用户自行绘制/替换，本文件只负责把贴图路径接好。
+# 数值(base_damage/armor/health 等词条)在 SF 独立的 equipment/ 文件夹配置，靠 ce-id 关联，本文件只管外观。
+items:
+  sourceforge:duskgold_sword:
+    material: netherite_sword
+    texture: sourceforge:item/duskgold_sword
+    data:
+      item_name: "<!i><gold>下界暗金剑"
+
+  sourceforge:duskgold_axe:
+    material: netherite_axe
+    texture: sourceforge:item/duskgold_axe
+    data:
+      item_name: "<!i><gold>下界暗金战斧"
+
+  sourceforge:duskgold_trident:
+    material: trident
+    texture: sourceforge:item/duskgold_trident
+    data:
+      item_name: "<!i><gold>下界暗金三叉戟"
+
+  sourceforge:duskgold_bow:
+    material: bow
+    textures:
+      - sourceforge:item/duskgold_bow
+      - sourceforge:item/duskgold_bow_pulling_0
+      - sourceforge:item/duskgold_bow_pulling_1
+      - sourceforge:item/duskgold_bow_pulling_2
+    data:
+      item_name: "<!i><gold>下界暗金弓"
+
+  # 2026-07-17 新增：暗金镐(工具线首件)。贴图用脚本(scratchpad/recolor_pickaxe.py)学习
+  # duskgold_sword/axe 与原版 netherite_sword/axe 的逐像素配色映射，套到原版 netherite_pickaxe
+  # 轮廓上生成，配色与其余暗金装备保持一致。
+  sourceforge:duskgold_pickaxe:
+    material: netherite_pickaxe
+    texture: sourceforge:item/duskgold_pickaxe
+    data:
+      item_name: "<!i><gold>下界暗金镐"
+
+  sourceforge:duskgold_crossbow:
+    material: crossbow
+    textures:
+      - sourceforge:item/duskgold_crossbow
+      - sourceforge:item/duskgold_crossbow_pulling_0
+      - sourceforge:item/duskgold_crossbow_pulling_1
+      - sourceforge:item/duskgold_crossbow_pulling_2
+      - sourceforge:item/duskgold_crossbow_arrow
+      - sourceforge:item/duskgold_crossbow_firework
+    data:
+      item_name: "<!i><gold>下界暗金弩"
+
+  sourceforge:duskgold_helmet:
+    material: netherite_helmet
+    texture: sourceforge:item/duskgold_helmet
+    settings:
+      equipment:
+        asset_id: sourceforge:duskgold
+        slot: head
+    data:
+      item_name: "<!i><gold>下界暗金头盔"
+
+  sourceforge:duskgold_chestplate:
+    material: netherite_chestplate
+    texture: sourceforge:item/duskgold_chestplate
+    settings:
+      equipment:
+        asset_id: sourceforge:duskgold
+        slot: chest
+    data:
+      item_name: "<!i><gold>下界暗金胸甲"
+
+  sourceforge:duskgold_leggings:
+    material: netherite_leggings
+    texture: sourceforge:item/duskgold_leggings
+    settings:
+      equipment:
+        asset_id: sourceforge:duskgold
+        slot: legs
+    data:
+      item_name: "<!i><gold>下界暗金护腿"
+
+  sourceforge:duskgold_boots:
+    material: netherite_boots
+    texture: sourceforge:item/duskgold_boots
+    settings:
+      equipment:
+        asset_id: sourceforge:duskgold
+        slot: feet
+    data:
+      item_name: "<!i><gold>下界暗金靴子"
+
+equipments:
+  $$>=1.21.2:
+    sourceforge:duskgold:
+      type: component
+      humanoid: sourceforge:entity/equipment/humanoid/duskgold
+      humanoid_leggings: sourceforge:entity/equipment/humanoid_leggings/duskgold
+    # 通用"外观隐藏"透明穿戴资源，所有护甲共用，不属于某一套装备（SF 的外观隐藏按钮运行时会把
+    # ItemStack 的 equippable.model 切到这个 id 上，只影响穿在身上的显示，不影响手持/图标贴图）。
+    sourceforge:transparent:
+      type: component
+      humanoid: sourceforge:entity/equipment/humanoid/transparent
+      humanoid_leggings: sourceforge:entity/equipment/humanoid_leggings/transparent
+  $$<1.21.2:
+    sourceforge:duskgold:
+      type: trim
+      humanoid: sourceforge:entity/equipment/humanoid/duskgold
+      humanoid_leggings: sourceforge:entity/equipment/humanoid_leggings/duskgold
+    sourceforge:transparent:
+      type: trim
+      humanoid: sourceforge:entity/equipment/humanoid/transparent
+      humanoid_leggings: sourceforge:entity/equipment/humanoid_leggings/transparent
+
+categories:
+  # 顶层"战斗装备"分类：取代已删除的 combat_items.yml(旧战斗物品分类，配套的 sourceforge.yml/
+  # vanilla_swords.yml 旧武器物品定义也已删除)。当前只有暗金一条产品线，子分类先只挂这一个，
+  # 以后新增其它战斗装备线时在 list 下面追加 "#sourceforge:<其它子分类id>" 即可。
+  sourceforge:combat_equipment:
+    name: "<!i><red>战斗装备</red>"
+    hidden: false
+    icon: sourceforge:duskgold_sword
+    list:
+      - "#sourceforge:duskgold_l15"
+  # 子分类："暗金装备"，被上面的 sourceforge:combat_equipment 通过 "#" 前缀引用嵌套，
+  # 不再单独作为顶层分类出现(hidden: true)。
+  sourceforge:duskgold_l15:
+    name: <!i><gold>下界暗金(L15)
+    hidden: true
+    icon: sourceforge:duskgold_sword
+    list:
+      - sourceforge:duskgold_sword
+      - sourceforge:duskgold_axe
+      - sourceforge:duskgold_trident
+      - sourceforge:duskgold_bow
+      - sourceforge:duskgold_crossbow
+      - sourceforge:duskgold_pickaxe
+      - sourceforge:duskgold_helmet
+      - sourceforge:duskgold_chestplate
+      - sourceforge:duskgold_leggings
+      - sourceforge:duskgold_boots

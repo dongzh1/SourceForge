@@ -47,6 +47,10 @@ object ModRegistry {
                     // 技能MOD：声明 mm-item 即视为技能MOD（也可显式 skill: true）
                     mmItem = config.getString("mm-item")?.takeIf { it.isNotBlank() },
                     skill = config.getBoolean("skill", config.getString("mm-item")?.isNotBlank() == true),
+                    // 护甲专属被动技能MOD（装进护甲被动技能槽，装备即生效）；与 skill 是两条互斥的腿。
+                    passiveSkill = config.getBoolean("passive-skill", false),
+                    // 限定安装部位（head/chest/legs/feet），空=该MOD适用类别下任意部位都能装。
+                    applicableSlots = config.getStringList("applicable-slots").map { it.lowercase() }.toSet(),
                     // 触发栏白名单（空=不限）：归一成 TriggerSlot.id，容忍别名。
                     // 评审#4：无法识别的条目写 warnings（与 effects 未知词条一致），避免拼错被静默当成"不限"。
                     allowedTriggers = config.getStringList("allowed-triggers").let { raw ->

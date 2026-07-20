@@ -4,8 +4,8 @@
 # lore 由 ModLoreBuilder 统一排版；mana/cooldown/description 里的 %cfg% 占位符实时取 config.yml。
 id: dash_thrust
 display-name: "&f冲刺突进"
-item: "minecraft:diamond_sword"
-cost: 0
+item: "sourceforge:mod_dash_thrust"
+cost: 7
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, mobility]

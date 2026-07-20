@@ -1,0 +1,18 @@
+# 元素MOD · 瘴毒核心（冰+毒双元素，武器通用）— 完全复用已有词条(cold_damage/toxin_damage/status_chance)
+# 不新增 affix。单卡即可同时具备两种元素触发几率，容易自然凑出 viral(冰+毒)组合，
+# 但单元素强度弱于专精元素卡(frostbite/venom满级 cold_damage/toxin_damage 均为2.0)，约六成强度。
+# max-rank: 4（5级 rank0~4），effects 填的是满级(rank4)数值，效果按 (rank+1)/(maxRank+1) 线性缩放。
+id: miasma_core
+display-name: "&d瘴毒核心"
+item: "sourceforge:mod_miasma_core"
+cost: 11
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { cold_damage: 1.2, toxin_damage: 1.2, status_chance: 0.15 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat, elemental]
+description:
+  - "&8同时叠加冰霜与剧毒"
+  - "&8单卡即可组成viral(病毒)元素反应"
+  - "&8单元素强度弱于专精卡(frostbite/venom满级2.0)，约六成强度"

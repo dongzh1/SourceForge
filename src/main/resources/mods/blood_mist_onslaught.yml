@@ -1,0 +1,27 @@
+# 技能MOD · 血雾冲阵（blood_mist_onslaught）— 近战·突进爆发套。装进武器「Shift+F」技能触发栏，
+# 与「铁壁架势(iron_stance)」共用同一栏位（TriggerSlot.SHIFT_F 定型槽，同一武器同一时刻只能装其一）：
+# 防御选铁壁架势，进攻选血雾冲阵，二选一分叉——这是设计意图，槽位互斥由触发栏本身"一槽一MOD"的结构
+# 天然保证，不需要额外的互斥校验代码。
+#
+# onActivate：1.2秒免伤窗口(抗性模拟"无敌"，未做真无碰撞穿墙——见 skills/blood_mist_onslaught.js 头注释的
+# 方案说明) → 沿视线冲刺位移到落点 → 落点半径2.5格AOE(base_damage×1.8) → 命中目标4秒流血(每秒当前生命值3%真实伤害)。
+# 冷却12秒(%cfg%可配置)。
+#
+# 脚本: skills/blood_mist_onslaught.js（钩子 onActivate）；数值全部走脚本内 sf.cfgInt/cfgDouble 的内嵌默认值
+# (未新增 config.yml 段落，与 dash_thrust/obsidian_blast 同款做法——避免14个并行任务抢改共享 config.yml)。
+id: blood_mist_onslaught
+display-name: "&c血雾冲阵"
+item: "sourceforge:mod_blood_mist_onslaught"
+cost: 11
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy]
+tags: [skill, mobility]
+skill: true
+allowed-triggers: [shift_f]
+mana: "%cfg:blood_mist_onslaught.mana|25% 能量"
+cooldown: "%cfgs:blood_mist_onslaught.cooldown-ms|12000%秒"
+description:
+  - "&fShift+F &7冲阵：先获得 &f%cfg:blood_mist_onslaught.immune-seconds|1.2% 秒&7免伤"
+  - "沿视线冲刺到落点，造成 &f基础伤害×%cfg:blood_mist_onslaught.dmg-mult|1.8% &7的半径 &f%cfg:blood_mist_onslaught.radius|2.5% &7格AOE"
+  - "&c命中目标流血 %cfg:blood_mist_onslaught.bleed-seconds|4% 秒&7，每秒损失当前生命值 &c%cfg:blood_mist_onslaught.bleed-percent|3%%"
+  - "&8与「铁壁架势」共用 Shift+F 栏位：防御选铁壁，进攻选血雾，二选一"

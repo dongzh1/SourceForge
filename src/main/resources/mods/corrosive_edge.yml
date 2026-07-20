@@ -1,8 +1,8 @@
 # 基础MOD · 触发几率（武器）— Warframe 腐蚀刃
 id: corrosive_edge
 display-name: "&2腐蚀刃"
-item: "minecraft:fermented_spider_eye"
-cost: 9
+item: "sourceforge:mod_corrosive_edge"
+cost: 8
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { status_chance: 0.20 }

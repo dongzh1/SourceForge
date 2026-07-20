@@ -106,15 +106,23 @@ class StatusEffectManager(private val plugin: SourceForge) {
         }
     }
 
-    /** 命中时对该怪的伤害放大倍率（病毒/腐蚀/磁力等 AMP 元素，按当前层数叠乘）。 */
-    fun outgoingDamageMultiplier(entity: LivingEntity): Double {
+    /**
+     * 命中时对该怪的伤害放大倍率（病毒/腐蚀等 AMP 类组合元素，按当前层数叠乘）。
+     * [attacker] 非空时，读取其身上"相位催化(phase_catalyst MOD)"提供的 combo_potency 词条，
+     * 作为组合元素增伤的额外乘算因子：amp = ampPerStack * stacks * (1 + comboPotency)。
+     * 只对 ElementEffect.AMP 生效——当前 elements.yml 里只有组合元素（viral/corrosive）用 AMP，
+     * 4个基础元素（heat/cold/toxin/electric）走 DOT/SLOW/BURST 等其它分支，完全不经过这里，
+     * 因此 combo_potency 天然只放大组合类异常，不影响基础元素本身的伤害结算。
+     */
+    fun outgoingDamageMultiplier(entity: LivingEntity, attacker: Player? = null): Double {
         val map = mobs[entity.uniqueId] ?: return 1.0
         val c = cfg()
+        val comboPotency = attacker?.let { plugin.itemService.readTotalAffix(it, "combo_potency") } ?: 0.0
         var mult = 1.0
         for ((type, st) in map) {
             val def = c.element(type) ?: continue
             if (def.effect == ElementEffect.AMP && def.ampPerStack > 0.0) {
-                mult *= (1.0 + def.ampPerStack * st.stacks)
+                mult *= (1.0 + def.ampPerStack * st.stacks * (1.0 + comboPotency))
             }
         }
         return mult

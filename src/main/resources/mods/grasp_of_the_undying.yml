@@ -1,0 +1,17 @@
+# 护甲专属被动技能MOD · 不朽之握（英雄联盟 坚决系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制简化说明：原版是"每隔几秒下次攻击附带按目标最大生命值百分比的伤害，并永久小幅提升自身
+# 最大生命值"。脚本层没有"读取目标最大生命值"的原语(onAttack不带目标信息)，也没有"写入永久
+# 属性加成"的原语(词条加成走 ModConfig.effects 静态声明，脚本改不了)，故改为"固定额外真实伤害
+# +按自身最大生命值百分比回血"，去掉了永久成长这半边——是坦克向持续输出+续航天赋，不是数值成长天赋。
+id: grasp_of_the_undying
+display-name: "&2不朽之握"
+item: "sourceforge:mod_grasp_of_the_undying"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f每隔 %cfg:keystone.grasp.interval-sec|4% 秒，下一次攻击附带额外真实伤害并回复生命"
+  - "&8额外伤害 %cfg:keystone.grasp.damage|7%，回复自身最大生命值 &a%cfg:keystone.grasp.heal-pct|2%%"

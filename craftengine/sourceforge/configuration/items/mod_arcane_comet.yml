@@ -1,0 +1,24 @@
+# MOD卡·秘法交汇（arcane_comet）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_arcane_comet:
+    material: fire_charge
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_arcane_comet_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_arcane_comet
+    data:
+      item_name: "<!i><aqua>秘法交汇"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>攻击命中触发彗星冲击，造成额外魔法伤害"
+        - "<!i>  <dark_gray>▪ <dark_gray>彗星伤害 9"
+        - "<!i>  <dark_gray>▪ <dark_gray>冷却 6 <dark_gray>秒"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

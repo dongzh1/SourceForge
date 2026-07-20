@@ -3,8 +3,8 @@
 # 脚本: skills/ground_slam.js（钩子 onActivate）；数值在 config.yml 的 ground-slam 段。
 id: ground_slam
 display-name: "&6震地"
-item: "minecraft:diamond_sword"
-cost: 0
+item: "sourceforge:mod_ground_slam"
+cost: 9
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, defense]

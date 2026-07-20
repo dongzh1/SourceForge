@@ -1,0 +1,46 @@
+# 导航布局：竖排目标列表，最多 5 行。每行只显示目标名；距离由世界内 Text Display 路标显示。
+# 行颜色由 SF 推送的 custom_variable:rowN_color（hex，与指南针三角颜色一致）控制。
+# 方向不在这里——交给 BetterHud 原生指南针的彩色三角 pointer。
+# SF 每 2 tick 推送 row1..row5 / row1_color..row5_color（空目标行为空串）。
+sourceforge_navigator_layout:
+  texts:
+    1:
+      name: sourceforge_navigator_font
+      pattern: "<#[custom_variable:row1_color]>[custom_variable:row1]"
+      layer: 1
+      x: 0
+      y: 0
+      scale: 0.7
+      align: center
+    2:
+      name: sourceforge_navigator_font
+      pattern: "<#[custom_variable:row2_color]>[custom_variable:row2]"
+      layer: 1
+      x: 0
+      y: 14
+      scale: 0.7
+      align: center
+    3:
+      name: sourceforge_navigator_font
+      pattern: "<#[custom_variable:row3_color]>[custom_variable:row3]"
+      layer: 1
+      x: 0
+      y: 28
+      scale: 0.7
+      align: center
+    4:
+      name: sourceforge_navigator_font
+      pattern: "<#[custom_variable:row4_color]>[custom_variable:row4]"
+      layer: 1
+      x: 0
+      y: 42
+      scale: 0.7
+      align: center
+    5:
+      name: sourceforge_navigator_font
+      pattern: "<#[custom_variable:row5_color]>[custom_variable:row5]"
+      layer: 1
+      x: 0
+      y: 56
+      scale: 0.7
+      align: center

@@ -1,8 +1,8 @@
 # 元素MOD · 毒（武器）— 同时附带触发几率，单卡即可中毒叠层
 id: venom
 display-name: "&a剧毒"
-item: "minecraft:poisonous_potato"
-cost: 11
+item: "sourceforge:mod_venom"
+cost: 10
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { toxin_damage: 2.0, status_chance: 0.25 }

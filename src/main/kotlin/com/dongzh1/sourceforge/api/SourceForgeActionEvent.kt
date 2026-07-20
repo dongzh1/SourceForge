@@ -19,8 +19,12 @@ class SourceForgeActionEvent @JvmOverloads constructor(
         FORGE_COMPLETE,
         /** 武器强化完成 */
         ENHANCE,
+        /** 蓝图原地重铸完成（换外观/基础属性，保留附魔与MOD） */
+        UPGRADE,
         /** 安装一个模组到装备 */
         MOD_INSTALL,
+        /** 一张封缄彼端遗纹完成试炼并苏醒 */
+        DREAMMARK_UNVEILED,
         /** 多方块锻炉搭建成型 */
         STRUCTURE_FORMED
     }

@@ -1,0 +1,28 @@
+# MOD卡·荆棘反震（thorned_retribution）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_thorned_retribution:
+    material: spider_eye
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_thorned_retribution_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_thorned_retribution
+    data:
+      item_name: "<!i><gold>荆棘反震"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>10"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>荆棘  <white>+12% <dark_gray>→ <green>+24%"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>受到近战命中时，将本次实际伤害的一部分"
+        - "<!i>  <dark_gray>▪ <dark_gray>作为 <red>真实伤害 <dark_gray>反弹给攻击者"
+        - "<!i>  <dark_gray>▪ <dark_gray>同一佩戴者每 <white>0.3 <dark_gray>秒最多触发一次"
+        - "<!i>  <dark_gray>▪ <green>铁壁架势激活中 <gray>反震比例额外 <white>+20%"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

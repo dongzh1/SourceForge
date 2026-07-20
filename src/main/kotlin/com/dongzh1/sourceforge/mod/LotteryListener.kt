@@ -20,7 +20,8 @@ import kotlin.random.Random
  * 处理：
  * - 附魔台劫持 -> 打开抽奖界面（Feature C）
  * - LotteryMenu 点击（抽取）
- * - ModUpgradeMenu 点击（升级）
+ * 2026-07-17：MOD 段位升级已并入锻炉"强化"流程（见 ForgeEnhanceMenu/ForgeMenuListener.enhanceMod），
+ * 不再有独立的 ModUpgradeMenu/升级核心实物消耗，本类不再处理升级点击。
  */
 class LotteryListener(
     private val plugin: SourceForge
@@ -74,7 +75,6 @@ class LotteryListener(
     fun onClick(event: InventoryClickEvent) {
         when (val holder = event.inventory.holder) {
             is LotteryMenu -> handleLotteryClick(event, holder)
-            is ModUpgradeMenu -> handleUpgradeClick(event, holder)
             else -> return
         }
     }
@@ -159,113 +159,17 @@ class LotteryListener(
         return mods.last()
     }
 
-    private fun handleUpgradeClick(event: InventoryClickEvent, menu: ModUpgradeMenu) {
-        val player = event.whoClicked as? Player ?: return
-        if (event.click == ClickType.DOUBLE_CLICK) {
-            event.isCancelled = true
-            return
-        }
-        val rawSlot = event.rawSlot
-        if (rawSlot >= event.inventory.size) {
-            if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-                event.isCancelled = true
-                player.sendMessage("§c[SourceForge] §f请手动把 MOD 放入升级槽")
-                playDeny(player)
-            }
-            return
-        }
-        when (rawSlot) {
-            menu.modSlot -> {
-                plugin.server.scheduler.runTask(plugin, Runnable { menu.render() })
-            }
-            menu.closeSlot -> {
-                event.isCancelled = true
-                player.closeInventory()
-            }
-            menu.upgradeSlot -> {
-                event.isCancelled = true
-                doUpgrade(player, menu)
-            }
-            else -> event.isCancelled = true
-        }
-    }
-
-    private fun doUpgrade(player: Player, menu: ModUpgradeMenu) {
-        val mod = menu.modItem()
-        if (mod == null || !plugin.modService.isModItem(mod)) {
-            player.sendMessage("§c[SourceForge] §f请放入要升级的 MOD")
-            playDeny(player)
-            return
-        }
-        val id = plugin.modService.modId(mod) ?: return
-        val config = plugin.modService.mods[id]
-        if (config == null || config.maxRank <= 0) {
-            player.sendMessage("§c[SourceForge] §f该 MOD 不可升级")
-            playDeny(player)
-            return
-        }
-        val rank = plugin.modService.modRank(mod)
-        if (rank >= config.maxRank) {
-            player.sendMessage("§c[SourceForge] §f该 MOD 已满段位")
-            playDeny(player)
-            return
-        }
-        val need = config.upgradeCostFor(rank)
-        if (menu.countCores() < need) {
-            player.sendMessage("§c[SourceForge] §f升级核心不足，需要 $need 个")
-            playDeny(player)
-            return
-        }
-        // 消耗升级核心
-        consumeCores(player, menu, need)
-        // 重建升级后的 MOD 物品（保持数量）
-        val upgraded = plugin.modService.createModItem(id, mod.amount.coerceAtLeast(1), rank + 1)
-        if (upgraded == null) {
-            player.sendMessage("§c[SourceForge] §f无法升级 MOD")
-            return
-        }
-        menu.inventory.setItem(menu.modSlot, upgraded)
-        player.sendMessage("§a[MOD 升级] §f${config.displayName} §f段位 $rank → ${rank + 1}")
-        player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 0.7f, 1.2f)
-        menu.render()
-    }
-
-    private fun consumeCores(player: Player, menu: ModUpgradeMenu, amount: Int) {
-        var remaining = amount
-        val storage = player.inventory.storageContents
-        for (i in storage.indices) {
-            if (remaining <= 0) break
-            val item = storage[i] ?: continue
-            if (!menu.isUpgradeCore(item)) continue
-            val take = minOf(remaining, item.amount)
-            item.amount -= take
-            remaining -= take
-            player.inventory.setItem(i, if (item.amount <= 0) null else item)
-        }
-    }
-
     // ==================== 拖拽与关闭 ====================
 
     @EventHandler
     fun onDrag(event: InventoryDragEvent) {
-        val holder = event.inventory.holder
-        if (holder !is LotteryMenu && holder !is ModUpgradeMenu) return
-        val inputSlot = when (holder) {
-            is LotteryMenu -> holder.inputSlot
-            is ModUpgradeMenu -> holder.modSlot
-            else -> -1
-        }
+        val holder = event.inventory.holder as? LotteryMenu ?: return
+        val inputSlot = holder.inputSlot
         if (event.rawSlots.any { it < event.inventory.size && it != inputSlot }) {
             event.isCancelled = true
         } else {
-            (event.whoClicked as? Player)?.let { p ->
-                plugin.server.scheduler.runTask(plugin, Runnable {
-                    when (holder) {
-                        is LotteryMenu -> holder.render()
-                        is ModUpgradeMenu -> holder.render()
-                        else -> {}
-                    }
-                })
+            (event.whoClicked as? Player)?.let {
+                plugin.server.scheduler.runTask(plugin, Runnable { holder.render() })
             }
         }
     }
@@ -273,21 +177,11 @@ class LotteryListener(
     @EventHandler
     fun onClose(event: InventoryCloseEvent) {
         val player = event.player as? Player ?: return
-        when (val holder = event.inventory.holder) {
-            is LotteryMenu -> {
-                val item = event.inventory.getItem(holder.inputSlot) ?: return
-                if (item.type == Material.AIR) return
-                player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
-                event.inventory.setItem(holder.inputSlot, null)
-            }
-            is ModUpgradeMenu -> {
-                val item = event.inventory.getItem(holder.modSlot) ?: return
-                if (item.type == Material.AIR) return
-                player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
-                event.inventory.setItem(holder.modSlot, null)
-            }
-            else -> {}
-        }
+        val holder = event.inventory.holder as? LotteryMenu ?: return
+        val item = event.inventory.getItem(holder.inputSlot) ?: return
+        if (item.type == Material.AIR) return
+        player.inventory.addItem(item).values.forEach { player.world.dropItemNaturally(player.location, it) }
+        event.inventory.setItem(holder.inputSlot, null)
     }
 
     private fun playDeny(player: Player) {

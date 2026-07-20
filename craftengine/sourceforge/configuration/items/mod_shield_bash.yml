@@ -1,0 +1,25 @@
+# MOD卡·盾击反震（shield_bash）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_shield_bash:
+    material: shield
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_shield_bash_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_shield_bash
+    data:
+      item_name: "<!i><yellow>盾击反震"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>8"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>右键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>12 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>5秒"
+        - "<!i>  <dark_gray>▪ <white>右键 <gray>盾击前方扇形：<white>基础伤害 ×0.8 <gray>+ 击退 + 硬直"
+        - "<!i>  <dark_gray>▪ <gold>破绽联动：<gray>格挡后施放 → <white>伤害×2、范围加大"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器"

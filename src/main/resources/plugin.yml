@@ -19,13 +19,18 @@ softdepend:
   - PlaceholderAPI
   - BetterHud
   - packetevents
+  - SourceTasks
+  - Vault
 commands:
   sourceforge:
     description: SourceForge main command
-    usage: /sourceforge <forge|reload|validate|giveblueprint|giveequipment|givematerial|give|testdamage|reroll|upgrade|stats|debug>
+    usage: /sourceforge <forge|mods|givemod|givedreammark|dreammark|givedreamcore|reload|validate|giveequipment|give|testdamage|reroll|upgrade|stats|sect|debug>
     aliases:
       - sf
 permissions:
   sourceforge.admin:
     description: Allows SourceForge admin commands
     default: op
+  sourceforge.color:
+    description: Allows using legacy color codes (&x) when renaming Source equipment on an anvil
+    default: true

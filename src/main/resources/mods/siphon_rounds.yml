@@ -1,0 +1,27 @@
+# 汲取导管：武器造成伤害时按比例把这次实际伤害转化为佩戴者自身回血。
+# 硬编码实现(见 mod/SiphonRoundsListener.kt)，不是JS脚本——A类被动词条，且需要挂在
+# "伤害结算之后(MONITOR优先级读 event.finalDamage)"这种事件时序钩子，脚本引擎没有对应的
+# sf.* 接口，直接写Kotlin监听器更直接。
+#
+# 数值：effects.life_steal=0.08，max-rank=5 时按引擎内置 rankRatio=(rank+1)/(maxRank+1) 缩放，
+# 段位0(初始，未升级)=0.08×1/6≈1.33%，段位5(满级)=0.08×6/6=8%，5次升级线性过渡（约1.3%~8%）。
+#
+# 【需要共享文件改动】affixes.yml 需要新增 life_steal 词条定义(decimals:2, percent:true,
+# combat: life_steal，不写 vanilla 属性，即不落 armor/health/shield_capacity 这类会被
+# ModService.reapplyModEffects 特殊处理成原版属性的 combat 值)才能让 MOD 卡 lore 按正确的
+# 百分比+2位小数格式显示；未注册前仍能正常生效(SiphonRoundsListener 直接读 ModConfig.effectAtRank，
+# 不经过 affixes.yml)，只是 ModRegistry 加载时会在日志里打一条"引用了不存在的词条"的警告，
+# 且 MOD 卡上的数值会退化成默认格式(小数位1位、无%号)。
+id: siphon_rounds
+display-name: "&c汲取导管"
+item: "sourceforge:mod_siphon_rounds"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { life_steal: 0.08 }
+max-rank: 5
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8造成伤害时按比例转化为自身回血"
+  - "&8只回复生命值，不吸收护盾；生命值不超过上限"
