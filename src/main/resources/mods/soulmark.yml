@@ -1,0 +1,23 @@
+# 基础MOD · 夺魄印记（武器）— A类被动，命中后按 status_chance 几率给目标打上4秒印记(可被佩戴者再次命中刷新)，
+# 期间目标承受的【全来源】伤害都按段位放大。放大倍率不是走标准 effectAtRank() 比例公式(那套公式的
+# 最小:最大值恒为 1:(max-rank+1)，无法同时命中设计要求的 6%~18% 两个字面端点)，而是在
+# mod/SoulmarkListener.kt 里按段位线性插值(6%,9%,12%,15%,18%)。effects 里的 vulnerability_amp
+# 仅用于卡片/锻炉展示"满级效果"文本，不是运行时实际读取的值——运行时直接用 installedModRank 查段位。
+# 需要新增 affix：vulnerability_amp（decimals 2, combat: vulnerability_amp，不写vanilla属性）——
+# 详见任务报告【需要共享文件改动】，affixes.yml 未注册前该数值不会出现在词条面板/锻炉词条池里，
+# 但不影响本MOD实际战斗判定(战斗逻辑走 SoulmarkListener 自己的段位读取，不依赖这个 affix 的 PDC 值)。
+id: soulmark
+display-name: "&5夺魄印记"
+item: "sourceforge:mod_soulmark"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { vulnerability_amp: 0.18 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8命中后按触发几率给目标打上夺魄印记"
+  - "&8持续4秒，可被佩戴者再次命中刷新"
+  - "&8期间目标承受的&d全来源伤害&8提升"
+  - "&8&o(随段位 6% ~ 18%，5级)"

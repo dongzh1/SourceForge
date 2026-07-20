@@ -1,0 +1,22 @@
+# MOD卡·钢化纤维（steel_fiber）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_steel_fiber:
+    material: iron_nugget
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_steel_fiber_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_steel_fiber
+    data:
+      item_name: "<!i><white>钢化纤维"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>8"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇◇ <gray>0/5"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>护甲  <white>+1 <dark_gray>→ <green>+3"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

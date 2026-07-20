@@ -1,0 +1,30 @@
+# ⛔ 已禁用（文件名带 .disable，CraftEngine 不会加载本文件）
+#
+# 这两个物品对应 06 号策划文档的两根长线支柱，但 SourceForge 代码**尚未接线**：
+#   - endo （内质）  ：支柱3 · 分解重复MOD → 通用养成货币，用于把稀有MOD升满段位
+#   - forma（极化器）：支柱2 · 极化装备MOD槽位，极性匹配的MOD容量消耗减半
+#
+# 建好了物品但没有任何代码/配置消费它们，属于"孤儿物品"，先禁用避免污染物品表。
+# 等 SF 侧实现了对应机制（分解GUI+内质记账 / 槽位极性PDC+容量折半计算）之后，
+# 把本文件改回 mod_items_pending.yml（去掉 .disable 后缀），
+# 并把下面两个 id 追加进 mod_items.yml 的 sourceforge:mod_items 分类 list 即可。
+
+items:
+  sourceforge:endo:
+    material: amethyst_shard
+    data:
+      item-name: "<!i><light_purple>内质"
+      lore:
+        - "<!i><gray>分解重复/低价值 MOD 获得的通用养成货币"
+        - "<!i><gray>用于将稀有 MOD 强化至满段位"
+        - "<!i><dark_gray>Endo · 可堆叠"
+
+  sourceforge:forma:
+    material: nether_star
+    data:
+      item-name: "<!i><gold>极化器 · Forma"
+      lore:
+        - "<!i><gray>对装备的一个 MOD 槽位进行极化"
+        - "<!i><gray>极化后，匹配极性的 MOD 容量消耗减半"
+        - "<!i><gray>不匹配极性则不受影响"
+        - "<!i><dark_gray>来源：世界Boss / 顶级合成"

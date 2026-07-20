@@ -3,8 +3,8 @@
 # 脚本: skills/wind_retreat.js（钩子 onActivate）；数值在 config.yml 的 wind-retreat 段。
 id: wind_retreat
 display-name: "&b疾风撤退"
-item: "minecraft:diamond_sword"
-cost: 0
+item: "sourceforge:mod_wind_retreat"
+cost: 7
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, mobility]

@@ -1,0 +1,22 @@
+# 纯测试用：composite 边框效果验证，跟 ForgeMenu/材料系统完全无关。
+# 拿到手后用 /ce give <你> sourceforge:test_frame_demo 或背包指令给自己一个，
+# 看物品栏图标四周是否有一圈半透明红框、钻石本体材质有没有被盖住。
+#
+# 顺序坑：CraftEngine 官方 wiki 写的是"排前面的在上层"，但实测(把材料放第一位、
+# 边框放第二位)结果是边框把材料盖住了——跟 wiki 说的反了，实际是"排后面的在上层"
+# (标准 vanilla composite 顺序)。现在改回边框第一位(底层)、材料第二位(上层)。
+items:
+  sourceforge:test_frame_demo:
+    material: diamond
+    data:
+      item_name: "<!i><red>[测试] 边框验证"
+    model:
+      type: minecraft:composite
+      models:
+        - type: minecraft:model
+          path: sourceforge:item/material_border_red
+          generation:
+            parent: minecraft:item/generated
+            textures: { layer0: sourceforge:item/material_border_red }
+        - type: minecraft:model
+          path: minecraft:item/diamond

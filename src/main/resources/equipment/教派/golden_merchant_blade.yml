@@ -1,0 +1,25 @@
+golden_merchant_blade:
+  material: GOLDEN_SWORD
+  display-name: "黄金教·金路护商刃"
+  ce-id: "sourceforge:golden_merchant_blade"
+  weapon-category: melee_light
+  effective-slots: [ offhand ]
+  chunkworld-level: "15"
+  affixes: [ base_damage, movement_speed, shield_capacity, health ]
+  tier-affixes:
+    1:
+      base_damage: 2.0
+      movement_speed: 0.12
+      shield_capacity: 8.0
+      health: 4.0
+    2:
+      base_damage: 2.4
+      movement_speed: 0.15
+      shield_capacity: 10.0
+      health: 5.0
+    3:
+      base_damage: 2.8
+      movement_speed: 0.18
+      shield_capacity: 12.0
+      health: 6.0
+  free-anvil-edit: true

@@ -1,0 +1,48 @@
+# 遗物奖励权重表。键 = 遗物的 CraftEngine 物品 id。
+# entries 下每条 = 一个 `blueprint` 静态蓝图，或一个 `dreammark` 动态彼端遗纹，均按权重抽取。
+# 新的遗纹遗物使用 `dreammark-profile` 指向 dreammark-relics/ 下某份 yml 的 relic-id；
+# 任务、目标武器、词条与占用均由那份独立配置决定。
+# 稀有度标签(普通/稀有/史诗/传说/顶级)不在这里配置——是蓝图物品自身 CE 定义里的展示 lore，
+# 纯装饰，不影响这里的权重。
+#
+# unlock 字段(解锁任务权重池)：拿到手时按权重抽一个SourceTasks任务id绑定到这个物品实例上，
+# 完成该任务后才能在游戏内交互解锁兑换；没有 unlock: 字段的遗物类型走别的解锁路径
+# (比如另一个插件里的关卡进度条件)，不受这里管辖。
+
+# 组队开箱界面(星际战甲式各取所需)未领取自动保底的等待秒数。
+group-crack:
+  timeout-seconds: 30
+
+relics:
+  sourceforge:relic_armor_duskgold:
+    unlock:
+      - quest: relic_armor_piglin_hunt
+        weight: 100
+    # 仅产出当前玩家线的单级蓝图；历史 tier2/3 蓝图保持兼容但不再新增来源。
+    entries:
+      - blueprint: sourceforge:blueprint_boots
+        weight: 40
+      - blueprint: sourceforge:blueprint_helmet
+        weight: 35
+      - blueprint: sourceforge:blueprint_leggings
+        weight: 25
+      - blueprint: sourceforge:blueprint_chestplate
+        weight: 10
+  sourceforge:relic_weapon_duskgold:
+    entries:
+      - blueprint: sourceforge:blueprint_sword
+        weight: 20
+      - blueprint: sourceforge:blueprint_axe
+        weight: 20
+      - blueprint: sourceforge:blueprint_trident
+        weight: 20
+      - blueprint: sourceforge:blueprint_bow
+        weight: 20
+      - blueprint: sourceforge:blueprint_crossbow
+        weight: 20
+      - blueprint: sourceforge:blueprint_pickaxe
+        weight: 20
+  sourceforge:relic_dreammark:
+    entries:
+      - dreammark-profile: sourceforge:relic_dreammark
+        weight: 100

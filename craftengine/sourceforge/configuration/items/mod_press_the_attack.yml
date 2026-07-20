@@ -1,0 +1,24 @@
+# MOD卡·强攻（press_the_attack）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_press_the_attack:
+    material: iron_sword
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_press_the_attack_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_press_the_attack
+    data:
+      item_name: "<!i><gold>强攻"
+      lore:
+        - "<!i><dark_gray>◆ <gray>基石天赋 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>3秒内连续命中 <gold>3次攻击 <gray>后，第3击造成额外伤害"
+        - "<!i>  <dark_gray>▪ <dark_gray>额外伤害 10，并令目标短暂减速"
+        - "<!i>  <dark_gray>▪ <dark_gray>连续攻击 <red>超时(3秒)未接上 <dark_gray>则重新计数"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

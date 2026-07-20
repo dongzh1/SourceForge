@@ -57,6 +57,8 @@ object BetterHudHook : Listener {
         // 重载已清空 BetterHud 内部弹窗状态；丢弃失效引用（不调用其 remove，已失效且本事件可能异步）。
         // 导航弹窗由 NavigationManager 每 2 tick 重新推送，会据此重建。
         navActive.clear()
+        taskTrackerActive.clear()
+        runCatching { taskTrackerRestorer?.invoke() }
     }
 
     private data class Active(val updater: PopupUpdater, val removalTask: BukkitTask)
@@ -68,6 +70,17 @@ object BetterHudHook : Listener {
 
     /** uuid -> 玩家当前的导航 popup 条目（每玩家一条，持续更新） */
     private val navActive = ConcurrentHashMap<java.util.UUID, NavEntry>()
+
+    private class TaskTrackerEntry(val updater: PopupUpdater, val event: CustomPopupEvent)
+
+    private val taskTrackerActive = ConcurrentHashMap<java.util.UUID, TaskTrackerEntry>()
+
+    @Volatile
+    private var taskTrackerRestorer: (() -> Unit)? = null
+
+    fun registerTaskTrackerRestorer(restorer: () -> Unit) {
+        taskTrackerRestorer = restorer
+    }
 
     /**
      * 在主线程调用。弹出/更新某技能的冷却 popup。
@@ -184,6 +197,49 @@ object BetterHudHook : Listener {
     /** 停止某玩家的导航 popup。 */
     fun hideNavigator(player: Player) {
         navActive.remove(player.uniqueId)?.let { runCatching { it.updater.remove() } }
+    }
+
+    fun showTaskTracker(plugin: SourceForge, player: Player, popupName: String, vars: Map<String, String>): Boolean {
+        if (!enabled || popupName.isBlank()) return false
+        val debug = plugin.forgeConfig.betterHud.debug
+        return try {
+            taskTrackerActive[player.uniqueId]?.let { existing ->
+                existing.event.variables.putAll(vars)
+                if (runCatching { existing.updater.update() }.getOrDefault(false)) return true
+                taskTrackerActive.remove(player.uniqueId)
+            }
+            val hud = BetterHudAPI.inst()
+            val hudPlayer = hud.playerManager.getHudPlayer(player.uniqueId) ?: run {
+                if (debug) plugin.logger.info("[SF-TASK] getHudPlayer=null：${player.name}")
+                return false
+            }
+            val popup = hud.popupManager.getPopup(popupName) ?: run {
+                if (debug) plugin.logger.info("[SF-TASK] getPopup('$popupName')=null：当前已加载=${hud.popupManager.allNames}")
+                return false
+            }
+            val event = CustomPopupEvent(player, popupName)
+            event.variables.putAll(vars)
+            Bukkit.getPluginManager().callEvent(event)
+            val updater = popup.show(BukkitEventUpdateEvent(event, "task-tracker:" + player.uniqueId), hudPlayer) ?: run {
+                if (debug) plugin.logger.info("[SF-TASK] popup.show 返回 null：${player.name}")
+                return false
+            }
+            taskTrackerActive[player.uniqueId] = TaskTrackerEntry(updater, event)
+            true
+        } catch (e: Exception) {
+            plugin.logger.warning("[SF-TASK] 任务追踪 popup 异常：${e.javaClass.name}: ${e.message}")
+            false
+        }
+    }
+
+    fun hideTaskTracker(player: Player): Boolean {
+        val entry = taskTrackerActive.remove(player.uniqueId) ?: return false
+        runCatching { entry.updater.remove() }
+        return true
+    }
+
+    fun forgetTaskTracker(playerId: UUID) {
+        taskTrackerActive.remove(playerId)
     }
 
     // ==================== 指南针指针（多目标方向三角） ====================

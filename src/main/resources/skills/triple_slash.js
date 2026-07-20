@@ -2,7 +2,7 @@
 // 左键挥砍 → 推进连段(1→2→3→回到1)，对前方扇形范围造成「SF 基础伤害 × 段位倍率」的 AoE 斩击。
 // 连段窗口内连击才会进段，超时(默认 2s)则从第 1 段重来；每段有小 CD 防止瞬连。
 //
-// 钩子：onAttack(playerId)   左键挥砍
+// 钩子：onActivate(playerId) 左键技能触发栏；onAttack 仅保留给旧普通槽物品兼容。
 // 参数读 config.yml 的 triple-slash 段；状态 per-player 存本脚本上下文（主线程单线程访问，安全）。
 
 var stage = {};    // playerId -> 当前段(1..3)
@@ -43,4 +43,8 @@ function onAttack(playerId) {
     var hit = sf.slash(playerId, radius(), arc(), dmg, "CRIT", s === 3 ? 30 : 12);
 
     sf.actionBar(playerId, "&e三段斩 &7第 &f" + s + " &7段" + (hit > 0 ? "  &c命中 " + hit : ""));
+}
+
+function onActivate(playerId) {
+    onAttack(playerId);
 }

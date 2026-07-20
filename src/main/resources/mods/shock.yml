@@ -1,8 +1,8 @@
 # 元素MOD · 电（武器）— 同时附带触发几率，单卡即可电击叠层
 id: shock
 display-name: "&e电击"
-item: "minecraft:lightning_rod"
-cost: 11
+item: "sourceforge:mod_shock"
+cost: 10
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { electric_damage: 2.0, status_chance: 0.25 }

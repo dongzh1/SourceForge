@@ -59,6 +59,43 @@ class SfScriptApi(private val plugin: SourceForge) {
     fun stat(playerId: String, affixId: String): Double =
         player(playerId)?.let { plugin.itemService.readTotalAffix(it, affixId) } ?: 0.0
 
+    // ===== 光环/群体（半径内玩家聚合，供光环类技能用，如 hearth_whisper）=====
+    /** 半径内的【其他】在线玩家数（不含自己，同世界，直线距离），供光环类技能按受益人数追加耗能。 */
+    @JsExport
+    fun nearbyAllyCount(playerId: String, radius: Double): Int {
+        val p = player(playerId) ?: return 0
+        val r = radius.coerceIn(0.0, 64.0)
+        return p.getNearbyEntities(r, r, r).count { it is Player && !it.isDead }
+    }
+
+    /**
+     * 光环回血：给施法者自己 + 半径内其他玩家，各自按【自身】最大生命值百分比([percentPerSecond]，
+     * 如 1.8 表示 1.8%)回复生命，各自封顶自身满血。
+     * 简化实现：无队伍/公会系统对接，半径内所有玩家均受益，不区分队友(见 hearth_whisper MOD 说明)。
+     * 返回本次受益人数（含自己）。
+     */
+    @JsExport
+    fun healPercentAura(playerId: String, radius: Double, percentPerSecond: Double): Int {
+        val p = player(playerId) ?: return 0
+        val pct = (percentPerSecond / 100.0).coerceIn(0.0, 1.0)
+        if (pct <= 0.0) return 0
+        val r = radius.coerceIn(0.0, 64.0)
+        val targets = ArrayList<Player>()
+        targets.add(p)
+        for (e in p.getNearbyEntities(r, r, r)) {
+            if (e is Player && e.uniqueId != p.uniqueId && !e.isDead) targets.add(e)
+        }
+        var affected = 0
+        for (t in targets) {
+            val maxHealth = t.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: t.health
+            if (maxHealth <= 0.0) continue
+            affected++
+            if (t.health >= maxHealth) continue
+            t.health = (t.health + maxHealth * pct).coerceAtMost(maxHealth)
+        }
+        return affected
+    }
+
     // ===== 输出 / MM =====
     @JsExport
     fun msg(playerId: String, text: String) {
@@ -155,6 +192,35 @@ class SfScriptApi(private val plugin: SourceForge) {
         dir.normalize().multiply(power.coerceIn(0.0, 4.0))
         p.velocity = org.bukkit.util.Vector(dir.x, up.coerceIn(-2.0, 2.0), dir.z)
         p.fallDistance = 0f
+    }
+
+    /**
+     * 破坏玩家瞄准的方块，仅当其类型与 [materialName]（不区分大小写，如 "OBSIDIAN"）匹配才会真正破坏，
+     * 用玩家主手物品当破坏工具传入 breakNaturally（保证镐子等级/附魔/掉落规则跟原版一致）。
+     * 未瞄准任何方块、或类型不符时不破坏，返回 false（黑曜石爆破等技能据此判断是否进入冷却）。
+     */
+    @JsExport
+    fun breakTargetBlock(playerId: String, range: Double, materialName: String): Boolean {
+        val p = player(playerId) ?: return false
+        val target = p.getTargetBlockExact(range.toInt().coerceIn(1, 32)) ?: return false
+        val material = org.bukkit.Material.matchMaterial(materialName) ?: return false
+        if (target.type != material) return false
+        return target.breakNaturally(p.inventory.itemInMainHand)
+    }
+
+    /**
+     * 玩家瞄准方向 [range] 格内最近一个存活生物实体的生命值占最大生命值比例(0.0~1.0)；
+     * 没瞄准到任何生物/无法读取最大生命值时返回 -1.0，脚本用负数判断"没有效目标"（如黑暗收割
+     * 靠这个读目标血量决定要不要打出处决打击，之前版本没有这个原语只能按固定倍率打，见MOD说明）。
+     */
+    @JsExport
+    fun targetHealthFraction(playerId: String, range: Double): Double {
+        val p = player(playerId) ?: return -1.0
+        val target = p.getTargetEntity(range.toInt().coerceIn(1, 32)) as? org.bukkit.entity.LivingEntity ?: return -1.0
+        if (target.isDead) return -1.0
+        val max = target.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: return -1.0
+        if (max <= 0.0) return -1.0
+        return (target.health / max).coerceIn(0.0, 1.0)
     }
 
     /** 撤退：沿视线【反方向】给冲量（后跃），[up] 附加上抛；顺带清坠落距离避免摔伤。 */

@@ -1,0 +1,27 @@
+# 基础MOD · 荆棘反震（护甲通用，2026-07-17 起物理/法术护甲合并，不再限物理护甲）— 受到近战命中时，将本次实际伤害的一部分作为真实伤害反弹给攻击者。
+# 自定义监听: mod/ThornedRetributionListener.kt（MONITOR 优先级，读 event.finalDamage；反震走
+# "直接扣血"，不经过 EntityDamage 事件管线，真正绕开护盾/护甲/抗性——见该文件头部注释）。
+# 与铁壁架势(iron_stance)联动：佩戴者当前处于格挡架势激活中时，反震比例额外 +20%（通过
+# SfScriptApi.activePlayers("iron_stance") 查询，与技能脚本 sf.isActive 同源）。
+#
+# 数值口径说明：段位数值走 ModConfig.effectAtRank 的标准线性公式(与卡片lore预览同一套算法)，
+# 5档实际为 12% / 24% / 36% / 48% / 60%。原始需求文本是"15%→60%(5级)"，但该线性公式在
+# max-rank=4(5级)时首末档比值恒为5:1，15/60只有4:1——两者不可能同时精确成立。取舍：优先保证
+# "卡片lore预览值"与"实际生效值"严格同源一致（ModLoreBuilder 是共享文件，只会按这套公式渲染
+# 预览，若在监听器里另起一套插值曲线，会导致卡片写的和实际打出来的对不上，比对不齐15%起点更糟），
+# 于是选择让上限精确命中60%，下限从15%降到12%。已在任务报告里说明。
+id: thorned_retribution
+display-name: "&6荆棘反震"
+item: "sourceforge:mod_thorned_retribution"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+effects: { thorns_reflect: 0.60 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8受到近战命中时，将本次实际伤害的一部分"
+  - "&8作为 &c真实伤害 &8反弹给攻击者"
+  - "&8同一佩戴者每 &f0.3 &8秒最多触发一次"
+  - "&a铁壁架势激活中 &7反震比例额外 &f+20%"

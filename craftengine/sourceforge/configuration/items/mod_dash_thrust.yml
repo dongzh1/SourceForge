@@ -1,0 +1,27 @@
+# MOD卡·冲刺突进（dash_thrust）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_dash_thrust:
+    material: feather
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_dash_thrust_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_dash_thrust
+    data:
+      item_name: "<!i><white>冲刺突进"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>7"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>右键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>18 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>7秒"
+        - "<!i>  <dark_gray>▪ <white>右键 <gray>向前冲刺，划出光束"
+        - "<!i>  <dark_gray>▪ 命中造成 <white>基础伤害 ×1"
+        - "<!i>  <dark_gray>▪ <yellow>突进后 3 秒内接『月华斩』×1.3"
+        - "<!i>  <dark_gray>▪ <dark_gray>元素由武器上的元素MOD 命中时附加"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器"

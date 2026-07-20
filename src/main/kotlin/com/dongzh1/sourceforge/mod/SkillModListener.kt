@@ -9,6 +9,8 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.EquipmentSlot
 import java.util.concurrent.ConcurrentHashMap
 
@@ -23,29 +25,83 @@ class SkillModListener(private val plugin: SourceForge) : Listener {
 
     private val toggleDebounce = ConcurrentHashMap<java.util.UUID, Long>()
     private val attackDebounce = ConcurrentHashMap<java.util.UUID, Long>()
-    /** 触发栏去抖：key=(玩家, 触发栏)。 */
-    private val triggerDebounce = ConcurrentHashMap<Pair<java.util.UUID, TriggerSlot>, Long>()
+    /**
+     * 触发栏去抖：key=(玩家, 触发栏, 技能MOD id)。
+     * 2026-07-17：id 也编进 key——此前只按(玩家,触发栏)去抖，若同一按键同时对应"主手武器的技能"
+     * 和"穿戴护甲的技能"(见下方 fireTriggerSlotForWornArmor，为 hearth_whisper 这类护甲技能新增)，
+     * 同一次按键内两次 fireTriggerSlot 调用会被同一个 key 互相吞掉，只有先算的那个能触发。
+     */
+    private val triggerDebounce = ConcurrentHashMap<Triple<java.util.UUID, TriggerSlot, String>, Long>()
     private val script get() = plugin.scriptService
 
     fun start() {
         plugin.server.scheduler.runTaskTimer(plugin, Runnable { tick() }, 20L, 20L) // 每秒
+        plugin.server.onlinePlayers.forEach { migrateLegacySkillSlots(it) }
+    }
+
+    @EventHandler
+    fun onJoin(event: PlayerJoinEvent) {
+        plugin.server.scheduler.runTask(plugin, Runnable { migrateLegacySkillSlots(event.player) })
+    }
+
+    private fun migrateLegacySkillSlots(player: Player) {
+        var migrated = 0
+        for (item in player.inventory.contents) {
+            if (item == null || !plugin.modService.migrateLegacySkillSlots(item)) continue
+            plugin.modService.reapplyModEffects(item)
+            migrated++
+        }
+        if (migrated > 0) {
+            player.updateInventory()
+            player.sendMessage("§7[技能] 已将 $migrated 张旧版技能MOD迁入对应触发栏")
+        }
     }
 
     /** 该装备上装的、且存在对应脚本的技能id（仅普通8槽，供旧 onAttack/onToggle 路径用，避免与触发栏双触发）。 */
     private fun skillModsOn(item: org.bukkit.inventory.ItemStack?): Set<String> =
         plugin.modService.installedModIds(item).intersect(script.loadedSkillIds())
 
-    /** 该装备上所有"有对应JS技能"的技能id：普通8槽 ∪ 技能触发栏。供 onDamaged/被动类结算用（含铁壁架势等触发栏技能）。 */
+    /** 该装备上所有"有对应JS技能"的技能id：普通8槽 ∪ 武器技能触发栏 ∪ 护甲被动技能槽。
+     *  供 onDamaged/被动类结算用（含铁壁架势等触发栏技能、篝火低语等护甲被动技能）。 */
     private fun allSkillIdsOn(item: org.bukkit.inventory.ItemStack?): Set<String> =
-        (plugin.modService.installedModIds(item) + plugin.modService.installedSkillModIds(item))
+        (plugin.modService.installedModIds(item) + plugin.modService.installedSkillModIds(item) + plugin.modService.installedPassiveSkillIds(item))
             .intersect(script.loadedSkillIds())
 
-    private fun anyEquipHasMod(player: Player, modId: String): Boolean =
-        plugin.itemService.effectiveSourceItems(player).any {
-            // 评审#1：普通8槽 ∪ 技能触发栏——否则持续型触发栏技能(如铁壁架势)会在下一 tick 被误判"装备已移除"而关闭
-            plugin.modService.installedModIds(it).contains(modId) ||
-                plugin.modService.installedSkillModIds(it).contains(modId)
+    /** 护甲被动技能独立于主手，武器持续技能则只能由当前主手维持。 */
+    private fun isPassiveSkillWorn(player: Player, skillId: String): Boolean =
+        player.inventory.armorContents.any { piece ->
+            piece != null && plugin.modService.readPassiveSkill(piece) == skillId
         }
+
+    private fun isActiveSkillHosted(player: Player, skillId: String): Boolean {
+        if (isPassiveSkillWorn(player, skillId)) return true
+        val mainHand = player.inventory.itemInMainHand
+        return plugin.modService.installedModIds(mainHand).contains(skillId) ||
+            plugin.modService.installedSkillModIds(mainHand).contains(skillId)
+    }
+
+    /**
+     * 武器持续技能不能跨主手保留：无论新武器是否也装了同一张 MOD，切换时都必须关闭旧状态。
+     * 护甲被动技能（如篝火低语）由 [isPassiveSkillWorn] 排除，继续正常生效。
+     */
+    private fun deactivateWeaponActiveSkills(player: Player) {
+        val playerId = player.uniqueId.toString()
+        for (skillId in script.api.activeSkillIds()) {
+            if (!script.api.isActive(skillId, playerId) || isPassiveSkillWorn(player, skillId)) continue
+            script.fireDeactivate(skillId, playerId)
+            script.api.deactivate(skillId, player.uniqueId)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onHeldItemChange(event: PlayerItemHeldEvent) {
+        deactivateWeaponActiveSkills(event.player)
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onHandSwapCompleted(event: org.bukkit.event.player.PlayerSwapHandItemsEvent) {
+        deactivateWeaponActiveSkills(event.player)
+    }
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onInteract(event: PlayerInteractEvent) {
@@ -59,30 +115,38 @@ class SkillModListener(private val plugin: SourceForge) : Listener {
         // 消歧：地面左键=LEFT，空中左键=MIDAIR（可选覆盖），潜行左键=SHIFT_LEFT；右键/潜行右键同理。
         when (event.action) {
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                if (player.isSneaking) fireTriggerSlot(player, main, TriggerSlot.SHIFT_LEFT, now, pid)
-                else {
+                if (player.isSneaking) {
+                    fireTriggerSlot(player, main, TriggerSlot.SHIFT_LEFT, now, pid)
+                } else {
                     // 评审#2：MIDAIR 仅作"可选空中覆盖"——须同时【在空中】且【MIDAIR栏已装技能】才走 MIDAIR，
                     // 否则一律 LEFT。这样 isOnGround 抖动/未装空中技能都不会把左键技能静默吞掉。
                     val useMidair = isAirborne(player) &&
                         plugin.modService.skillModAtTrigger(main, TriggerSlot.MIDAIR) != null
-                    fireTriggerSlot(player, main, if (useMidair) TriggerSlot.MIDAIR else TriggerSlot.LEFT, now, pid)
+                    val slot = if (useMidair) TriggerSlot.MIDAIR else TriggerSlot.LEFT
+                    fireTriggerSlot(player, main, slot, now, pid)
                 }
             }
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
                 // 评审#5：右键交互方块(箱子/门/工作台/按钮等)不触发右键技能，避免开箱/开门即放技能烧蓝烧CD
                 val interactBlock = event.action == Action.RIGHT_CLICK_BLOCK &&
                     event.clickedBlock?.type?.isInteractable == true
-                if (!interactBlock)
-                    fireTriggerSlot(player, main, if (player.isSneaking) TriggerSlot.SHIFT_RIGHT else TriggerSlot.RIGHT, now, pid)
+                if (!interactBlock) {
+                    val slot = if (player.isSneaking) TriggerSlot.SHIFT_RIGHT else TriggerSlot.RIGHT
+                    fireTriggerSlot(player, main, slot, now, pid)
+                }
             }
             else -> Unit
         }
 
-        // 旧：普通槽技能(skill=false)保持原触发（右键 onToggle / 左键 onAttack），向后兼容。
+        // 旧：普通槽技能(skill=false)保持原触发（右键 onToggle / 左键 onAttack），向后兼容——仅主手武器。
         val skillIds = skillModsOn(main)
-        if (skillIds.isEmpty()) return
+        // 护甲被动技能槽：只关心"打了一下"这个动作，没有 onToggle 概念(装备即生效，见架构说明)，
+        // 只在左键(onAttack)一路广播——英雄联盟天赋类MOD(电刑/强攻等)基本都是靠这个钩子实现。
+        val armorPassiveIds = passiveSkillIdsWorn(player)
+        if (skillIds.isEmpty() && armorPassiveIds.isEmpty()) return
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
+                if (skillIds.isEmpty()) return
                 if (now - (toggleDebounce[player.uniqueId] ?: 0L) < 300L) return
                 toggleDebounce[player.uniqueId] = now
                 for (id in skillIds) script.fireToggle(id, pid)
@@ -91,16 +155,28 @@ class SkillModListener(private val plugin: SourceForge) : Listener {
                 if (now - (attackDebounce[player.uniqueId] ?: 0L) < 100L) return
                 attackDebounce[player.uniqueId] = now
                 for (id in skillIds) script.fireAttack(id, pid)
+                for (id in armorPassiveIds) script.fireAttack(id, pid)
             }
             else -> Unit
         }
+    }
+
+    /** 穿戴护甲被动技能槽里、且存在对应JS脚本的技能id集合。 */
+    private fun passiveSkillIdsWorn(player: Player): Set<String> {
+        val loaded = script.loadedSkillIds()
+        val result = HashSet<String>()
+        for (piece in player.inventory.armorContents) {
+            if (piece == null) continue
+            result += plugin.modService.installedPassiveSkillIds(piece).intersect(loaded)
+        }
+        return result
     }
 
     /** 触发栏路由：查该栏上安装的技能MOD(须有对应JS技能)，去抖后 fireActivate。 */
     private fun fireTriggerSlot(player: Player, item: org.bukkit.inventory.ItemStack?, trigger: TriggerSlot, now: Long, pid: String) {
         val id = plugin.modService.skillModAtTrigger(item, trigger) ?: return
         if (id !in script.loadedSkillIds()) return
-        val key = player.uniqueId to trigger
+        val key = Triple(player.uniqueId, trigger, id)
         if (now - (triggerDebounce[key] ?: 0L) < 150L) return
         triggerDebounce[key] = now
         script.fireActivate(id, pid)
@@ -117,20 +193,21 @@ class SkillModListener(private val plugin: SourceForge) : Listener {
         return !hasGroundNear
     }
 
-    /** Shift+F(换手键) → SHIFT_F 触发栏。命中则取消换手，避免误触主副手交换。 */
+    /** Shift+F(换手键) → SHIFT_F 触发栏。命中则取消换手，避免误触主副手交换。
+     *  护甲不再有主动触发栏（改用被动技能槽，装备即生效，见 tick() 的自动激活逻辑），
+     *  这里只需要检查主手武器。 */
     @EventHandler(priority = EventPriority.NORMAL)
     fun onSwapHand(event: org.bukkit.event.player.PlayerSwapHandItemsEvent) {
         val player = event.player
         if (!player.isSneaking) return
-        val main = player.inventory.itemInMainHand
-        val id = plugin.modService.skillModAtTrigger(main, TriggerSlot.SHIFT_F) ?: return
-        if (id !in script.loadedSkillIds()) return
-        event.isCancelled = true
         val now = System.currentTimeMillis()
-        val key = player.uniqueId to TriggerSlot.SHIFT_F
-        if (now - (triggerDebounce[key] ?: 0L) < 150L) return
-        triggerDebounce[key] = now
-        script.fireActivate(id, player.uniqueId.toString())
+        val pid = player.uniqueId.toString()
+        val main = player.inventory.itemInMainHand
+        val hasMainSkill = plugin.modService.skillModAtTrigger(main, TriggerSlot.SHIFT_F)?.let { it in script.loadedSkillIds() } == true
+        if (hasMainSkill) {
+            event.isCancelled = true
+            fireTriggerSlot(player, main, TriggerSlot.SHIFT_F, now, pid)
+        }
     }
 
     /**
@@ -169,16 +246,36 @@ class SkillModListener(private val plugin: SourceForge) : Listener {
         val regen = plugin.config.getDouble("mana.regen-per-second", 1.0)
         for (player in plugin.server.onlinePlayers) plugin.energyService.regenMana(player, regen)
 
+        autoActivatePassiveSkills()
+
         for (skillId in script.api.activeSkillIds()) {
             for (uid in script.api.activePlayers(skillId)) {
                 val player = plugin.server.getPlayer(uid)
                 if (player == null || !player.isOnline) { script.api.deactivate(skillId, uid); continue }
-                if (!anyEquipHasMod(player, skillId)) {
+                if (!isActiveSkillHosted(player, skillId)) {
+                    script.fireDeactivate(skillId, uid.toString())
                     script.api.deactivate(skillId, uid)
-                    player.sendMessage("§7[技能] §f装备已移除，§e$skillId §f自动关闭")
+                    player.sendMessage("§7[技能] §f主手已切换或装备已移除，§e$skillId §f自动关闭")
                     continue
                 }
                 script.fireTick(skillId, uid.toString())
+            }
+        }
+    }
+
+    /**
+     * 护甲被动技能槽没有"按键触发"概念——每秒扫一遍在线玩家穿戴的四件护甲，任何一件被动技能槽里
+     * 有对应JS脚本且还没进 active 注册表的，直接 setActive(true)，让它接上现成的 onTick 结算/
+     * onDamaged 结算通路。关闭走已有逻辑：tick() 下方主循环发现 isActiveSkillHosted 变 false(卸甲)
+     * 就会自动 deactivate，被动技能槽不需要额外的关闭代码。
+     */
+    private fun autoActivatePassiveSkills() {
+        for (player in plugin.server.onlinePlayers) {
+            for (piece in player.inventory.armorContents) {
+                val id = plugin.modService.readPassiveSkill(piece) ?: continue
+                if (id !in script.loadedSkillIds()) continue
+                val pid = player.uniqueId.toString()
+                if (!script.api.isActive(id, pid)) script.api.setActive(id, pid, true)
             }
         }
     }

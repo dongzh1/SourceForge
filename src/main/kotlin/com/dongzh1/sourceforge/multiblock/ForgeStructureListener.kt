@@ -2,6 +2,7 @@ package com.dongzh1.sourceforge.multiblock
 
 import com.dongzh1.sourceforge.SourceForge
 import com.dongzh1.sourceforge.forge.ForgeMenu
+import com.dongzh1.sourceforge.forge.ForgeMenus
 import com.dongzh1.sourceforge.item.CraftEngineHook
 import org.bukkit.Sound
 import org.bukkit.block.Block
@@ -72,12 +73,18 @@ class ForgeStructureListener(
                     if (job != null) {
                         // 已有作业：直接打开锻造界面，动作槽显示进度/收取。
                         // 用作业自身记录的外壳/倍率构造上下文，避免重新校验结构。
-                        openStructureForge(player, block, job.shellTier, job.multiplier)
+                        openStructureForge(player, block, job.shellTier, job.multiplier, null)
                         return
                     }
-                    val result = ForgeStructure.validate(block, config)
+                    val result = ForgeStructure.validate(block, config) { manager.isClaimed(it) }
                     if (result.formed && result.tier != null) {
-                        openStructureForge(player, block, result.tier, result.multiplier)
+                        com.dongzh1.sourceforge.api.SourceForgeActionEvent(
+                            player, com.dongzh1.sourceforge.api.SourceForgeActionEvent.Action.STRUCTURE_FORMED, result.tier
+                        ).callEvent()
+                        openStructureForge(player, block, result.tier, result.multiplier, result.direction)
+                    } else if (result.occupied) {
+                        player.sendMessage("§c结构与其他锻炉重叠，请更换位置")
+                        playDeny(player)
                     } else {
                         player.sendMessage("§c结构未完成，请用重锤左键核心检测")
                         playDeny(player)
@@ -97,14 +104,17 @@ class ForgeStructureListener(
     private val dismantleCooldownMs = 400L
 
     /**
-     * 拆除一个锻炉方块（核心或外壳）：仅由“手持重锤 + 潜行 + 右键”触发。
+     * 拆除一个锻炉方块（核心或外壳）：仅由"手持重锤 + 潜行 + 右键"触发。
      * 用 CE 稳定 api 的 CraftEngineBlocks.remove 移除（掉落方块物品 + 清理 CE 数据）；
-     * 若拆的是带作业的核心，先退还已消耗材料。
+     * 若拆的方块(核心或外壳，任意一块)当前被某个作业占用，先取消该作业并退还已消耗材料——
+     * 2026-07-13 之前这里只检查核心，外壳可以在作业进行中被自由拆走且对作业毫无影响，
+     * 一套外壳能循环用在无数个炉子上，是真实存在的漏洞，现在统一走 claimOwner 查占用。
      */
     private fun dismantle(player: Player, block: Block, ceId: String) {
-        if (ceId == config.coreBlockId && manager.hasJob(block)) {
-            manager.cancelAndRefund(block)
-            player.sendMessage("§e[源质锻炉] §f拆除核心，已退还消耗的材料")
+        val owningCore = manager.claimOwner(block)
+        if (owningCore != null) {
+            manager.cancelAndRefund(owningCore)
+            player.sendMessage("§e[源质锻炉] §f该结构正在使用中，已取消作业并退还消耗的材料")
         }
         val world = block.world
         val dropLoc = block.location.add(0.5, 0.5, 0.5)
@@ -119,12 +129,19 @@ class ForgeStructureListener(
     }
 
     private fun handleHammer(player: Player, core: Block) {
-        val result = ForgeStructure.validate(core, config)
+        val result = ForgeStructure.validate(core, config) { manager.isClaimed(it) }
         when {
             result.formed && result.tier != null -> {
                 val tierName = config.tierDisplay(result.tier)
                 player.sendMessage("§a[源质锻炉] §f结构完成 ✔ §7(${tierName}壳 ${result.multiplier}× 速度)")
                 player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 0.8f, 1.2f)
+                com.dongzh1.sourceforge.api.SourceForgeActionEvent(
+                    player, com.dongzh1.sourceforge.api.SourceForgeActionEvent.Action.STRUCTURE_FORMED, result.tier
+                ).callEvent()
+            }
+            result.occupied -> {
+                player.sendMessage("§c结构与其他锻炉重叠")
+                playDeny(player)
             }
             result.mixed -> {
                 player.sendMessage("§c外壳材质不一致")
@@ -137,16 +154,19 @@ class ForgeStructureListener(
         }
     }
 
-    private fun openStructureForge(player: Player, core: Block, tier: String, multiplier: Double) {
+    /** direction 非空时(刚校验通过的新结构)才会用于给 StructureContext 带上占用清单计算所需的方向；
+     * 复用已有作业(job != null 分支)时不再重新校验，传 null 即可(占用早已在提交时登记过)。 */
+    private fun openStructureForge(player: Player, core: Block, tier: String, multiplier: Double, direction: Pair<Int, Int>?) {
         val ctx = ForgeMenu.StructureContext(
             world = core.world.name,
             x = core.x,
             y = core.y,
             z = core.z,
             shellTier = tier,
-            multiplier = multiplier
+            multiplier = multiplier,
+            direction = direction
         )
-        player.openInventory(ForgeMenu(plugin, ctx).inventory)
+        ForgeMenus.open(plugin, player, ctx)
     }
 
     /**

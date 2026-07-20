@@ -1,0 +1,23 @@
+items:
+  sourceforge:dream_core:
+    material: redstone
+    data:
+      item_name: "<!i><dark_purple>梦髓晶核"
+      lore:
+        - "<!i><dark_gray>◆ <gray>资源类型  <dark_purple>梦织材料"
+        - "<!i><dark_gray>◆ <gray>使用对象  <white>已苏醒彼端遗纹"
+        - ""
+        - "<!i><dark_purple>✦ 梦织指令"
+        - "<!i>  <dark_gray>▪ <gray>/sf dreammark weave  <white>生成候选词条"
+        - "<!i>  <dark_gray>▪ <gray>/sf dreammark accept  <green>接受候选"
+        - "<!i>  <dark_gray>▪ <gray>/sf dreammark keep  <yellow>保留当前词条"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>封缄遗纹不能直接开启 · 需按卡面试炼完成"
+
+categories:
+  sourceforge:dreammark_resources:
+    name: <!i><dark_purple>梦髓物资</dark_purple>
+    hidden: true
+    icon: sourceforge:dream_core
+    list:
+      - sourceforge:dream_core

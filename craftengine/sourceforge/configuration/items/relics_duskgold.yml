@@ -1,0 +1,708 @@
+# 遗物：击杀/闯关获得，达成各自条件后自动开启并发放对应奖励。
+# 使用资源包内的原创 32px 像素图标，护甲与武器遗物以不同色相和轮廓区分。
+# 材质选择已避让 sourceforge.yml/mod_items.yml/apex_blueprint_shard 占用的
+# echo_shard/amethyst_shard/nether_star/prismarine_shard/shulker_shell。
+items:
+  sourceforge:relic_armor_duskgold:
+    material: nautilus_shell
+    texture: sourceforge:item/relic_armor_duskgold
+    data:
+      item_name: "<!i><light_purple>暗金·护甲梦核"
+      lore:
+        - "<!i><dark_gray>◆ <gray>遗物类型  <light_purple>任务解锁"
+        - "<!i><dark_gray>◆ <gray>开启方式  <white>完成任务后安全回城"
+        - ""
+        - "<!i><light_purple>✦ 开启流程"
+        - "<!i>  <dark_gray>▪ <gray>携带进入荒野，自动登记 <white>猪灵猎手"
+        - "<!i>  <dark_gray>▪ <gray>击杀 <white>30 只<gray>下界猪灵或猪灵蛮兵"
+        - "<!i>  <dark_gray>▪ <gray>通过撤离点安全回城，自动发放护甲蓝图"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>右键不会开启"
+
+  sourceforge:relic_weapon_duskgold:
+    material: heart_of_the_sea
+    texture: sourceforge:item/relic_weapon_duskgold
+    data:
+      item_name: "<!i><aqua>暗金·武器梦核"
+      lore:
+        - "<!i><dark_gray>◆ <gray>遗物类型  <aqua>副本解锁"
+        - "<!i><dark_gray>◆ <gray>开启方式  <white>达到第 10 波后结束副本"
+        - ""
+        - "<!i><aqua>✦ 开启流程"
+        - "<!i>  <dark_gray>▪ <gray>进入防御战前带在背包里，局内捡到要下一局"
+        - "<!i>  <dark_gray>▪ <gray>达到 <white>第 10 波<gray>，副本结束或死亡重生时自动开启"
+        - "<!i>  <dark_gray>▪ <gray>组队时共享展示全部结果，可选队友开出的武器蓝图"
+        - "<!i>  <dark_gray>▪ <gray>每人可领取一项，重复选中互不影响"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>右键不会开启"
+
+  sourceforge:relic_dreammark:
+    material: phantom_membrane
+    data:
+      item_name: "<!i><dark_purple>梦潮纹理·遗物"
+      lore:
+        - "<!i><dark_gray>◆ <gray>遗物类型  <dark_purple>试炼解锁"
+        - "<!i><dark_gray>◆ <gray>开启方式  <white>完成试炼后安全回城"
+        - ""
+        - "<!i><dark_purple>✦ 开启流程"
+        - "<!i>  <dark_gray>▪ <gray>携带进入荒野，自动登记 <white>梦潮回响"
+        - "<!i>  <dark_gray>▪ <gray>完成 <white>3 次<gray>战利品扫描"
+        - "<!i>  <dark_gray>▪ <gray>通过撤离点安全回城，生成封缄彼端遗纹"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>无需右键"
+
+  sourceforge:dream_core_guide:
+    material: knowledge_book
+    data:
+      item_name: "<!i><dark_purple>梦核获取指南"
+      lore:
+        - "<!i><dark_gray>◆ <gray>分类说明  <dark_purple>梦核与彼端遗物"
+        - ""
+        - "<!i><dark_purple>✦ 获取方式与概率"
+        - "<!i>  <dark_gray>▪ <gray>事件空投箱：每箱固定 1 个遗物"
+        - "<!i>  <dark_gray>▪ <gray>护甲梦核 <white>50%  <dark_gray>/  <gray>武器梦核 <white>50%"
+        - "<!i>  <dark_gray>▪ <gray>高暴露非事件箱：暴露值 <white>70+"
+        - "<!i>  <dark_gray>▪ <gray>保底池抽取 <white>1–2 种<gray>，池内权重 <white>6 : 5 : 1"
+        - "<!i>  <dark_gray>▪ <gray>池内第一抽：护甲 <white>50%<gray>、武器 <white>41.7%<gray>、梦潮 <white>8.3%"
+        - "<!i>  <dark_gray>▪ <gray>单箱至少出现：护甲约 <white>70.1%<gray>、武器约 <white>63.0%<gray>、梦潮约 <white>15.6%"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>概率按对应战利品池计算"
+
+  sourceforge:blueprint_helmet:
+    material: paper
+    texture: sourceforge:item/blueprint_helmet
+    data:
+      item_name: "<!i><light_purple>下界暗金·头盔蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <light_purple>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·头盔"
+        - "<!i><dark_gray>◆ <gray>稀有度  <light_purple>史诗"
+        - ""
+        - "<!i><light_purple>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×2"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_helmet"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:2"
+
+  sourceforge:blueprint_chestplate:
+    material: paper
+    texture: sourceforge:item/blueprint_chestplate
+    data:
+      item_name: "<!i><red><bold>下界暗金·胸甲蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <red>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·胸甲"
+        - "<!i><dark_gray>◆ <gray>稀有度  <red><bold>顶级"
+        - ""
+        - "<!i><red>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×2"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_chestplate"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:2"
+
+  sourceforge:blueprint_leggings:
+    material: paper
+    texture: sourceforge:item/blueprint_leggings
+    data:
+      item_name: "<!i><gold>下界暗金·护腿蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·护腿"
+        - "<!i><dark_gray>◆ <gray>稀有度  <gold>传说"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×2"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_leggings"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:2"
+
+  sourceforge:blueprint_boots:
+    material: paper
+    texture: sourceforge:item/blueprint_boots
+    data:
+      item_name: "<!i><aqua>下界暗金·靴子蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <aqua>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·靴子"
+        - "<!i><dark_gray>◆ <gray>稀有度  <aqua>稀有"
+        - ""
+        - "<!i><aqua>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×2"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_boots"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:2"
+
+  sourceforge:blueprint_sword:
+    material: paper
+    texture: sourceforge:item/blueprint_sword
+    data:
+      item_name: "<!i><gold>下界暗金·剑蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·剑"
+        - "<!i><dark_gray>◆ <gray>锻造时间  <yellow>60 秒"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_sword"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  sourceforge:blueprint_axe:
+    material: paper
+    texture: sourceforge:item/blueprint_axe
+    data:
+      item_name: "<!i><gold>下界暗金·战斧蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·战斧"
+        - "<!i><dark_gray>◆ <gray>锻造时间  <yellow>60 秒"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_axe"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  sourceforge:blueprint_trident:
+    material: paper
+    texture: sourceforge:item/blueprint_trident
+    data:
+      item_name: "<!i><gold>下界暗金·三叉戟蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·三叉戟"
+        - "<!i><dark_gray>◆ <gray>锻造时间  <yellow>60 秒"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_trident"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  sourceforge:blueprint_bow:
+    material: paper
+    texture: sourceforge:item/blueprint_bow
+    data:
+      item_name: "<!i><gold>下界暗金·弓蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·弓"
+        - "<!i><dark_gray>◆ <gray>锻造时间  <yellow>60 秒"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_bow"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  sourceforge:blueprint_crossbow:
+    material: paper
+    texture: sourceforge:item/blueprint_crossbow
+    data:
+      item_name: "<!i><gold>下界暗金·弩蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备重铸"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>下界暗金·弩"
+        - "<!i><dark_gray>◆ <gray>锻造时间  <yellow>60 秒"
+        - ""
+        - "<!i><gold>✦ 锻造需求"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭  <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>金块  <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始重铸"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_crossbow"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  # 兼容保留：暗金现行玩法只发放无后缀的单级蓝图。以下旧的 tier2/3 定义不再出现在
+  # 玩家可见分类或任何遗物奖池中，但继续注册，避免历史卡片失去外观、PDC 配方或可用性。
+  # 不要为这些 legacy 蓝图新增掉落、任务或兑换来源。
+  sourceforge:blueprint_helmet_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_helmet
+    data:
+      item_name: "<!i><light_purple>下界暗金·头盔蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><light_purple>稀有度: 史诗(超越)"
+        - "<!i><dark_gray>锻造台放入 tier1 暗金头盔重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x3"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_helmet"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:3"
+
+  sourceforge:blueprint_helmet_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_helmet
+    data:
+      item_name: "<!i><light_purple><bold>下界暗金·头盔蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><light_purple><bold>稀有度: 史诗(巅峰)"
+        - "<!i><dark_gray>锻造台放入 tier2 暗金头盔重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_helmet"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_chestplate_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_chestplate
+    data:
+      item_name: "<!i><red><bold>下界暗金·胸甲蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><red><bold>稀有度: 顶级(超越)"
+        - "<!i><dark_gray>锻造台放入 tier1 暗金胸甲重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x3"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_chestplate"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:3"
+
+  sourceforge:blueprint_chestplate_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_chestplate
+    data:
+      item_name: "<!i><red><bold>下界暗金·胸甲蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><red><bold>稀有度: 顶级(巅峰)"
+        - "<!i><dark_gray>锻造台放入 tier2 暗金胸甲重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_chestplate"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_leggings_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_leggings
+    data:
+      item_name: "<!i><gold>下界暗金·护腿蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><gold>稀有度: 传说(超越)"
+        - "<!i><dark_gray>锻造台放入 tier1 暗金护腿重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x3"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_leggings"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:3"
+
+  sourceforge:blueprint_leggings_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_leggings
+    data:
+      item_name: "<!i><gold><bold>下界暗金·护腿蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><gold><bold>稀有度: 传说(巅峰)"
+        - "<!i><dark_gray>锻造台放入 tier2 暗金护腿重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_leggings"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_boots_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_boots
+    data:
+      item_name: "<!i><aqua>下界暗金·靴子蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><aqua>稀有度: 稀有(超越)"
+        - "<!i><dark_gray>锻造台放入 tier1 暗金靴子重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x3"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_boots"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:3"
+
+  sourceforge:blueprint_boots_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_boots
+    data:
+      item_name: "<!i><aqua><bold>下界暗金·靴子蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><aqua><bold>稀有度: 稀有(巅峰)"
+        - "<!i><dark_gray>锻造台放入 tier2 暗金靴子重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_boots"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_sword_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_sword
+    data:
+      item_name: "<!i><gold>下界暗金·剑蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金剑重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_sword"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_sword_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_sword
+    data:
+      item_name: "<!i><gold><bold>下界暗金·剑蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金剑重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_sword"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_axe_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_axe
+    data:
+      item_name: "<!i><gold>下界暗金·战斧蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金战斧重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_axe"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_axe_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_axe
+    data:
+      item_name: "<!i><gold><bold>下界暗金·战斧蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金战斧重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_axe"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_trident_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_trident
+    data:
+      item_name: "<!i><gold>下界暗金·三叉戟蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金三叉戟重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_trident"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_trident_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_trident
+    data:
+      item_name: "<!i><gold><bold>下界暗金·三叉戟蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金三叉戟重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_trident"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_bow_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_bow
+    data:
+      item_name: "<!i><gold>下界暗金·弓蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金弓重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_bow"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_bow_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_bow
+    data:
+      item_name: "<!i><gold><bold>下界暗金·弓蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金弓重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_bow"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  sourceforge:blueprint_crossbow_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_crossbow
+    data:
+      item_name: "<!i><gold>下界暗金·弩蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金弩重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_crossbow"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_crossbow_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_crossbow
+    data:
+      item_name: "<!i><gold><bold>下界暗金·弩蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金弩重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_crossbow"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+  # 2026-07-17 新增：暗金镐蓝图(工具线首件，MOD挂载对象——连锁挖矿/黑曜石爆破)。
+  sourceforge:blueprint_pickaxe:
+    material: paper
+    texture: sourceforge:item/blueprint_pickaxe
+    data:
+      item_name: "<!i><gold>下界暗金·镐蓝图"
+      lore:
+        - "<!i><dark_gray>锻造台放入下界合金镐(或已锻造同类装备)+材料重铸"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x1"
+        - "<!i><gray>- 金块 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_pickaxe"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "60"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:gold_block:1"
+
+  sourceforge:blueprint_pickaxe_t2:
+    material: paper
+    texture: sourceforge:item/blueprint_sword
+    data:
+      item_name: "<!i><gold>下界暗金·镐蓝图 <gray>Ⅱ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier1 暗金镐重铸，突破至 tier2"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x2"
+        - "<!i><gray>- 金块 <white>x2"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_pickaxe"
+        "sourceforge:blueprint_tier": "2"
+        "sourceforge:blueprint_min_tier": "1"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:2,minecraft:gold_block:2"
+
+  sourceforge:blueprint_pickaxe_t3:
+    material: paper
+    texture: sourceforge:item/blueprint_sword
+    data:
+      item_name: "<!i><gold><bold>下界暗金·镐蓝图 <gray>Ⅲ"
+      lore:
+        - "<!i><dark_gray>锻造台放入 tier2 暗金镐重铸，突破至 tier3"
+        - "<!i><gray>所需材料:"
+        - "<!i><gray>- 下界合金锭 <white>x4"
+        - "<!i><gray>- 下界之星 <white>x1"
+      pdc:
+        "sourceforge:blueprint_equipment": "duskgold_pickaxe"
+        "sourceforge:blueprint_tier": "3"
+        "sourceforge:blueprint_min_tier": "2"
+        "sourceforge:blueprint_mode": "upgrade"
+        "sourceforge:blueprint_time_seconds": "150"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:4,minecraft:nether_star:1"
+
+categories:
+  sourceforge:dream_cores:
+    name: "<!i><dark_purple>梦核与彼端遗物</dark_purple>"
+    hidden: false
+    icon: sourceforge:relic_dreammark
+    list:
+      - sourceforge:dream_core_guide
+      - sourceforge:relic_armor_duskgold
+      - sourceforge:relic_weapon_duskgold
+      - sourceforge:relic_dreammark
+
+  sourceforge:dreammark_relics:
+    name: <!i><dark_purple>彼端遗纹 · 梦潮纹理
+    hidden: true
+    icon: sourceforge:relic_dreammark
+    list:
+      - sourceforge:relic_dreammark
+  sourceforge:relics_duskgold:
+    name: <!i><gold>下界暗金 · 遗物与蓝图
+    hidden: true
+    icon: sourceforge:relic_armor_duskgold
+    list:
+      - sourceforge:relic_armor_duskgold
+      - sourceforge:relic_weapon_duskgold
+      - sourceforge:blueprint_helmet
+      - sourceforge:blueprint_chestplate
+      - sourceforge:blueprint_leggings
+      - sourceforge:blueprint_boots
+      - sourceforge:blueprint_sword
+      - sourceforge:blueprint_axe
+      - sourceforge:blueprint_trident
+      - sourceforge:blueprint_bow
+      - sourceforge:blueprint_crossbow
+      - sourceforge:blueprint_pickaxe
+  # 蓝图专属分类(只放蓝图，不含遗物)：只展示当前单级暗金蓝图。tier2/3 定义仅作旧物品兼容，
+  # 不可在这里向玩家暴露；以后新增蓝图线时也应遵循一件装备一张玩家可获得蓝图的规则。
+  sourceforge:duskgold_blueprints:
+    name: "<!i><yellow>下界暗金 · 蓝图</yellow>"
+    hidden: false
+    icon: sourceforge:blueprint_sword
+    list:
+      - sourceforge:blueprint_helmet
+      - sourceforge:blueprint_chestplate
+      - sourceforge:blueprint_leggings
+      - sourceforge:blueprint_boots
+      - sourceforge:blueprint_sword
+      - sourceforge:blueprint_axe
+      - sourceforge:blueprint_trident
+      - sourceforge:blueprint_bow
+      - sourceforge:blueprint_crossbow
+      - sourceforge:blueprint_pickaxe

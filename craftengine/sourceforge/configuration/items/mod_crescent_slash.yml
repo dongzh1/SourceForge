@@ -1,0 +1,26 @@
+# MOD卡·月华斩（crescent_slash）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_crescent_slash:
+    material: feather
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_crescent_slash_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_crescent_slash
+    data:
+      item_name: "<!i><aqua>月华斩"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>左键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>0.6秒"
+        - "<!i>  <dark_gray>▪ <white>左键 <gray>斩出 <aqua>半圆月华弧"
+        - "<!i>  <dark_gray>▪ 对扇形内目标造成 <white>基础伤害 ×1.3<gray>，叠 1 层火"
+        - "<!i>  <dark_gray>▪ <yellow>突进/撤退后接斩触发联动加成"
+        - "<!i>  <dark_gray>▪ <dark_gray>元素由武器上的元素MOD 命中时附加"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器"

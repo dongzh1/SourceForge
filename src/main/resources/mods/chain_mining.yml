@@ -1,0 +1,17 @@
+# 连锁挖矿：装在镐子上，挖矿时自动连锁开采相邻的同类方块。
+# 2026-07-17：硬编码实现(见 mod/ChainMiningListener.kt)，不是JS脚本——一次最多处理15个方块，
+# 脚本引擎(GraalJS)每次调用的桥接开销相对原生Kotlin更高，这类"单次事件内可能批量操作十几个方块"
+# 的场景直接写Kotlin更稳。BFS用visited HashSet+显式队列，达到上限立刻停止入队，不做多余探索。
+id: chain_mining
+display-name: "&b连锁挖矿"
+item: "sourceforge:mod_chain_mining"
+cost: 6
+max-per-equipment: 1
+applicable-categories: [pickaxe]
+effects: { chain_mining_count: 15 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8挖矿时自动连锁开采相邻的同类方块"
+  - "&8连锁数量随段位提升，硬编码上限15个/次"

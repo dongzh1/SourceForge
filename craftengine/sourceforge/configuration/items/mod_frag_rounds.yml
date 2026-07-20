@@ -1,0 +1,27 @@
+# MOD卡·破片弹（frag_rounds）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_frag_rounds:
+    material: firework_star
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_frag_rounds_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_frag_rounds
+    data:
+      item_name: "<!i><gold>破片弹"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇◇ <gray>0/5"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>破片  <white>+5% <dark_gray>→ <green>+10%"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>远程武器命中目标后，对命中点周围 <white>2.5 <dark_gray>格内其余目标"
+        - "<!i>  <dark_gray>▪ <dark_gray>造成 <white>本次伤害×词条数值 <dark_gray>的溅射伤害"
+        - "<!i>  <dark_gray>▪ <dark_gray>单次最多波及 <white>5 <dark_gray>个额外目标(不含原目标)"
+        - ""
+        - "<!i><gray>适用装备  <white>远程武器"

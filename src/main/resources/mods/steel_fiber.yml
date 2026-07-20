@@ -1,8 +1,8 @@
 # 基础MOD · 护甲（护甲）— Warframe 钢化纤维
 id: steel_fiber
 display-name: "&f钢化纤维"
-item: "minecraft:iron_nugget"
-cost: 9
+item: "sourceforge:mod_steel_fiber"
+cost: 8
 max-per-equipment: 1
 applicable-categories: [armor_physical, armor_magic]
 effects: { armor: 8.0 }

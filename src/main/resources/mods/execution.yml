@@ -1,0 +1,29 @@
+# 处决本能：目标当前生命值 ≤ 25% 时，本次伤害额外 ×(1+X) 放大。
+# 条件触发的伤害倍率，不是恒定加成，ModService.reapplyModEffects 的通用词条叠加模型表达不了
+# "取决于目标此刻状态"这种逻辑，硬编码在 mod/ExecutionListener.kt（伤害结算 HIGHEST 优先级钩子）。
+#
+# 段位缩放沿用项目统一公式 (rank+1)/(maxRank+1)：effects.execute_bonus=0.50 是满段位(5级)的封顶值，
+# 5级分别为 10%/20%/30%/40%/50%（与 lore 显示、ForgeEnhanceMenu 升级预览完全一致）。
+#
+# 精英/Boss 减半（设计稿要求）未实现：代码库里没有找到任何现成的"精英/Boss"判定
+# （MythicMobs 侧无统一命名/变量约定，见 ExecutionListener.kt 头部注释与最终报告），
+# 贸然猜一个匹配规则风险是"看起来做了防护、实际匹配不到任何怪"，比明确不做更糟——
+# 这是本 MOD 相对设计稿的唯一简化取舍。
+#
+# 新 affix execute_bonus 尚未登记进 affixes.yml（共享文件，本任务不可编辑，见最终报告的
+# 【需要共享文件改动】）；MOD 卡 lore 在未登记前会退化显示为 "execute_bonus +10%" 而非
+# 中文名+专属颜色，纯 UI 层面的降级，不影响本 MOD 实际战斗效果（伤害倍率不经过 affixes.yml
+# 的 combat 汇总系统，ExecutionListener 直接读 ModConfig.effectAtRank 现算现用）。
+id: execution
+display-name: "&4处决本能"
+item: "sourceforge:mod_execution"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
+effects: { execute_bonus: 0.50 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8目标生命值 &c≤25%&8 时，本次伤害额外提升"
+  - "&8远程武器在开火瞬间锁定段位，箭矢/弩矢飞行途中换武器不影响已命中的这一发"

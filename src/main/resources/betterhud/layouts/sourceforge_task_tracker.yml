@@ -1,0 +1,146 @@
+sourceforge_task_tracker_layout:
+  texts:
+    1:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line1]"
+      layer: 1
+      x: 0
+      y: 0
+      scale: 1.0
+      align: right
+      outline: false
+    2:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line2]"
+      layer: 1
+      x: 0
+      y: 16
+      scale: 1.0
+      align: right
+      outline: false
+    3:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line3]"
+      layer: 1
+      x: 0
+      y: 32
+      scale: 1.0
+      align: right
+      outline: false
+    4:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line4]"
+      layer: 1
+      x: 0
+      y: 48
+      scale: 1.0
+      align: right
+      outline: false
+    5:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line5]"
+      layer: 1
+      x: 0
+      y: 64
+      scale: 1.0
+      align: right
+      outline: false
+    6:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line6]"
+      layer: 1
+      x: 0
+      y: 80
+      scale: 1.0
+      align: right
+      outline: false
+    7:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line7]"
+      layer: 1
+      x: 0
+      y: 96
+      scale: 1.0
+      align: right
+      outline: false
+    8:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line8]"
+      layer: 1
+      x: 0
+      y: 112
+      scale: 1.0
+      align: right
+      outline: false
+    9:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line9]"
+      layer: 1
+      x: 0
+      y: 128
+      scale: 1.0
+      align: right
+      outline: false
+    10:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line10]"
+      layer: 1
+      x: 0
+      y: 144
+      scale: 1.0
+      align: right
+      outline: false
+    11:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line11]"
+      layer: 1
+      x: 0
+      y: 160
+      scale: 1.0
+      align: right
+      outline: false
+    12:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line12]"
+      layer: 1
+      x: 0
+      y: 176
+      scale: 1.0
+      align: right
+      outline: false
+    13:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line13]"
+      layer: 1
+      x: 0
+      y: 192
+      scale: 1.0
+      align: right
+      outline: false
+    14:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line14]"
+      layer: 1
+      x: 0
+      y: 208
+      scale: 1.0
+      align: right
+      outline: false
+    15:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line15]"
+      layer: 1
+      x: 0
+      y: 224
+      scale: 1.0
+      align: right
+      outline: false
+    16:
+      name: sourceforge_task_tracker_line
+      pattern: "[custom_variable:task_tracker_line16]"
+      layer: 1
+      x: 0
+      y: 240
+      scale: 1.0
+      align: right
+      outline: false

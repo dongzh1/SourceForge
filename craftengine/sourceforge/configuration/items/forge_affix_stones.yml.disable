@@ -1,0 +1,59 @@
+# 词缀石（forge_affix_stone_t1~t5）
+# 荒野掉落材料，5档对应 普通/稀有/史诗/传说/顶级 品质，用不同基材+颜色区分。
+# 数值策划 02_怪物数值设计.md / 04_荒野世界与战利品守护者.md 的掉落表引用了这5个id，
+# 建号前经多处grep确认：SourceForge / ChunkWorld / SourceWild / MythicmobsSkill 内均未真实定义过，此前是纯文档占位引用。
+# 注：本文件只登记 CraftEngine 物品本体（外观/可持有），不包含 SourceForge 的“材料词缀roll”配置
+# （对比 sharp_stone 等材料还有 src/main/resources/materials/*.yml 定义roll词条，并在 SourceForge.kt 里
+#  saveBundledResource 注册）——词缀石是否需要这层暂未确认，留给后续任务。
+items:
+  sourceforge:forge_affix_stone_t1:
+    material: cobblestone
+    data:
+      item-name: "<!i><white>普通词缀石"
+      lore:
+        - "<!i><gray>荒野掉落材料"
+        - "<!i><gray>锻造词缀用（一档：普通）"
+
+  sourceforge:forge_affix_stone_t2:
+    material: lapis_lazuli
+    data:
+      item-name: "<!i><blue>稀有词缀石"
+      lore:
+        - "<!i><gray>荒野掉落材料"
+        - "<!i><gray>锻造词缀用（二档：稀有）"
+
+  sourceforge:forge_affix_stone_t3:
+    material: amethyst_cluster
+    data:
+      item-name: "<!i><light_purple>史诗词缀石"
+      lore:
+        - "<!i><gray>荒野掉落材料"
+        - "<!i><gray>锻造词缀用（三档：史诗）"
+
+  sourceforge:forge_affix_stone_t4:
+    material: raw_gold
+    data:
+      item-name: "<!i><gold>传说词缀石"
+      lore:
+        - "<!i><gray>荒野掉落材料"
+        - "<!i><gray>锻造词缀用（四档：传说）"
+
+  sourceforge:forge_affix_stone_t5:
+    material: redstone
+    data:
+      item-name: "<!i><red>顶级词缀石"
+      lore:
+        - "<!i><gray>荒野掉落材料"
+        - "<!i><gray>锻造词缀用（五档：顶级）"
+
+categories:
+  sourceforge:forge_affix_stones:
+    name: <!i><white>SourceForge 词缀石</white>
+    hidden: true
+    icon: sourceforge:forge_affix_stone_t1
+    list:
+      - sourceforge:forge_affix_stone_t1
+      - sourceforge:forge_affix_stone_t2
+      - sourceforge:forge_affix_stone_t3
+      - sourceforge:forge_affix_stone_t4
+      - sourceforge:forge_affix_stone_t5

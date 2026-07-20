@@ -1,0 +1,26 @@
+# MOD卡·相位催化（phase_catalyst）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_phase_catalyst:
+    material: amethyst_shard
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_phase_catalyst_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_phase_catalyst
+    data:
+      item_name: "<!i><light_purple>相位催化"
+      lore:
+        - "<!i><dark_gray>◆ <gray>元素 MOD  <dark_gray>│  <gray>占用 <yellow>9"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>相位  <white>+8% <dark_gray>→ <green>+16%"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>对病毒/腐蚀/毒气/辐射/爆裂等组合元素异常生效(不含磁力)"
+        - "<!i>  <dark_gray>▪ <gray>组合触发时,该组合的强度与持续时间按相位强度加成"
+        - ""
+        - "<!i><gray>适用装备  <white>武器通用"

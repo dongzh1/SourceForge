@@ -1,0 +1,27 @@
+# MOD卡·暴戾无常（blind_rage）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_blind_rage:
+    material: redstone
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_blind_rage_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_blind_rage
+    data:
+      item_name: "<!i><red>暴戾无常"
+      lore:
+        - "<!i><dark_gray>◆ <gray>属性 MOD  <dark_gray>│  <gray>占用 <yellow>12"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>强度  <white>+0.22 <dark_gray>→ <green>+0.44"
+        - "<!i>  <dark_gray>▪ <gray>效率  <white>-0.16 <dark_gray>→ <green>-0.32"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>技能强度大幅提升，但技能效率(耗蓝<dark_gray>/<dark_gray>冷却缩减)大幅下降"
+        - "<!i>  <dark_gray>▪ <dark_gray>高伤害输出与高耗蓝<dark_gray>/<dark_gray>长冷却并存的极端配置，需谨慎搭配技能循环"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

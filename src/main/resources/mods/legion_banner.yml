@@ -1,0 +1,30 @@
+# 群魄图腾：召唤类专属被动词条，提升佩戴者可同时存在的召唤物数量上限。
+# 调研结论(2026-07-17)：代码库内没有任何"召唤物数量上限"追踪/校验服务(已 grep 全 kotlin 源码，
+# 只有 summon_damage 这个纯数值词条，靠 MythicMobs 侧技能自行读取)。本词条 summon_max_count
+# 走同样的路子：只是一个只读数值词条，佩戴生效后可通过 PAPI 占位符
+# %sourceforge_attr_summon_max_count% / %sourceforge_total_summon_max_count%（两者等价，
+# 均为 SourceForgePapi.kt 里 attr_/total_ 前缀共用的 totalAffix() 全身叠加总和，无"单件"版本）
+# 供 MM 召唤技能配置自行做数量校验，SourceForge 这边不做任何主动的召唤物计数/清理。
+# 详见任务报告【需要共享文件改动】。
+#
+# 数值取整说明：effects 用线性词条(rankRatio = (rank+1)/(maxRank+1))，rank0~4 时
+# summon_max_count 原始值 = 0.4/0.8/1.2/1.6/2.0，PAPI 侧 decimals:0 用 .toInt() 截断，
+# 对应 +0/+0/+1/+1/+2，正好是需求的 5 级阶梯(rank2/3=+1，rank4=+2)。
+# 注意：MOD 卡片 lore 预览用的是 AffixFormat(DecimalFormat 四舍五入)，不是截断，
+# 中间段位(rank1/rank3)在卡面上可能提前显示成 +1/+2，与实际生效值差 1 级——
+# 这是 ModLoreBuilder/AffixFormat(共享文件)本身四舍五入 vs PAPI 截断口径不一致导致的展示误差，
+# 不是这个 MOD 独有的 bug，故未改动共享文件，仅在此注释说明。
+id: legion_banner
+display-name: "&5群魄图腾"
+item: "sourceforge:mod_legion_banner"
+cost: 7
+max-per-equipment: 1
+applicable-categories: [summon]
+effects: { summon_max_count: 2 }
+max-rank: 4
+upgrade-cost: 2
+tags: [stat]
+description:
+  - "&8提升佩戴者可同时存在的召唤物数量上限"
+  - "&8满段位时 &f+2 &8召唤物上限"
+  - "&8实际召唤数量校验由召唤技能自身读取本词条完成"

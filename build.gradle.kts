@@ -36,9 +36,14 @@ easylib {
 //    library("org.apache.commons:commons-pool2:2.12.0", true){
 //        relocate("org.apache.commons.pool2", "${project.group}.shadow.pool2")
 //    }
-//    library("com.zaxxer:HikariCP:4.0.3", true) {
-//        relocate("com.zaxxer.hikari", "${project.group}.shadow.hikari")
-//    }
+    // MySQL 持久化(源质锻炉作业，2026-07-13 从本地 Kryo 文件迁移而来)：HikariCP 连接池 + MySQL JDBC 驱动，
+    // cloud=false -> implementation + shadow 重定位(服务器不太可能已经装了这两个依赖的插件)。
+    library("com.zaxxer:HikariCP:4.0.3", false) {
+        relocate("com.zaxxer.hikari", "${project.group}.shadow.hikari")
+    }
+    library("mysql:mysql-connector-java:8.0.33", false) {
+        relocate("com.mysql", "${project.group}.shadow.mysql")
+    }
 
     relocate("com.xbaimiao.easylib", "${project.group}.easylib", false)
     relocate("kotlin", "${project.group}.shadow.kotlin", true)
@@ -58,6 +63,7 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://repo.codemc.io/repository/maven-releases/")
+    maven("https://jitpack.io")
 }
 
 java {
@@ -91,11 +97,30 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
     // GraalJS 运行时已抽到独立插件 SourceJS：SF 只 compileOnly 瘦接口，
     // 运行期共享 SourceJS 的引擎（plugin.yml 里 depend: SourceJS）。jar 体积因此减约 30MB。
-    compileOnly("com.dongzh1.sourcejs:sourcejs-api:1.0.0")
+    val localSourceJsApi = project.file("../SourceJS/sourcejs-api/build/libs/sourcejs-api-1.0.0.jar")
+    if (localSourceJsApi.isFile) {
+        compileOnly(project.files(localSourceJsApi))
+    } else {
+        compileOnly("com.dongzh1.sourcejs:sourcejs-api:1.0.0")
+    }
+    // SourceTasks 对话 API：教派文件动态注册到 SourceTasks 的 HUD/打字机/选项引擎。
+    val localSourceTasksApi = project.file("../SourceTasks/build/libs/SourceTasks-1.0.0.jar")
+    if (localSourceTasksApi.isFile) {
+        compileOnly(project.files(localSourceTasksApi))
+    }
+    // 强化(升级武器)改成花 Vault 经济货币而非消耗材料，需要标准 Economy 接口；只拿 API 接口，
+    // 运行期由服务器已装的 Vault 插件提供真正的经济后端实现（softdepend，见 plugin.yml）。
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
     compileOnly(fileTree("libs"))
 }
 
 tasks {
+    // shadowJar 清空了 archiveClassifier，与普通 jar 任务输出同名；不禁用 jar 任务的话，
+    // 两者谁后落盘就覆盖谁，曾导致部署的是没打包 easylib/kryo/hikari/mysql 的裸 jar
+    // （运行时 NoClassDefFoundError: com/xbaimiao/easylib/EasyPlugin）。
+    jar {
+        enabled = false
+    }
     compileJava {
         options.encoding = "UTF-8"
         options.release.set(21)
@@ -120,12 +145,21 @@ tasks {
         easylib.getAllRelocate().forEach {
             relocate(it.pattern, it.replacement)
         }
+        // mysql-connector-java 的 relocate 只搬类字节码，不改 META-INF/services/java.sql.Driver 里的
+        // 驱动类名文本——没有这行，HikariCP 靠 ServiceLoader 自动发现驱动会在打包后失败(类名对不上)，
+        // 多方块锻炉的 MySQL 连接会静默连不上。mergeServiceFiles() 让 Shadow 顺带重写这些 service 文件。
+        mergeServiceFiles()
 
         // 不再使用 minimize：它的可达性静态分析对 Kotlin 不稳定，曾间歇性把本项目自有类（如 util/Text）
         // 当作“无用类”剔除，导致运行时 NoClassDefFoundError。换来的体积收益很小，不值得这个风险。
     }
     processResources {
-        expand("version" to project.version)
+        // expand() 只能对 plugin.yml 生效——它用 Groovy SimpleTemplateEngine 对整份文件内容做模板渲染，
+        // 单字符串字面量硬上限 65535 unicode units；config.yml 现在 10万字符会直接编译失败。
+        // 全仓库只有 plugin.yml 用到 ${version} 占位符（已核实），限定 filesMatching 不丢功能。
+        filesMatching("plugin.yml") {
+            expand("version" to project.version)
+        }
         val relocateAnchor = "relocate: # inject"
         filter { line ->
             var replace = line

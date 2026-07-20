@@ -3,8 +3,8 @@
 # 脚本: skills/iron_stance.js（钩子 onActivate/onTick/onDamaged）；数值在 config.yml 的 iron-stance 段。
 id: iron_stance
 display-name: "&e铁壁架势"
-item: "minecraft:diamond_sword"
-cost: 0
+item: "sourceforge:mod_iron_stance"
+cost: 9
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill, defense]

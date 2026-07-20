@@ -1,0 +1,33 @@
+# 护甲专属被动技能MOD · 篝火低语（hearth_whisper）— 护甲被动技能槽首发卡，装备即生效，
+# 不再需要按键开关。2026-07-17 架构变更：护甲不再允许安装武器式的主动触发技能（原来挂在
+# Shift+F 触发栏、且因 SkillModListener 只扫主手武器而实际永远触发不了），改走护甲专属的
+# 1格「被动技能槽」——由 SkillModListener.autoActivatePassiveSkills() 每秒自动把装了这张卡的
+# 护甲激活，卸下装备时同一套"装备已移除"检测自动关闭，脚本本身不用管开关（见 hearth_whisper.js）。
+#
+# 机制：佩戴者【静止或缓慢移动】时，以自身为心 radius 格光环，每秒为光环内的玩家(含自己；无队伍
+# 系统，按"光环覆盖范围内的其他玩家"计)按各自最大生命值百分比回复生命；移动过快时暂停回复(不关闭)。
+# 护甲被动技能槽卡片统一不设资源消耗——不像武器主动技能要抠能量/冷却，装上就是纯常驻加成，
+# 这也是"被动"与"主动"两条腿在设计上的核心区别，别再给它加 mana/cooldown。
+#
+# ⚠ 已知宿主API缺口（未落地，脚本会静默降级，见 skills/hearth_whisper.js 头注释）：
+#   sf.isSlowMoving(playerId, maxBlocksPerSecond) — 缺失时按"未限制移动"处理，回复不受移速门控
+#   sf.healPercentAura(playerId, radius, percentPerSecond) — 缺失时只剩粒子表现，不真的回血
+#
+# 段位说明：技能槽（含被动技能槽）安装机制只持久化 MOD id，不像普通8槽那样持久化 "id#rank"，
+# 技能类MOD 目前统一无法在装备上保留段位（iron_stance/shield_bash 等主动技能同理），
+# 故本卡固定 max-rank: 0，回复速率取设计区间 0.4%~1.8%/秒 的中值 1.1%/秒。
+id: hearth_whisper
+display-name: "&6篝火低语"
+item: "sourceforge:mod_hearth_whisper"
+cost: 8
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, support]
+passive-skill: true
+description:
+  - "&f装备即生效 &8(护甲被动技能槽，无需按键)"
+  - "静止或缓慢移动时，&f以自身为心 %cfg:hearth-whisper.radius|6% 格 &7光环持续回复"
+  - "光环内玩家(含自己) &a每秒回复最大生命值 %cfg:hearth-whisper.regen-percent-per-second|1.1%%"
+  - "&7移动过快时暂停回复；&8不消耗能量，不会像主动技能那样被打断"
+  - "&8卸下装备自动失效，重新装备自动重新生效"
+  - "&8设计区间 0.4%~1.8%/秒(5级)，当前固定中值"

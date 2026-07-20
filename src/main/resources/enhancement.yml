@@ -1,21 +1,82 @@
-# 武器强化配置。锻炉蓝图槽放入 SF 武器即进入强化模式。
+# 武器强化配置。锻炉GUI里切到"强化"模式，蓝图槽放入 SF 武器即可强化。
 # 按武器 weapon-category 查询；未配置的类别回退 default。
-# levels[i] = 升到 level i+1 的所需材料与加成（index 0 -> level 1）。
+# levels[i] = 升到 level i+1 的花费与加成（index 0 -> level 1）。
+#
+# 2026-07-16 改版(用户明确要求)：强化只花钱(Vault经济)、不再消耗材料；上限从 5 级放宽到 15 级；
+# 依然需要时间(锻炉核心占用一个作业，耗时公式不变: ticks = round(enhance-time-seconds*20/外壳倍率))。
+# cost 曲线参考 SourceWild/prices.yml 的经济锚点(铁锭12/钻石120/下界之星3000)与
+# value.exposure-reference-value=5000(约等于"一趟满载而归"的战利品价值量级)估算：
+# 重新设计：武器15级强化伤害增量累计 +17.0、MOD容量增量累计 +100；保护类装备不增加伤害或护甲，
+# 只增加少量护盾、生命与每件 +60 MOD容量增量。
 enhance-time-seconds: 30
+
+# 武器强化费用指数模型：第 1 档 1000 金，第 15 档 300000 金；中间档位按指数插值。
+weapon-cost-model:
+  type: exponential
+  start-cost: 1000
+  end-cost: 300000
+
+# MOD 段位升级：复用上面的强化流程(锻炉、钱+时间、不耗材料)，武器槽换成放 MOD 物品即可。
+# 2026-07-17：取代旧的"升级核心"实物消耗系统。单级花费 = base-cost-per-slot-cost ×
+# 该MOD的cost(改造容量点数) × upgradeCostBase(该MOD自身稀有度系数) × level-multiplier[rank]。
+# 举例：critical_strike(cost 9, upgradeCostBase 2) 满5级总花费 ≈ 1656 金；
+# continuity(cost 9, upgradeCostBase 1) 满级总花费 ≈ 828 金。第一版估算，不满意直接改数字。
+mod-upgrade:
+  base-cost-per-slot-cost: 8
+  level-multiplier: [1.0, 1.4, 2.0, 2.9, 4.2]   # rank0→1 ... rank4→5
+
 categories:
   melee:
-    max-level: 5
+    max-level: 15
     levels:
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 2 } ], base-damage: 1.0, mod-capacity: 2 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 4 } ], base-damage: 1.5, mod-capacity: 2 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 6 } ], base-damage: 2.0, mod-capacity: 3 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 8 } ], base-damage: 2.5, mod-capacity: 3 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 10 } ], base-damage: 3.0, mod-capacity: 4 }
+      - { cost: 1000,   base-damage: 0.51,  mod-capacity: 3 }
+      - { cost: 1503,   base-damage: 0.595, mod-capacity: 4 }
+      - { cost: 2259,   base-damage: 0.68,  mod-capacity: 5 }
+      - { cost: 3395,   base-damage: 0.765, mod-capacity: 5 }
+      - { cost: 5102,   base-damage: 0.85,  mod-capacity: 6 }
+      - { cost: 7668,   base-damage: 0.935, mod-capacity: 6 }
+      - { cost: 11525,  base-damage: 1.02,  mod-capacity: 7 }
+      - { cost: 17321,  base-damage: 1.105, mod-capacity: 7 }
+      - { cost: 26031,  base-damage: 1.19,  mod-capacity: 7 }
+      - { cost: 39123,  base-damage: 1.275, mod-capacity: 7 }
+      - { cost: 58799,  base-damage: 1.36,  mod-capacity: 8 }
+      - { cost: 88371,  base-damage: 1.445, mod-capacity: 8 }
+      - { cost: 132815, base-damage: 1.53,  mod-capacity: 8 }
+      - { cost: 199611, base-damage: 1.70,  mod-capacity: 9 }
+      - { cost: 300000, base-damage: 2.04,  mod-capacity: 10 }
   default:
-    max-level: 5
+    max-level: 15
     levels:
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 2 } ], base-damage: 1.0, mod-capacity: 2 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 4 } ], base-damage: 1.5, mod-capacity: 2 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 6 } ], base-damage: 2.0, mod-capacity: 3 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 8 } ], base-damage: 2.5, mod-capacity: 3 }
-      - { materials: [ { item: "sourceforge:bulwark_plate", amount: 10 } ], base-damage: 3.0, mod-capacity: 4 }
+      - { cost: 1000,   base-damage: 0.51,  mod-capacity: 3 }
+      - { cost: 1503,   base-damage: 0.595, mod-capacity: 4 }
+      - { cost: 2259,   base-damage: 0.68,  mod-capacity: 5 }
+      - { cost: 3395,   base-damage: 0.765, mod-capacity: 5 }
+      - { cost: 5102,   base-damage: 0.85,  mod-capacity: 6 }
+      - { cost: 7668,   base-damage: 0.935, mod-capacity: 6 }
+      - { cost: 11525,  base-damage: 1.02,  mod-capacity: 7 }
+      - { cost: 17321,  base-damage: 1.105, mod-capacity: 7 }
+      - { cost: 26031,  base-damage: 1.19,  mod-capacity: 7 }
+      - { cost: 39123,  base-damage: 1.275, mod-capacity: 7 }
+      - { cost: 58799,  base-damage: 1.36,  mod-capacity: 8 }
+      - { cost: 88371,  base-damage: 1.445, mod-capacity: 8 }
+      - { cost: 132815, base-damage: 1.53,  mod-capacity: 8 }
+      - { cost: 199611, base-damage: 1.70,  mod-capacity: 9 }
+      - { cost: 300000, base-damage: 2.04,  mod-capacity: 10 }
+  armor_physical:
+    max-level: 15
+    levels:
+      - { cost: 1000,   base-damage: 0.0, mod-capacity: 2, shield-capacity: 0.4, health: 0.15 }
+      - { cost: 1503,   base-damage: 0.0, mod-capacity: 2, shield-capacity: 0.4, health: 0.15 }
+      - { cost: 2259,   base-damage: 0.0, mod-capacity: 3, shield-capacity: 0.4, health: 0.15 }
+      - { cost: 3395,   base-damage: 0.0, mod-capacity: 3, shield-capacity: 0.4, health: 0.15 }
+      - { cost: 5102,   base-damage: 0.0, mod-capacity: 3, shield-capacity: 0.4, health: 0.15 }
+      - { cost: 7668,   base-damage: 0.0, mod-capacity: 3, shield-capacity: 0.5, health: 0.20 }
+      - { cost: 11525,  base-damage: 0.0, mod-capacity: 4, shield-capacity: 0.5, health: 0.20 }
+      - { cost: 17321,  base-damage: 0.0, mod-capacity: 4, shield-capacity: 0.5, health: 0.20 }
+      - { cost: 26031,  base-damage: 0.0, mod-capacity: 4, shield-capacity: 0.5, health: 0.20 }
+      - { cost: 39123,  base-damage: 0.0, mod-capacity: 4, shield-capacity: 1.0, health: 0.20 }
+      - { cost: 58799,  base-damage: 0.0, mod-capacity: 5, shield-capacity: 1.0, health: 0.25 }
+      - { cost: 88371,  base-damage: 0.0, mod-capacity: 5, shield-capacity: 1.0, health: 0.25 }
+      - { cost: 132815, base-damage: 0.0, mod-capacity: 5, shield-capacity: 1.0, health: 0.25 }
+      - { cost: 199611, base-damage: 0.0, mod-capacity: 6, shield-capacity: 1.0, health: 0.25 }
+      - { cost: 300000, base-damage: 0.0, mod-capacity: 7, shield-capacity: 1.0, health: 0.25 }

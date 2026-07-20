@@ -1,0 +1,77 @@
+items:
+  sourceforge:golden_merchant_blade:
+    material: golden_sword
+    texture: sourceforge:item/golden_merchant_blade
+    data:
+      item_name: "<!i><gold>黄金教·金路护商刃"
+      lore:
+        - "<!i><dark_gray>◆ <gray>黄金教专属副武器"
+        - "<!i><dark_gray>◆ <gray>适合跑商与长途出行"
+
+  sourceforge:skyfire_ember_blade:
+    material: netherite_sword
+    texture: sourceforge:item/skyfire_ember_blade
+    data:
+      item_name: "<!i><red>天火教·烬星副刃"
+      lore:
+        - "<!i><dark_gray>◆ <gray>天火教专属副武器"
+        - "<!i><dark_gray>◆ <gray>适合决斗与正面战斗"
+
+  sourceforge:blueprint_golden_merchant_blade:
+    material: paper
+    texture: sourceforge:item/blueprint_golden_merchant_blade
+    data:
+      item_name: "<!i><gold>黄金教·金路护商刃蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <gold>装备制造"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>黄金教·金路护商刃"
+        - "<!i><dark_gray>◆ <gray>装备位置  <aqua>副手"
+        - ""
+        - "<!i><gold>✦ 特殊效果"
+        - "<!i>  <dark_gray>▪ <gray>移动速度 <aqua>+12%"
+        - "<!i>  <dark_gray>▪ <gray>护盾容量 <aqua>+8"
+        - "<!i>  <dark_gray>▪ <gray>生命上限 <aqua>+4"
+        - ""
+        - "<!i><gold>✦ 锻造材料"
+        - "<!i>  <dark_gray>▪ <gray>金锭 <white>×2"
+        - "<!i>  <dark_gray>▪ <gray>绿宝石 <white>×2"
+        - "<!i>  <dark_gray>▪ <gray>皮革 <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始制造"
+      pdc:
+        "sourceforge:blueprint_equipment": "golden_merchant_blade"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "create"
+        "sourceforge:blueprint_time_seconds": "90"
+        "sourceforge:blueprint_weapon_category": "melee_light"
+        "sourceforge:blueprint_materials": "minecraft:gold_ingot:2,minecraft:emerald:2,minecraft:leather:1"
+
+  sourceforge:blueprint_skyfire_ember_blade:
+    material: paper
+    texture: sourceforge:item/blueprint_skyfire_ember_blade
+    data:
+      item_name: "<!i><red>天火教·烬星副刃蓝图"
+      lore:
+        - "<!i><dark_gray>◆ <gray>蓝图类型  <red>装备制造"
+        - "<!i><dark_gray>◆ <gray>目标装备  <white>天火教·烬星副刃"
+        - "<!i><dark_gray>◆ <gray>装备位置  <aqua>副手"
+        - ""
+        - "<!i><red>✦ 特殊效果"
+        - "<!i>  <dark_gray>▪ <gray>火元素伤害 <red>+1.5"
+        - "<!i>  <dark_gray>▪ <gray>触发几率 <red>+20%"
+        - "<!i>  <dark_gray>▪ <gray>暴击几率 <red>+8%"
+        - "<!i>  <dark_gray>▪ <gray>暴击伤害 <red>+15%"
+        - ""
+        - "<!i><red>✦ 锻造材料"
+        - "<!i>  <dark_gray>▪ <gray>下界合金锭 <white>×1"
+        - "<!i>  <dark_gray>▪ <gray>烈焰棒 <white>×2"
+        - "<!i>  <dark_gray>▪ <gray>钻石 <white>×1"
+        - ""
+        - "<!i><gray>在源质锻炉中放入蓝图与材料开始制造"
+      pdc:
+        "sourceforge:blueprint_equipment": "skyfire_ember_blade"
+        "sourceforge:blueprint_tier": "1"
+        "sourceforge:blueprint_mode": "create"
+        "sourceforge:blueprint_time_seconds": "120"
+        "sourceforge:blueprint_weapon_category": "melee_light"
+        "sourceforge:blueprint_materials": "minecraft:netherite_ingot:1,minecraft:blaze_rod:2,minecraft:diamond:1"

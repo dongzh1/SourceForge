@@ -1,0 +1,27 @@
+# MOD卡·血雾冲阵（blood_mist_onslaught）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_blood_mist_onslaught:
+    material: feather
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_blood_mist_onslaught_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_blood_mist_onslaught
+    data:
+      item_name: "<!i><red>血雾冲阵"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>11"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>Shift+F <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>25 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>12秒"
+        - "<!i>  <dark_gray>▪ <white>Shift+F <gray>冲阵：先获得 <white>1.2 秒<gray>免伤"
+        - "<!i>  <dark_gray>▪ 沿视线冲刺到落点，造成 <white>基础伤害×1.8 <gray>的半径 <white>2.5 <gray>格AOE"
+        - "<!i>  <dark_gray>▪ <red>命中目标流血 4 秒<gray>，每秒损失当前生命值 <red>3%"
+        - "<!i>  <dark_gray>▪ <dark_gray>与「铁壁架势」共用 Shift+F 栏位：防御选铁壁，进攻选血雾，二选一"
+        - ""
+        - "<!i><gray>适用装备  <white>轻近战 · 重近战"

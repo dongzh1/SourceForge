@@ -89,8 +89,7 @@ class EquipmentSelectMenu(
         val lore = (meta.lore() ?: mutableListOf()).toMutableList()
         val capColor = if (used > max) "&c" else "&e"
         lore += Text.comp("")
-        lore += Text.comp("&8——————")
-        lore += Text.comp("&7容量: $capColor$used&7/&f$max")
+        lore += Text.comp("&7占用: $capColor$used&7/&f$max")
         lore += Text.comp("&7已安装: &f$installed 个 MOD")
         lore += Text.comp("&a点击打开改造界面")
         meta.lore(lore)

@@ -2,7 +2,8 @@
 // 右键持有装了 parry MOD 的武器 → 展开架势窗口；窗口内被实体/弹射物命中 → 免疫该次伤害（单次格挡）。
 //
 // 钩子：
-//   onToggle(playerId)              右键
+//   onActivate(playerId)            右键技能触发栏
+//   onToggle(playerId)              仅保留给旧普通槽物品兼容
 //   onDamaged(playerId, dmg, cause) 受击；返回 true = 取消本次伤害（免疫）
 // 参数读 config.yml 的 parry 段；状态 per-player 存本脚本上下文（主线程单线程访问，安全）。
 
@@ -32,6 +33,10 @@ function onToggle(playerId) {
     sf.playSound(playerId, "ENTITY_PLAYER_ATTACK_CRIT", 1.2, 1.6);
     if (slowTicks() > 0) sf.potion(playerId, "SLOWNESS", slowTicks(), slowAmp());
     sf.actionBar(playerId, "&b震刀·架势展开 &7(" + (windowMs() / 1000).toFixed(1) + "s)");
+}
+
+function onActivate(playerId) {
+    onToggle(playerId);
 }
 
 // 返回 true = 免疫（宿主取消该次 EntityDamageByEntityEvent）

@@ -1,7 +1,7 @@
 id: skill_leap
 display-name: "&d技能：跃迁"
-item: "minecraft:feather"
-cost: 0
+item: "sourceforge:mod_skill_leap"
+cost: 4
 max-per-equipment: 1
 # 技能MOD：装进技能槽后给装备盖上 MM 物品身份 sf_skill_leap（见 MythicMobs/Packs/源质技能）
 skill: true

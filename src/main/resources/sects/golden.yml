@@ -1,0 +1,118 @@
+id: golden
+display-name: "黄金教"
+description:
+  - "&7崇拜财富与交易。"
+  - "&7每次出行前可以领取黄金信号枪与黄金酒。"
+outgoing-damage-multiplier: 1.0
+
+npc:
+  id: golden_priest
+
+rewards:
+  signal_gun:
+    material: CROSSBOW
+    name: "&6黄金信号枪"
+    lore:
+      - "&7右键发射黄金信号"
+      - "&7召来黄金教商人"
+      - "&8一次性道具"
+    behavior: signal_gun
+  merchant_blade_blueprint:
+    item: "sourceforge:blueprint_golden_merchant_blade"
+    material: PAPER
+    name: "&6金路护商刃蓝图"
+    lore:
+      - "&7黄金教专属副武器蓝图"
+      - "&7副手装备后提升移动速度、护盾与生命"
+    behavior: none
+    journey-reward: false
+    purchase-price: 18000
+  golden_wine:
+    material: HONEY_BOTTLE
+    name: "&6黄金酒"
+    lore:
+      - "&7饮用后所有输出提高至 &e1.1 倍"
+      - "&7持续 60 秒"
+    behavior: golden_wine
+    duration-seconds: 60
+
+dialogue:
+  npc: golden_priest
+  stare: true
+  pages:
+    - id: entry
+      speaker: "&6黄金教使者"
+      text: "迷途者，你是否愿意将财富与命运交给黄金？黄金不是终点，而是让你在旅途中拥有选择的筹码。"
+      sound: ENTITY_VILLAGER_AMBIENT
+      options:
+        - text: "&e请告诉我黄金教的教义"
+          goto: doctrine
+        - text: "&6我愿意加入黄金教"
+          goto: join_confirm
+          condition: "!Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'golden')"
+        - text: "&a我已经入教，准备出行"
+          goto: member_menu
+          condition: "Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'golden')"
+        - text: "&7暂时离开"
+          goto: end
+
+    - id: doctrine
+      speaker: "&6黄金教使者"
+      text: "我们相信，财富应当流动，机会应当被抓住。加入黄金教后，你每次出行前都能领取一把黄金信号枪和一瓶黄金酒：信号枪能在原地召来黄金教商人，黄金酒则让你的所有输出提高至一点一倍。"
+      options:
+        - text: "&6我愿意加入"
+          goto: join_confirm
+          condition: "!Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'golden')"
+        - text: "&7返回"
+          goto: entry
+
+    - id: join_confirm
+      speaker: "&6黄金教使者"
+      text: "入教意味着你承认财富的力量，也接受它带来的诱惑。你确定要踏上黄金之路吗？"
+      options:
+        - text: "&a确认入教"
+          goto: joined
+          actions:
+            - "pcmd: sf sect join golden"
+        - text: "&7我再想想"
+          goto: entry
+
+    - id: joined
+      speaker: "&6黄金教使者"
+      text: "很好。黄金会记住你的名字。准备出行时回来，我会把黄金信号枪和黄金酒交给你。"
+      options:
+        - text: "&e现在准备出行"
+          goto: prepared
+          actions:
+            - "pcmd: sf sect prepare"
+        - text: "&e购买金路护商刃蓝图（18000金币）"
+          goto: end
+          actions:
+            - "pcmd: sf sect buy merchant_blade_blueprint"
+        - text: "&7下次再来"
+          goto: end
+
+    - id: member_menu
+      speaker: "&6黄金教使者"
+      text: "你已经站在黄金的道路上。要领取本次出行的物资吗？"
+      options:
+        - text: "&e领取出行物资"
+          goto: prepared
+          actions:
+            - "pcmd: sf sect prepare"
+        - text: "&7暂时不需要"
+          goto: end
+        - text: "&e购买金路护商刃蓝图（18000金币）"
+          goto: end
+          actions:
+            - "pcmd: sf sect buy merchant_blade_blueprint"
+
+    - id: prepared
+      speaker: "&6黄金教使者"
+      text: "物资已经交到你手里。饮下黄金酒，鸣响信号枪，再带着商人的祝福出发吧——愿每一次冒险都满载而归。"
+      options:
+        - text: "&a我准备好了"
+          goto: end
+
+  end:
+    - "sound: ENTITY_VILLAGER_YES 1 1"

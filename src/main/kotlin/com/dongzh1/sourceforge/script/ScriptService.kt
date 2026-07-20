@@ -12,7 +12,9 @@ import java.io.File
  * 改为向 SourceJS 申请隔离沙箱（safe 策略：仅 @JsExport 标注的 sf 原语对脚本可见）。
  *
  * 每个技能 = 数据目录 skills/<id>.js，可定义钩子函数：
- *   onToggle(playerId)            右键开关
+ *   onToggle(playerId)            旧普通槽技能的右键开关
+ *   onActivate(playerId)          技能触发栏激活
+ *   onDeactivate(playerId)        武器切换/卸下导致的持续技能清理
  *   onTick(playerId)             每秒（仅对开启的玩家）
  *   onKillNearby(playerId, dist) 附近有生物死亡，返回掉落倍率（1=不变）
  *   onDamaged(playerId, damage, cause) 返回 true 免疫该次伤害
@@ -87,6 +89,11 @@ class ScriptService(private val plugin: SourceForge) {
      */
     fun fireActivate(skillId: String, playerId: String) {
         skills[skillId]?.sandbox?.callVoid("onActivate", playerId)
+    }
+
+    /** 持续型武器技能因切换主手或卸下而关闭时调用，供脚本清理临时状态。 */
+    fun fireDeactivate(skillId: String, playerId: String) {
+        skills[skillId]?.sandbox?.callVoid("onDeactivate", playerId)
     }
 
     fun close() {

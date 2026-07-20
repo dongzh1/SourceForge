@@ -20,6 +20,19 @@ object CraftEngineHook {
         return runCatching { CraftEngineItems.getCustomItemId(item)?.asString() }.getOrNull()
     }
 
+    /**
+     * 物品是否匹配给定的物料 id：CE 自定义物品按 CE id 精确匹配；`itemId()` 返回 null(非 CE 自定义物品，
+     * 比如原版 "minecraft:netherite_ingot")时按 [org.bukkit.Material] 类型匹配。
+     * 背包计数/扣除材料等需要同时兼容 CE 自定义物品与原版材质的场景统一走这个口子，
+     * 避免像之前那样漏掉"原版材质按 itemId 永远匹配不上导致一直判定材料不足"的坑。
+     */
+    fun matches(item: ItemStack, ceId: String): Boolean {
+        val custom = itemId(item)
+        if (custom != null) return custom == ceId
+        val material = org.bukkit.Material.matchMaterial(ceId) ?: return false
+        return item.type == material
+    }
+
     fun build(id: String, amount: Int = 1): ItemStack? {
         if (!enabled) return null
         val key = parseKey(id) ?: return null

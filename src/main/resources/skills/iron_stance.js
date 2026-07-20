@@ -29,6 +29,10 @@ function onActivate(playerId) {
     sf.actionBar(playerId, "&e⛨ 铁壁架势 &7» 减伤·可格挡");
 }
 
+function onDeactivate(playerId) {
+    close(playerId, "&7主手已切换，架势解除");
+}
+
 // 每秒维持：耗蓝，不足则自动解除；刷新减伤/减速 + 环绕粒子
 function onTick(playerId) {
     if (!sf.isActive("iron_stance", playerId)) return;

@@ -1,10 +1,10 @@
-# 基础MOD · 技能范围（法术护甲）— Warframe 延伸
+# 基础MOD · 技能范围（护甲通用，2026-07-17 起物理/法术护甲合并）— Warframe 延伸
 id: stretch
 display-name: "&b延伸"
-item: "minecraft:ender_pearl"
-cost: 9
+item: "sourceforge:mod_stretch"
+cost: 8
 max-per-equipment: 1
-applicable-categories: [armor_magic]
+applicable-categories: [armor_physical, armor_magic]
 effects: { ability_range: 0.12 }
 max-rank: 5
 upgrade-cost: 1

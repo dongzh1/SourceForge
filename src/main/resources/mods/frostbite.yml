@@ -1,8 +1,8 @@
 # 元素MOD · 冰（武器）— 同时附带触发几率，单卡即可减速叠层
 id: frostbite
 display-name: "&b寒霜"
-item: "minecraft:blue_ice"
-cost: 11
+item: "sourceforge:mod_frostbite"
+cost: 10
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm, bow, crossbow, firearm]
 effects: { cold_damage: 2.0, status_chance: 0.25 }

@@ -48,6 +48,11 @@ object Text {
         meta.displayName(comp(raw))
     }
 
+    /** 给物品 meta 直接设置一个已构建好的 Component 名称(如原版翻译键组件，不走字符串解析)。 */
+    fun name(meta: ItemMeta, component: Component) {
+        meta.displayName(component.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE))
+    }
+
     /** 给物品 meta 设置 lore(每行各自支持 MiniMessage)。 */
     fun lore(meta: ItemMeta, lines: List<String>) {
         meta.lore(comps(lines))

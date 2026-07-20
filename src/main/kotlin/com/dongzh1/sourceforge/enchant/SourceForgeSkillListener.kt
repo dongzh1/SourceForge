@@ -83,12 +83,12 @@ class SourceForgeSkillListener(private val plugin: SourceForge) : Listener {
                 if (betterHud.enabled && isCdDisplayEnabled(player)) {
                     BetterHudHook.showSkillCd(plugin, player, betterHud.skillCdPopup, rawName, afterCd, cdTicks)
                 }
-                if (plugin.forgeConfig.debugCombat) {
-                    plugin.logger.info(
-                        "[SF-DBG] 技能CD ${player.name} $skillName: " +
-                            "应用=${"%.2f".format(applied)}s -> 最终=${"%.2f".format(afterCd)}s " +
-                            "(效率=${"%.0f".format(efficiency * 100)}%)"
-                    )
+                if (plugin.forgeConfig.debugCombat || plugin.combatDebug.isWatched(player)) {
+                    val message = "技能CD ${player.name} $skillName: " +
+                        "应用=${"%.2f".format(applied)}s -> 最终=${"%.2f".format(afterCd)}s " +
+                        "(效率=${"%.0f".format(efficiency * 100)}%)"
+                    plugin.logger.info("[SF-DBG] $message")
+                    plugin.combatDebug.send(player, "§8[SourceForge Debug] §7$message", plugin.forgeConfig.debugCombat)
                 }
             })
         } catch (e: Exception) {

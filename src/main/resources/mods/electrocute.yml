@@ -1,0 +1,18 @@
+# 护甲专属被动技能MOD · 电刑（英雄联盟 主宰系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制：4秒内命中3次攻击(onAttack)引爆额外伤害，随后进入独立冷却。原版LoL是"3次不同攻击/技能命中
+# 同一目标"，SF脚本层拿不到"命中的是哪个实体/是否命中"，只能拿到"打出了一次攻击"这个信号（与本项目
+# triple_slash.js 的连段计数同一简化口径），故这里按"4秒内挥了3次"计数，不判定是否真的命中同一目标。
+# 引爆用 sf.slash 小范围扇形结算，近似"你当前正在打的目标"。
+id: electrocute
+display-name: "&c电刑"
+item: "sourceforge:mod_electrocute"
+cost: 9
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f4秒内命中 &c3次攻击 &7后，引爆额外伤害"
+  - "&8引爆伤害 %cfg:keystone.electrocute.damage|8%（真实数值走 SF 基础伤害加成）"
+  - "&8引爆后进入 %cfg:keystone.electrocute.cooldown-sec|20% &8秒冷却，冷却中不再计数"

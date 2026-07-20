@@ -1,0 +1,111 @@
+id: skyfire
+display-name: "天火教"
+description:
+  - "&7以战斗淬炼意志，以胜负证明信仰。"
+  - "&7入教即获得常驻战力，每次出行前还能领取天火战酿。"
+outgoing-damage-multiplier: 1.1
+
+npc:
+  id: skyfire_priest
+
+rewards:
+  ember_blade_blueprint:
+    item: "sourceforge:blueprint_skyfire_ember_blade"
+    material: PAPER
+    name: "&c烬星副刃蓝图"
+    lore:
+      - "&7天火教专属战斗副武器蓝图"
+      - "&7副手装备后附加火元素、暴击与触发"
+    behavior: none
+    journey-reward: false
+    purchase-price: 35000
+  skyfire_brew:
+    material: HONEY_BOTTLE
+    name: "&c天火战酿"
+    lore:
+      - "&7饮用后额外提高所有输出 &e1.1 倍"
+      - "&7持续 60 秒，力量图标显示剩余时间"
+      - "&8与天火教常驻战力叠加，战斗峰值 &e1.21 倍"
+    behavior: golden_wine
+    duration-seconds: 60
+
+dialogue:
+  npc: skyfire_priest
+  stare: true
+  pages:
+    - id: entry
+      speaker: "&c天火使者"
+      text: "&6停步，战士。&f天火从不眷顾旁观者，只有在交锋中站到最后的人，才配谈论胜利。你愿意让天火检验你的战意吗？"
+      sound: ENTITY_BLAZE_AMBIENT
+      options:
+        - text: "&e告诉我天火教的战道"
+          goto: doctrine
+        - text: "&c我愿意加入天火教，走上战场"
+          goto: join_confirm
+          condition: "!Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'skyfire')"
+        - text: "&a我已是天火教徒，准备战斗"
+          goto: member_menu
+          condition: "Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'skyfire')"
+        - text: "&7暂时离开"
+          goto: end
+
+    - id: doctrine
+      speaker: "&c天火使者"
+      text: "&f天火教只承认一种祈祷：挥刃，见血，活下来。加入天火教，你会立刻获得 &e1.1 倍&f 的常驻战斗输出；每次出行前还能领取一瓶天火战酿。饮下它，SourceForge 处理的输出再乘 &e1.1 倍&f，持续 &e60 秒&f，并以力量图标显示时间。两重天火叠加时，战斗峰值达到 &e1.21 倍&f。"
+      options:
+        - text: "&c我愿意接受天火的战斗试炼"
+          goto: join_confirm
+          condition: "!Java.type('com.dongzh1.sourceforge.api.SourceForgeSectAPI').isMember(player, 'skyfire')"
+        - text: "&7返回"
+          goto: entry
+
+    - id: join_confirm
+      speaker: "&c天火使者"
+      text: "&f入教不承诺你平安归来，只承诺在开战前给你一次点燃战意的机会。你愿意用自己的胜负证明信仰吗？"
+      options:
+        - text: "&a确认加入天火教"
+          goto: joined
+          actions:
+            - "pcmd: sf sect join skyfire"
+        - text: "&7我再想想"
+          goto: entry
+
+    - id: joined
+      speaker: "&c天火使者"
+      text: "&f火焰已经记住你的名字。你的常驻战力已经点燃，准备出行时回来，我会把天火战酿交给你；烬星副刃蓝图需要用金币向教派购买。记住：额外的爆发只燃烧六十秒，别在真正的战斗前浪费它。"
+      options:
+        - text: "&e现在领取战斗物资"
+          goto: prepared
+          actions:
+            - "pcmd: sf sect prepare"
+        - text: "&e购买烬星副刃蓝图（35000金币）"
+          goto: end
+          actions:
+            - "pcmd: sf sect buy ember_blade_blueprint"
+        - text: "&7下次出行前再来"
+          goto: end
+
+    - id: member_menu
+      speaker: "&c天火使者"
+      text: "&f你的火焰还未熄灭。现在领取本次战斗的天火战酿，或购买烬星副刃蓝图吗？"
+      options:
+        - text: "&e领取天火战酿"
+          goto: prepared
+          actions:
+            - "pcmd: sf sect prepare"
+        - text: "&7暂时不需要"
+          goto: end
+        - text: "&e购买烬星副刃蓝图（35000金币）"
+          goto: end
+          actions:
+            - "pcmd: sf sect buy ember_blade_blueprint"
+
+    - id: prepared
+      speaker: "&c天火使者"
+      text: "&f天火战酿已交到你手中。锻造烬星副刃强化火焰，饮下战酿叠加常驻战力，踏入战场，在六十秒的火焰窗口里结束战斗——让敌人明白什么叫从天而降的决意。"
+      options:
+        - text: "&a我准备好了"
+          goto: end
+
+  end:
+    - "sound: ENTITY_BLAZE_AMBIENT 1 1"

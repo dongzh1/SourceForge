@@ -1,0 +1,19 @@
+# 技能MOD · 超载重弹（overcharge_shot）— 远程武器专属，装进武器「Shift+右键」技能触发栏。
+# Shift+右键 发射一枚慢速超载弹体，命中造成纯物理伤害(×2.4 base_damage，元素随武器元素MOD附加) + 强力击退。
+# 脚本: skills/overcharge_shot.js（钩子 onActivate）；数值在 config.yml 的 overcharge-shot 段（本文件不写死值，脚本内置默认兜底）。
+id: overcharge_shot
+display-name: "&6超载重弹"
+item: "sourceforge:mod_overcharge_shot"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [bow, crossbow, firearm]
+tags: [skill, burst]
+skill: true
+allowed-triggers: [shift_right]
+mana: "%cfg:overcharge-shot.mana|24% 能量"
+cooldown: "%cfgs:overcharge-shot.cooldown-ms|9000%秒"
+description:
+  - "&6Shift+右键 &7发射一枚慢速超载弹体"
+  - "命中造成 &f基础伤害 ×%cfg:overcharge-shot.dmg-mult|2.4% &7纯物理伤害"
+  - "&c强力击退 &7命中目标"
+  - "&8元素由武器上的元素MOD 命中时附加"

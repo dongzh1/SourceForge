@@ -1,7 +1,7 @@
 id: vitality
 display-name: "&a活力"
-item: "minecraft:ghast_tear"
-cost: 9
+item: "sourceforge:mod_vitality"
+cost: 8
 max-per-equipment: 1
 applicable-categories: [armor_physical, armor_magic]
 effects: { health: 20.0 }

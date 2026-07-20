@@ -1,0 +1,19 @@
+sourceforge_task_tracker:
+  push: true
+  key-mapping: false
+  max-stack: 1
+  move:
+    duration: 1
+    pixel:
+      x-equation: 0
+      y-equation: 0
+  layouts:
+    1:
+      name: sourceforge_task_tracker_layout
+      gui:
+        x: 100
+        y: 0
+      pixel:
+        x: -18
+        y: 80
+  duration: 999999999

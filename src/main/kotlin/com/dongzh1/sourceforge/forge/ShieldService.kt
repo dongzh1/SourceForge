@@ -33,9 +33,7 @@ class ShieldService(private val plugin: SourceForge) {
         val remaining = event.damage - absorbed
         setCurrentShield(player, currentShield - absorbed, maxShield)
         event.damage = remaining
-        if (plugin.forgeConfig.debugCombat) {
-            player.sendMessage("§8[SourceForge Debug] §7护盾: ${"%.1f".format(absorbed)} 吸收, 剩余=${"%.1f".format(currentShield - absorbed)}/${"%.1f".format(maxShield)}, 穿透=${"%.1f".format(remaining)}")
-        }
+        plugin.combatDebug.send(player, "§8[SourceForge Debug] §7护盾: ${"%.1f".format(absorbed)} 吸收, 剩余=${"%.1f".format(currentShield - absorbed)}/${"%.1f".format(maxShield)}, 穿透=${"%.1f".format(remaining)}", plugin.forgeConfig.debugCombat)
     }
 
     fun getCurrentShieldPublic(player: Player): Double {
@@ -66,8 +64,8 @@ class ShieldService(private val plugin: SourceForge) {
         val regen = maxShield / 20.0 // 每次 1/20，20 次回满
         val newValue = minOf(maxShield, current + regen)
         setCurrentShield(player, newValue, maxShield)
-        if (plugin.forgeConfig.debugCombat && (newValue.toInt() % 10 == 0 || newValue >= maxShield || current < regen)) {
-            player.sendMessage("§8[SourceForge Debug] §7护盾回复: +${"%.1f".format(regen)}, ${"%.1f".format(newValue)}/${"%.1f".format(maxShield)}")
+        if ((plugin.forgeConfig.debugCombat || plugin.combatDebug.isWatched(player)) && (newValue.toInt() % 10 == 0 || newValue >= maxShield || current < regen)) {
+            plugin.combatDebug.send(player, "§8[SourceForge Debug] §7护盾回复: +${"%.1f".format(regen)}, ${"%.1f".format(newValue)}/${"%.1f".format(maxShield)}", plugin.forgeConfig.debugCombat)
         }
     }
 }

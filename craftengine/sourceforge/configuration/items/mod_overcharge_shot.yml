@@ -1,0 +1,27 @@
+# MOD卡·超载重弹（overcharge_shot）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_overcharge_shot:
+    material: spectral_arrow
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_overcharge_shot_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_overcharge_shot
+    data:
+      item_name: "<!i><gold>超载重弹"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>10"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>Shift+右键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>24 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>9秒"
+        - "<!i>  <dark_gray>▪ <gold>Shift+右键 <gray>发射一枚慢速超载弹体"
+        - "<!i>  <dark_gray>▪ 命中造成 <white>基础伤害 ×2.4 <gray>纯物理伤害"
+        - "<!i>  <dark_gray>▪ <red>强力击退 <gray>命中目标"
+        - "<!i>  <dark_gray>▪ <dark_gray>元素由武器上的元素MOD 命中时附加"
+        - ""
+        - "<!i><gray>适用装备  <white>远程武器"

@@ -1,0 +1,13 @@
+# SourceForge 技能 CD 冷却条（25 段）。
+# 填充比例 = remaining_ticks / cooldown_ticks（由 SF 每 2tick 推送的条目变量）。
+# 随冷却递减从满到空。split-type: left = 横向从左到右填充；若贴图是竖向改 up。
+cd_bar_image:
+  type: listener
+  split: 25
+  split-type: left
+  file: fantasy_assets/cd_bar.png
+  setting:
+    listener:
+      class: placeholder
+      value: "(number)custom_variable:remaining_ticks"
+      max: "(number)custom_variable:cooldown_ticks"

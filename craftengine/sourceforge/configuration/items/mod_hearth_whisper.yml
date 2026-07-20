@@ -1,0 +1,27 @@
+# MOD卡·篝火低语（hearth_whisper）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_hearth_whisper:
+    material: campfire
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_hearth_whisper_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_hearth_whisper
+    data:
+      item_name: "<!i><gold>篝火低语"
+      lore:
+        - "<!i><dark_gray>◆ <gray>护甲被动 MOD  <dark_gray>│  <gray>占用 <yellow>8"
+        - "<!i><dark_gray>◆ <gray>生效方式  <white>装备后生效 <dark_gray>· <gray>被动技能槽"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <white>装备即生效 <dark_gray>(护甲被动技能槽，无需按键)"
+        - "<!i>  <dark_gray>▪ 静止或缓慢移动时，<white>以自身为心 6 格 <gray>光环持续回复"
+        - "<!i>  <dark_gray>▪ 光环内玩家(含自己) <green>每秒回复最大生命值 1.1%"
+        - "<!i>  <dark_gray>▪ <gray>移动过快时暂停回复；<dark_gray>不消耗能量，不会像主动技能那样被打断"
+        - "<!i>  <dark_gray>▪ <dark_gray>卸下装备自动失效，重新装备自动重新生效"
+        - "<!i>  <dark_gray>▪ <dark_gray>设计区间 0.4%~1.8%/秒(5级)，当前固定中值"
+        - ""
+        - "<!i><gray>适用装备  <white>护甲通用"

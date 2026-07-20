@@ -22,8 +22,13 @@ data class ModConfig(
     val upgradeCostBase: Int = 1,
     /** 抽奖权重（Feature C）。 */
     val weight: Double = 1.0,
-    /** 是否为技能MOD：只能装进技能槽，安装后给装备盖上 MM 物品身份以触发 item-skills。 */
+    /** 是否为（武器专属）主动技能MOD：只能装进武器的技能触发栏，按键触发。护甲不允许装这类MOD。 */
     val skill: Boolean = false,
+    /** 是否为护甲专属被动技能MOD：只能装进护甲的被动技能槽（1格），装备即生效，无需按键。
+     *  与 [skill] 互斥的另一条腿——同一张卡不应该两个都 true。 */
+    val passiveSkill: Boolean = false,
+    /** 限定安装部位（head/chest/legs/feet），仅护甲件生效；空 = 该MOD适用类别下的任意部位。 */
+    val applicableSlots: Set<String> = emptySet(),
     /** 技能MOD 对应的 MythicMobs 物品内部名（mythicmobs:type）。安装到技能槽时盖到装备 PDC 上。 */
     val mmItem: String? = null,
     /**
@@ -44,7 +49,10 @@ data class ModConfig(
     fun allowsTrigger(slot: TriggerSlot): Boolean =
         allowedTriggers.isEmpty() || slot.id in allowedTriggers
 
-    fun appliesTo(weaponCategory: String?, equipmentId: String?): Boolean {
+    /** [armorSlot] = head/chest/legs/feet（plugin.itemService.armorSlotKey），仅护甲件非空；
+     *  武器/无法识别传 null。applicableSlots 非空时先卡这一关，再走原有 equipment/category 判定。 */
+    fun appliesTo(weaponCategory: String?, equipmentId: String?, armorSlot: String? = null): Boolean {
+        if (applicableSlots.isNotEmpty() && (armorSlot == null || armorSlot.lowercase() !in applicableSlots)) return false
         if (applicableEquipment.isNotEmpty()) {
             return equipmentId != null && equipmentId.lowercase() in applicableEquipment
         }

@@ -1,0 +1,4 @@
+# 导航文字字体元素。换成你自己的 .ttf 即可。
+sourceforge_navigator_font:
+  file: pixel_font.ttf
+  scale: 24

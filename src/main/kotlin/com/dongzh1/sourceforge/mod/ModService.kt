@@ -19,7 +19,7 @@ class ModService(
     val mods: Map<String, ModConfig>
 ) {
     private val modCapacityKey = ModKeys.modCapacity(plugin)
-    private val modInstalledKey = NamespacedKey(plugin, "mod_installed")
+    private val modInstalledKey = ModKeys.modInstalled(plugin)
     private val modIdKey = NamespacedKey(plugin, "mod_id")
 
     /** MOD 物品上的段位（Feature B）。安装后段位也编码进 mod_installed 的 token (`id#rank`)。 */
@@ -29,10 +29,26 @@ class ModService(
     private val nmToken = "~nm"
 
     /** 每个槽位的梦魇MOD 实例数据 (nm_data 字符串)，仅当该槽 token == ~nm 时有效。 */
-    private val nmSlotKeys: List<NamespacedKey> = (0 until 8).map { NamespacedKey(plugin, "nm_slot_$it") }
+    private val nmSlotKeys: List<NamespacedKey> = ModKeys.nmSlots(plugin)
 
-    /** 技能槽（独立于 8 个普通MOD槽）的安装记录：逗号分隔的技能MOD id。 */
-    private val modSkillInstalledKey = NamespacedKey(plugin, "mod_skill_installed")
+    /** 裂罅MOD 占用某槽位时，mod_installed 中的占位 token。 */
+    private val rivenToken = "~rv"
+
+    /** 每个槽位的裂罅MOD 实例数据，仅当该槽 token == ~rv 时有效。 */
+    private val rivenSlotKeys: List<NamespacedKey> = ModKeys.rivenSlots(plugin)
+
+    /** 技能槽（独立于 8 个普通MOD槽，武器专属）的安装记录：逗号分隔的技能MOD id。 */
+    private val modSkillInstalledKey = ModKeys.modSkillInstalled(plugin)
+
+    /** 护甲专属被动技能槽（1格）的安装记录：单个被动技能MOD id（无则 null/空串）。 */
+    private val modPassiveInstalledKey = ModKeys.modPassiveInstalled(plugin)
+
+    /** 外观隐藏开关：key 存在即隐藏中，value 是隐藏前原始 equippable.model 的字符串备份。 */
+    private val modHiddenAppearanceKey = ModKeys.modHiddenAppearance(plugin)
+
+    /** 隐藏外观时切换到的透明穿戴资源 id，所有护甲共用同一份（近乎全透明，见 equipments: sourceforge:transparent）。
+     *  只改 equippable.model（穿在身上时人物模型的贴图），不动 item_model（手持/图标贴图保持不变）。 */
+    private val transparentEquipModel = NamespacedKey("sourceforge", "transparent")
 
     /** 技能槽位最大数量上限（= 触发栏总数 6；GUI 与存储都按此上限）。实际可用数由 skillSlotCount 决定。 */
     private val maxSkillSlots = TriggerSlot.COUNT
@@ -40,9 +56,12 @@ class ModService(
     /** MM 物品身份桥：安装技能MOD 时给装备盖 mythicmobs:type/version。 */
     private val mythicHook = MythicItemHook(plugin)
 
-    /** 该装备可用的技能触发栏数量（config: mods.skill-slots，默认 = 触发栏总数 6）。 */
-    fun skillSlotCount(@Suppress("UNUSED_PARAMETER") item: ItemStack? = null): Int =
-        plugin.config.getInt("mods.skill-slots", TriggerSlot.COUNT).coerceIn(0, maxSkillSlots)
+    /** 该装备可用的技能触发栏数量（config: mods.skill-slots，默认 = 触发栏总数 6）。
+     *  护甲恒为 0——主动技能触发栏武器专属，护甲改用被动技能槽（见 tryInstallPassiveSkill）。 */
+    fun skillSlotCount(item: ItemStack? = null): Int {
+        if (item != null && isArmorCategory(item)) return 0
+        return plugin.config.getInt("mods.skill-slots", TriggerSlot.COUNT).coerceIn(0, maxSkillSlots)
+    }
 
     /** 读取技能槽（长度 = maxSkillSlots，未占用为 null）。 */
     fun readSkillSlots(item: ItemStack?): List<String?> {
@@ -68,9 +87,93 @@ class ModService(
     fun skillModAtTrigger(item: ItemStack?, trigger: TriggerSlot): String? =
         readSkillSlots(item).getOrNull(trigger.index)?.trim()?.takeIf { it.isNotEmpty() }
 
+    /**
+     * 将旧版普通 MOD 槽中的固定触发技能迁入对应技能槽。
+     * 仅迁移无段位、只允许一个触发方式、且目标技能槽为空的卡，避免覆盖玩家已有技能或丢失段位数据。
+     */
+    fun migrateLegacySkillSlots(item: ItemStack): Boolean {
+        if (!plugin.itemService.isSourceEquipment(item) || isArmorCategory(item)) return false
+        val normalSlots = readInstalledSlots(item).toMutableList()
+        val skillSlots = readSkillSlots(item).toMutableList()
+        val availableSkillSlots = skillSlotCount(item)
+        var changed = false
+
+        for (index in normalSlots.indices) {
+            val token = normalSlots[index] ?: continue
+            val (id, rank) = parseSlotToken(token) ?: continue
+            val mod = mods[id] ?: continue
+            if (!mod.skill || rank != 0 || mod.maxRank != 0 || mod.allowedTriggers.size != 1) continue
+            val trigger = TriggerSlot.byId(mod.allowedTriggers.single()) ?: continue
+            if (trigger.index >= availableSkillSlots || skillSlots[trigger.index] != null) continue
+
+            normalSlots[index] = null
+            skillSlots[trigger.index] = id
+            changed = true
+        }
+
+        if (!changed) return false
+        val meta = item.itemMeta
+        writeInstalledSlots(meta, normalSlots)
+        writeSkillSlots(meta, skillSlots)
+        item.itemMeta = meta
+        return true
+    }
+
     /** 当前装备应盖的 MM 物品身份：取第一个占用的技能槽对应 MOD 的 mm-item（每件装备只能有一个身份）。 */
     private fun activeMmIdentity(item: ItemStack?): String? =
         readSkillSlots(item).filterNotNull().firstNotNullOfOrNull { mods[it]?.mmItem }
+
+    /** 该装备是否属于护甲类别（armor_physical/armor_magic）——决定 UI 渲染触发栏还是被动技能槽，
+     *  以及能否安装武器专属主动技能MOD（护甲一律不行）。 */
+    fun isArmorCategory(item: ItemStack?): Boolean {
+        val category = plugin.itemService.weaponCategory(item) ?: return false
+        return category.equals("armor_physical", true) || category.equals("armor_magic", true)
+    }
+
+    /** 读取护甲被动技能槽上安装的 MOD id（无则 null）。 */
+    fun readPassiveSkill(item: ItemStack?): String? {
+        if (item == null || !item.hasItemMeta()) return null
+        return item.itemMeta.persistentDataContainer.get(modPassiveInstalledKey, PersistentDataType.STRING)
+            ?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun writePassiveSkill(meta: ItemMeta, id: String?) {
+        if (id.isNullOrBlank()) meta.persistentDataContainer.remove(modPassiveInstalledKey)
+        else meta.persistentDataContainer.set(modPassiveInstalledKey, PersistentDataType.STRING, id)
+    }
+
+    /** 该物品护甲被动技能槽上的 MOD id 集合（0或1个）；供技能脚本判断装备是否带某个被动技能。 */
+    fun installedPassiveSkillIds(item: ItemStack?): Set<String> = setOfNotNull(readPassiveSkill(item))
+
+    /** 安装被动技能MOD 到护甲的被动技能槽（1格，无按键触发概念，装备即生效）。 */
+    fun tryInstallPassiveSkill(item: ItemStack, modItem: ItemStack): InstallResult {
+        if (!plugin.itemService.isSourceEquipment(item)) return InstallResult.NOT_EQUIPMENT
+        if (!isArmorCategory(item)) return InstallResult.WRONG_CATEGORY
+        val mod = modConfig(modItem) ?: return InstallResult.INVALID_MOD
+        if (!mod.passiveSkill) return InstallResult.SKILL_SLOT_REQUIRED
+        val category = plugin.itemService.weaponCategory(item)
+        val equipId = plugin.itemService.weaponType(item)
+        val armorSlot = plugin.itemService.armorSlotKey(item)
+        if (!mod.appliesTo(category, equipId, armorSlot)) return InstallResult.WRONG_CATEGORY
+        if (readPassiveSkill(item) != null) return InstallResult.SLOT_OCCUPIED
+        if (usedCapacity(item) + mod.cost > readCapacity(item)) return InstallResult.CAPACITY_EXCEEDED
+        val meta = item.itemMeta
+        writePassiveSkill(meta, mod.id)
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        modItem.amount -= 1
+        return InstallResult.SUCCESS
+    }
+
+    /** 取出护甲被动技能槽的 MOD，返回还原的 MOD 物品。 */
+    fun tryRemovePassiveSkill(item: ItemStack): ItemStack? {
+        val id = readPassiveSkill(item) ?: return null
+        val meta = item.itemMeta
+        writePassiveSkill(meta, null)
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        return createModItem(id, 1, 0) ?: fallbackModItem(id)
+    }
 
     /** affixId -> AffixConfig 直接查表，热路径复用。 */
     private val affixById: Map<String, AffixConfig> = forgeConfig.affixes
@@ -100,6 +203,10 @@ class ModService(
         INVALID_MOD,
         NOT_EQUIPMENT,
         SEALED_NIGHTMARE,
+        SEALED_RIVEN,
+        PENDING_RIVEN_SELECTION,
+        RIVEN_WEAPON_MISMATCH,
+        RIVEN_ALREADY_INSTALLED,
         /** 把普通MOD 放进了技能槽。 */
         SKILL_SLOT_REQUIRED,
         /** 把技能MOD 放进了普通MOD槽。 */
@@ -133,10 +240,19 @@ class ModService(
     /** 槽位 token 是否为梦魇MOD 占位。 */
     fun isNightmareSlot(token: String?): Boolean = token == nmToken
 
+    /** 槽位 token 是否为裂罅MOD 占位。 */
+    fun isRivenSlot(token: String?): Boolean = token == rivenToken
+
     /** 读取某个 ~nm 槽位的梦魇MOD 实例数据字符串（无则 null）。 */
     fun nightmareSlotData(item: ItemStack?, slotIndex: Int): String? {
         if (item == null || !item.hasItemMeta() || slotIndex !in 0 until 8) return null
         return item.itemMeta.persistentDataContainer.get(nmSlotKeys[slotIndex], PersistentDataType.STRING)
+    }
+
+    /** 读取某个 ~rv 槽位的裂罅MOD 实例数据字符串（无则 null）。 */
+    fun rivenSlotData(item: ItemStack?, slotIndex: Int): String? {
+        if (item == null || !item.hasItemMeta() || slotIndex !in 0 until 8) return null
+        return item.itemMeta.persistentDataContainer.get(rivenSlotKeys[slotIndex], PersistentDataType.STRING)
     }
 
     fun isModItem(item: ItemStack?): Boolean {
@@ -165,7 +281,7 @@ class ModService(
      * 梦魇 token `~nm` 不走这里。无效返回 null。
      */
     fun parseSlotToken(token: String?): Pair<String, Int>? {
-        if (token.isNullOrBlank() || token == nmToken) return null
+        if (token.isNullOrBlank() || token == nmToken || token == rivenToken) return null
         val hash = token.indexOf('#')
         return if (hash < 0) {
             token to 0
@@ -240,6 +356,16 @@ class ModService(
         return result
     }
 
+    /** 该物品上 [modId] 这张普通MOD所处的段位；未安装该MOD返回 null（区别于"已安装但rank=0"）。 */
+    fun installedModRank(item: ItemStack?, modId: String): Int? {
+        for (token in readInstalledSlots(item)) {
+            if (token == null || token == nmToken) continue
+            val (id, rank) = parseSlotToken(token) ?: continue
+            if (id == modId) return rank
+        }
+        return null
+    }
+
     private fun writeInstalledSlots(meta: ItemMeta, slots: List<String?>) {
         val padded = (0 until 8).map { slots.getOrNull(it) ?: "" }
         meta.persistentDataContainer.set(modInstalledKey, PersistentDataType.STRING, padded.joinToString(","))
@@ -252,14 +378,25 @@ class ModService(
         var total = 0
         for (i in slots.indices) {
             val token = slots[i] ?: continue
-            total += if (token == nmToken) {
-                val data = pdc?.get(nmSlotKeys[i], PersistentDataType.STRING)
-                data?.let { plugin.nightmareService.parseDataString(it)?.cost } ?: 0
-            } else {
-                val (id, _) = parseSlotToken(token) ?: continue
-                mods[id]?.cost ?: 0
+            total += when (token) {
+                nmToken -> {
+                    val data = pdc?.get(nmSlotKeys[i], PersistentDataType.STRING)
+                    data?.let { plugin.nightmareService.parseDataString(it)?.cost } ?: 0
+                }
+                rivenToken -> {
+                    val data = pdc?.get(rivenSlotKeys[i], PersistentDataType.STRING)
+                    data?.let { plugin.rivenService.parseDataString(it) }?.let { plugin.rivenService.cost(it) } ?: 0
+                }
+                else -> {
+                    val (id, _) = parseSlotToken(token) ?: continue
+                    mods[id]?.cost ?: 0
+                }
             }
         }
+        for (id in readSkillSlots(item)) {
+            total += id?.let { mods[it]?.cost } ?: 0
+        }
+        readPassiveSkill(item)?.let { total += mods[it]?.cost ?: 0 }
         return total
     }
 
@@ -281,7 +418,8 @@ class ModService(
     fun validateInstall(item: ItemStack, mod: ModConfig, targetSlot: Int): InstallResult {
         val category = plugin.itemService.weaponCategory(item)
         val equipId = plugin.itemService.weaponType(item)
-        if (!mod.appliesTo(category, equipId)) return InstallResult.WRONG_CATEGORY
+        val armorSlot = plugin.itemService.armorSlotKey(item)
+        if (!mod.appliesTo(category, equipId, armorSlot)) return InstallResult.WRONG_CATEGORY
         val slots = readInstalledSlots(item)
         val sameCount = slots.count { parseSlotToken(it)?.first == mod.id }
         if (sameCount >= mod.maxPerEquipment) return InstallResult.MAX_COUNT_EXCEEDED
@@ -301,6 +439,9 @@ class ModService(
 
     fun tryInstall(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
         if (!plugin.itemService.isSourceEquipment(item)) return InstallResult.NOT_EQUIPMENT
+        if (plugin.rivenService.isRiven(modItem)) {
+            return tryInstallRiven(item, modItem, slotIndex)
+        }
         if (plugin.nightmareService.isNightmare(modItem)) {
             return tryInstallNightmare(item, modItem, slotIndex)
         }
@@ -343,6 +484,27 @@ class ModService(
         return InstallResult.SUCCESS
     }
 
+    private fun tryInstallRiven(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
+        val riven = plugin.rivenService
+        if (!riven.isUnveiled(modItem)) return InstallResult.SEALED_RIVEN
+        if (riven.hasPendingRoll(modItem)) return InstallResult.PENDING_RIVEN_SELECTION
+        if (slotIndex !in 0 until 8) return InstallResult.INVALID_MOD
+        val instance = riven.parseData(modItem) ?: return InstallResult.INVALID_MOD
+        val slots = readInstalledSlots(item).toMutableList()
+        if (slots[slotIndex] != null) return InstallResult.SLOT_OCCUPIED
+        if (slots.any { it == rivenToken }) return InstallResult.RIVEN_ALREADY_INSTALLED
+        if (!riven.appliesTo(instance, item)) return InstallResult.RIVEN_WEAPON_MISMATCH
+        if (usedCapacity(item) + riven.cost(instance) > readCapacity(item)) return InstallResult.CAPACITY_EXCEEDED
+        slots[slotIndex] = rivenToken
+        val meta = item.itemMeta
+        writeInstalledSlots(meta, slots)
+        meta.persistentDataContainer.set(rivenSlotKeys[slotIndex], PersistentDataType.STRING, riven.serialize(instance))
+        item.itemMeta = meta
+        reapplyModEffects(item)
+        modItem.amount -= 1
+        return InstallResult.SUCCESS
+    }
+
     fun tryRemove(item: ItemStack, slotIndex: Int): ItemStack? {
         val slots = readInstalledSlots(item).toMutableList()
         if (slotIndex !in 0 until 8) return null
@@ -358,15 +520,57 @@ class ModService(
             val instance = data?.let { plugin.nightmareService.parseDataString(it) }
             return instance?.let { plugin.nightmareService.buildFromData(it) }
         }
+        if (token == rivenToken) {
+            val data = meta.persistentDataContainer.get(rivenSlotKeys[slotIndex], PersistentDataType.STRING)
+            meta.persistentDataContainer.remove(rivenSlotKeys[slotIndex])
+            item.itemMeta = meta
+            reapplyModEffects(item)
+            val instance = data?.let { plugin.rivenService.parseDataString(it) }
+            return instance?.let { plugin.rivenService.buildFromData(it) }
+        }
         item.itemMeta = meta
         reapplyModEffects(item)
         val (id, rank) = parseSlotToken(token) ?: return fallbackModItem(token)
         return createModItem(id, 1, rank) ?: fallbackModItem(id)
     }
 
+    /** 该装备是否有"外观隐藏"这个选项——只有护甲（有 equippable 穿戴组件）才有，武器没有。 */
+    fun canToggleAppearance(item: ItemStack?): Boolean =
+        item != null && item.hasItemMeta() && item.itemMeta.hasEquippable()
+
+    /** 装备当前是否处于"外观隐藏"状态。 */
+    fun isAppearanceHidden(item: ItemStack?): Boolean =
+        item != null && item.hasItemMeta() && item.itemMeta.persistentDataContainer.has(modHiddenAppearanceKey)
+
+    /**
+     * 外观隐藏开关：隐藏时把 equippable.model（穿在身上时人物模型的贴图）换成透明穿戴资源，
+     * 并把隐藏前的原 model 备份进 PDC；还原时读回备份值精确复原。手持/图标贴图(item_model)完全不动。
+     * 只对护甲生效（canToggleAppearance 为 false 时直接跳过）。返回切换后的新状态（true = 已隐藏）。
+     */
+    fun toggleAppearanceHidden(item: ItemStack): Boolean {
+        if (!canToggleAppearance(item)) return false
+        val meta = item.itemMeta
+        val equippable = meta.getEquippable() ?: return false
+        val pdc = meta.persistentDataContainer
+        val hidden = pdc.has(modHiddenAppearanceKey)
+        if (hidden) {
+            val orig = pdc.get(modHiddenAppearanceKey, PersistentDataType.STRING)
+            equippable.setModel(orig?.takeIf { it.isNotBlank() }?.let { NamespacedKey.fromString(it) })
+            pdc.remove(modHiddenAppearanceKey)
+        } else {
+            pdc.set(modHiddenAppearanceKey, PersistentDataType.STRING, equippable.getModel()?.asString() ?: "")
+            equippable.setModel(transparentEquipModel)
+        }
+        meta.setEquippable(equippable)
+        item.itemMeta = meta
+        return !hidden
+    }
+
     /** 安装技能MOD 到技能槽 slotIndex。成功后重算效果并盖上 MM 物品身份。 */
     fun tryInstallSkill(item: ItemStack, modItem: ItemStack, slotIndex: Int): InstallResult {
         if (!plugin.itemService.isSourceEquipment(item)) return InstallResult.NOT_EQUIPMENT
+        // 主动技能栏武器专属：护甲只有被动技能槽（见 tryInstallPassiveSkill），不允许装主动触发技能。
+        if (isArmorCategory(item)) return InstallResult.WRONG_CATEGORY
         val mod = modConfig(modItem) ?: return InstallResult.INVALID_MOD
         if (!mod.skill) return InstallResult.SKILL_SLOT_REQUIRED
         if (slotIndex !in 0 until skillSlotCount()) return InstallResult.INVALID_MOD
@@ -379,6 +583,7 @@ class ModService(
         val slots = readSkillSlots(item).toMutableList()
         if (slots.getOrNull(slotIndex) != null) return InstallResult.SLOT_OCCUPIED
         if (slots.count { it == mod.id } >= mod.maxPerEquipment) return InstallResult.MAX_COUNT_EXCEEDED
+        if (usedCapacity(item) + mod.cost > readCapacity(item)) return InstallResult.CAPACITY_EXCEEDED
         slots[slotIndex] = mod.id
         val meta = item.itemMeta
         writeSkillSlots(meta, slots)
@@ -410,6 +615,7 @@ class ModService(
     }
 
     fun reapplyModEffects(item: ItemStack) {
+        migrateLegacySkillSlots(item)
         val meta = item.itemMeta
         val pdc = meta.persistentDataContainer
         // 清掉所有 mod_delta_*
@@ -430,6 +636,16 @@ class ModService(
                 }
                 continue
             }
+            if (token == rivenToken) {
+                val data = pdc.get(rivenSlotKeys[i], PersistentDataType.STRING) ?: continue
+                val instance = plugin.rivenService.parseDataString(data) ?: continue
+                if (!plugin.rivenService.appliesTo(instance, item)) continue
+                for ((affixId, value) in plugin.rivenService.effectiveAffixes(instance)) {
+                    if (affixId !in affixById) continue
+                    deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + value
+                }
+                continue
+            }
             val (id, rank) = parseSlotToken(token) ?: continue
             val mod = mods[id] ?: continue
             for (affixId in mod.effects.keys) {
@@ -441,6 +657,14 @@ class ModService(
         for (id in readSkillSlots(item)) {
             val mod = id?.let { mods[it] } ?: continue
             for (affixId in mod.effects.keys) {
+                if (affixId !in affixById) continue
+                deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + mod.effectAtRank(affixId, mod.maxRank)
+            }
+        }
+        // 护甲被动技能槽：同理也可带词条（段位固定取满）。
+        readPassiveSkill(item)?.let { id ->
+            val mod = mods[id]
+            if (mod != null) for (affixId in mod.effects.keys) {
                 if (affixId !in affixById) continue
                 deltaMap[affixId] = (deltaMap[affixId] ?: 0.0) + mod.effectAtRank(affixId, mod.maxRank)
             }
@@ -472,9 +696,8 @@ class ModService(
         val rebuilt = kept.toMutableList()
         rebuilt += ""
         rebuilt += marker
-        val remaining = (capacity - used).coerceAtLeast(0)
         val capColor = if (used > capacity) "&c" else "&a"
-        rebuilt += color("  &7容量 $capColor$remaining&7/&f$capacity")
+        rebuilt += color("  &7占用 $capColor$used&7/&f$capacity")
 
         // 技能触发栏：装了技能MOD 就把「释放方式 » 技能名」显示在装备 lore 上（槽位下标 == 触发方式）。
         val skillSlots = readSkillSlots(item)
@@ -490,10 +713,16 @@ class ModService(
             rebuilt += color("&e● 技能&7:")
             rebuilt += skillLines
         }
+        // 护甲被动技能槽：装了就把技能名显示在装备 lore 上（无触发方式一说，装备即生效）。
+        readPassiveSkill(item)?.let { id ->
+            rebuilt += ""
+            rebuilt += color("&a● 被动&7:")
+            rebuilt += color("  &f${mods[id]?.displayName ?: id}")
+        }
         meta.lore = rebuilt
         item.itemMeta = meta
 
-        // 原版属性：护甲与生命/护盾
+        // 原版属性：护甲与生命/护盾/移速
         val armorDelta = deltaMap.entries.sumOf { (affixId, value) ->
             if (affixById[affixId]?.combat == "armor") value else 0.0
         }
@@ -501,7 +730,12 @@ class ModService(
             val combat = affixById[affixId]?.combat
             if (combat == "health" || combat == "shield_capacity") value else 0.0
         }
-        plugin.itemService.applyModVanillaAttributes(item, armorDelta, healthDelta)
+        // movement_speed（fleetfoot 疾风之靴）：SF 12维属性系统里唯一需要直接写入原版
+        // Attribute.MOVEMENT_SPEED 的词条，见 ForgeItemService.applyModVanillaAttributes 的处理。
+        val movementSpeedDelta = deltaMap.entries.sumOf { (affixId, value) ->
+            if (affixById[affixId]?.combat == "movement_speed") value else 0.0
+        }
+        plugin.itemService.applyModVanillaAttributes(item, armorDelta, healthDelta, movementSpeedDelta)
 
         // MM 物品身份：按第一个占用的技能槽盖身份（无技能MOD 则清除）。
         mythicHook.applyIdentity(item, activeMmIdentity(item))

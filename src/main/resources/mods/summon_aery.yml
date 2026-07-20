@@ -1,0 +1,17 @@
+# 护甲专属被动技能MOD · 灵光召唤（英雄联盟 巫术系基石天赋，原名直用）— 装进护甲被动技能槽，装备即生效。
+# 机制简化说明：原版LoL的精灵"打敌人造成伤害/护给友军上护盾"是二选一(取决于施法目标阵营)，
+# SF脚本层的 onAttack 拿不到"这一下打的是敌是友"，故只保留伤害这一半——精灵附带额外魔法伤害，
+# 用飞行弹体表现"精灵飞出去"，带冷却防止连点刷额外伤害。
+id: summon_aery
+display-name: "&b灵光召唤"
+item: "sourceforge:mod_summon_aery"
+cost: 8
+max-per-equipment: 1
+applicable-categories: [armor_physical, armor_magic]
+tags: [passive, keystone]
+type-label: "基石天赋"
+passive-skill: true
+description:
+  - "&f攻击时召唤精灵飞向目标，附带额外魔法伤害"
+  - "&8精灵伤害 %cfg:keystone.summon-aery.damage|6%"
+  - "&8冷却 %cfg:keystone.summon-aery.cooldown-sec|8% &8秒"

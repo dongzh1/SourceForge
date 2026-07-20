@@ -1,0 +1,38 @@
+# 装备品阶配置——不是 CE 战斗装备分类(weapon-category)，也不是装备强度(tier: 1/2/3...)。
+# 这里定义"这一整套装备属于哪个品阶"，强化(升级武器)每一级的花费(见 enhancement.yml 的 cost)
+# 会再乘以这里的 cost-multiplier。未在下面任何品阶 items 列表里出现的装备，倍率固定按 1.0。
+#
+# 预留 5 个品阶槽位，槽位编号本身没有"越大越强/越小越强"的强制含义，纯粹是分类容器；
+# 目前只有品阶 1(暗金)有实际套装，2~5 先占位、multiplier 是给未来套装定的参考起点，
+# 真正加装备时按那件装备该有的强化成本再调整即可。
+tiers:
+  1:
+    display-name: "暗金"
+    cost-multiplier: 1.0
+    items:
+      - "sourceforge:duskgold_helmet"
+      - "sourceforge:duskgold_chestplate"
+      - "sourceforge:duskgold_leggings"
+      - "sourceforge:duskgold_boots"
+      - "sourceforge:duskgold_sword"
+      - "sourceforge:duskgold_bow"
+      - "sourceforge:duskgold_crossbow"
+      - "sourceforge:duskgold_axe"
+      - "sourceforge:duskgold_trident"
+      - "sourceforge:duskgold_pickaxe"
+  2:
+    display-name: ""
+    cost-multiplier: 1.5
+    items: []
+  3:
+    display-name: ""
+    cost-multiplier: 2.0
+    items: []
+  4:
+    display-name: ""
+    cost-multiplier: 3.0
+    items: []
+  5:
+    display-name: ""
+    cost-multiplier: 5.0
+    items: []

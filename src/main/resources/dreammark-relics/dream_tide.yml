@@ -1,0 +1,29 @@
+# 每个 yml 定义一种可独立投放的遗纹遗物；文件名可自由命名，relic-id 必须等于对应的 CraftEngine 遗物 id。
+# 新增遗物时同时在 CraftEngine 物品配置和 relics.yml 中登记该 id，然后复制本文件修改即可。
+relic-id: "sourceforge:relic_dreammark"
+
+tasks:
+  # 玩家下次携带该遗物进入荒野时自动接取；完成后回城才会兑换。
+  unlock: "dreammark_relic_resonance"
+  # 遗物兑换成封缄遗纹时自动接取；遗纹实际苏醒后由 SourceTasks 的 DREAMMARK_UNVEIL 目标推进。
+  unveil: "dreammark_unveil"
+
+reward:
+  # 可省略；省略时随机选 dreammark.yml 内的一项试炼。
+  challenge: "hunt"
+  # 可填写字符串，或 { id: 装备ID, weight: 权重 }。兑换时会抽取一件具体装备，封缄状态已固定目标。
+  weapons:
+    - { id: "duskgold_sword", weight: 40 }
+    - { id: "duskgold_trident", weight: 25 }
+    - { id: "duskgold_bow", weight: 20 }
+    - { id: "duskgold_crossbow", weight: 15 }
+  # 数值为遗纹满段基础值，直接使用 SourceForge 词条单位；也可写 { min: x, max: y } 让每张遗纹独立滚值。
+  # 必须为 1-3 条正词条，最多 1 条负词条，且范围不得跨越 0。
+  affixes:
+    base_damage:     { min: 2.4, max: 3.0 }
+    critical_chance: { min: 0.10, max: 0.14 }
+    status_chance:   { min: 0.10, max: 0.14 }
+  # 作为 SourceForge 特殊 MOD 的占用：段位 0 为 base，每升一段增加 per-rank。
+  capacity:
+    base: 10
+    per-rank: 1

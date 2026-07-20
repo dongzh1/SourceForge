@@ -2,22 +2,37 @@
 # - blank_mod：空白MOD，放进附魔台(抽奖台)消耗经验随机抽一个普通MOD。
 # - upgrade_core：升级核心，MOD 升级界面消耗它提升 MOD 段位。
 # SF 代码按 CE id 识别（CraftEngineHook.itemId），id 必须与代码一致。
+#
+# 注：endo（内质）/ forma（极化器）两个物品已移入 mod_items_pending.yml.disable，
+#     原因是 SF 代码尚未实现对应机制（06号策划文档支柱2/支柱3），先禁用避免孤儿物品。
 items:
   sourceforge:blank_mod:
     material: book
     data:
-      item-name: "<!i><light_purple>空白MOD"
+      item_name: "<!i><light_purple>空白MOD"
       lore:
-        - "<!i><gray>放入附魔台(抽奖台)"
-        - "<!i><gray>消耗经验随机抽取一个普通MOD"
+        - "<!i><dark_gray>◆ <gray>道具类型  <light_purple>MOD 抽取材料"
+        - "<!i><dark_gray>◆ <gray>使用方式  <white>放入附魔台（抽奖台）"
+        - ""
+        - "<!i><light_purple>✦ 使用说明"
+        - "<!i>  <dark_gray>▪ <gray>放入附魔台（抽奖台）"
+        - "<!i>  <dark_gray>▪ <gray>消耗经验，随机抽取一个普通 MOD"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>需要满足抽奖台的书架条件"
 
   sourceforge:upgrade_core:
     material: paper
     data:
-      item-name: "<!i><aqua>升级核心"
+      item_name: "<!i><aqua>升级核心"
       lore:
-        - "<!i><gray>在 MOD 升级界面消耗"
-        - "<!i><gray>用于提升 MOD 段位"
+        - "<!i><dark_gray>◆ <gray>道具类型  <aqua>MOD 强化材料"
+        - "<!i><dark_gray>◆ <gray>使用方式  <white>放入 MOD 升级界面"
+        - ""
+        - "<!i><aqua>✦ 使用说明"
+        - "<!i>  <dark_gray>▪ <gray>在 MOD 升级界面消耗"
+        - "<!i>  <dark_gray>▪ <gray>用于提升已安装 MOD 的段位"
+        - ""
+        - "<!i><dark_gray>◆ <gray>提示  <dark_gray>先在装备上安装可升级的 MOD"
 
 categories:
   sourceforge:mod_items:

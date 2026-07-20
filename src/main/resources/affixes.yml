@@ -24,7 +24,6 @@
 #   display-name: 词条显示名
 #   pdc-key: PDC 键名
 #   value-type: double / int
-#   min/max: 默认数值范围
 #   decimals: lore 小数位
 #   combat: 属性分类（用于评分和战斗系统）
 #   scale: 锻造缩放系数
@@ -35,8 +34,6 @@ affixes:
     display-name: "召唤物伤害"
     pdc-key: "summon_damage"
     value-type: double
-    min: 0.05
-    max: 0.20
     decimals: 2
     combat: summon_damage
     scale: 1.0
@@ -45,8 +42,6 @@ affixes:
     display-name: "基础伤害"
     pdc-key: "base_damage"
     value-type: double
-    min: 1.0
-    max: 3.0
     decimals: 1
     combat: base_damage
     scale: 1.0
@@ -56,8 +51,6 @@ affixes:
     display-name: "暴击几率"
     pdc-key: "critical_chance"
     value-type: double
-    min: 0.03
-    max: 0.10
     decimals: 2
     combat: critical_chance
     scale: 1.0
@@ -67,8 +60,6 @@ affixes:
     display-name: "暴击伤害"
     pdc-key: "critical_damage"
     value-type: double
-    min: 0.20
-    max: 0.60
     decimals: 2
     combat: critical_damage
     scale: 1.0
@@ -78,8 +69,6 @@ affixes:
     display-name: "触发"
     pdc-key: "status_chance"
     value-type: double
-    min: 0.05
-    max: 0.20
     decimals: 2
     combat: status_chance
     scale: 1.0
@@ -89,8 +78,6 @@ affixes:
     display-name: "护甲"
     pdc-key: "armor"
     value-type: double
-    min: 2.0
-    max: 8.0
     decimals: 0
     combat: armor
     scale: 1.0
@@ -100,8 +87,6 @@ affixes:
     display-name: "生命"
     pdc-key: "health"
     value-type: double
-    min: 2.0
-    max: 8.0
     decimals: 0
     combat: health
     scale: 1.0
@@ -111,8 +96,6 @@ affixes:
     display-name: "护盾"
     pdc-key: "shield_capacity"
     value-type: double
-    min: 2.0
-    max: 8.0
     decimals: 0
     combat: shield_capacity
     scale: 1.0
@@ -122,8 +105,6 @@ affixes:
     display-name: "能量"
     pdc-key: "energy_max"
     value-type: double
-    min: 5.0
-    max: 20.0
     decimals: 0
     combat: energy_max
     scale: 1.0
@@ -133,8 +114,6 @@ affixes:
     display-name: "强度"
     pdc-key: "ability_strength"
     value-type: double
-    min: 0.03
-    max: 0.12
     decimals: 2
     combat: ability_strength
     scale: 1.0
@@ -144,8 +123,6 @@ affixes:
     display-name: "持续"
     pdc-key: "ability_duration"
     value-type: double
-    min: 0.03
-    max: 0.12
     decimals: 2
     combat: ability_duration
     scale: 1.0
@@ -155,8 +132,6 @@ affixes:
     display-name: "效率"
     pdc-key: "ability_efficiency"
     value-type: double
-    min: 0.03
-    max: 0.12
     decimals: 2
     combat: ability_efficiency
     scale: 1.0
@@ -166,12 +141,110 @@ affixes:
     display-name: "范围"
     pdc-key: "ability_range"
     value-type: double
-    min: 0.03
-    max: 0.12
     decimals: 2
     combat: ability_range
     scale: 1.0
     lore: "&7范围: &f+%value%"
+
+  # 2026-07-17 新增：14个新MOD批次(星际战甲/流放之路/暗黑/雨中冒险2/泰拉瑞亚/无主之地灵感头脑风暴精选)
+  # 用到的8个新词条。全部走"硬编码专属监听器读取effectAtRank"的模式(仿chain_mining_count先例)，
+  # 不是自动进SF内部combat.yml攻防公式——combat字段只是分类标签，不代表这些词条会被combat.yml消费。
+  vulnerability_amp:
+    display-name: "夺魄"
+    pdc-key: "vulnerability_amp"
+    value-type: double
+    decimals: 2
+    combat: vulnerability_amp
+    scale: 1.0
+    percent: true
+    lore: "&7夺魄: &f+%value%"
+
+  life_steal:
+    display-name: "汲取"
+    pdc-key: "life_steal"
+    value-type: double
+    decimals: 2
+    combat: life_steal
+    scale: 1.0
+    percent: true
+    lore: "&7汲取: &f+%value%"
+
+  execute_bonus:
+    display-name: "处决"
+    pdc-key: "execute_bonus"
+    value-type: double
+    decimals: 2
+    combat: execute_bonus
+    scale: 1.0
+    percent: true
+    lore: "&7处决: &f+%value%"
+
+  combo_potency:
+    display-name: "相位"
+    pdc-key: "combo_potency"
+    value-type: double
+    decimals: 2
+    combat: elemental
+    scale: 1.0
+    percent: true
+    lore: "&7相位: &f+%value%"
+
+  splash_power:
+    display-name: "破片"
+    pdc-key: "splash_power"
+    value-type: double
+    decimals: 2
+    combat: splash_power
+    scale: 1.0
+    percent: true
+    lore: "&7破片: &f+%value%"
+
+  thorns_reflect:
+    display-name: "荆棘"
+    pdc-key: "thorns_reflect"
+    value-type: double
+    decimals: 2
+    combat: thorns_reflect
+    scale: 1.0
+    percent: true
+    lore: "&7荆棘: &f+%value%"
+
+  movement_speed:
+    display-name: "疾风"
+    pdc-key: "movement_speed"
+    value-type: double
+    decimals: 2
+    combat: movement_speed
+    scale: 1.0
+    percent: true
+    lore: "&7疾风: &f+%value%"
+
+  summon_max_count:
+    display-name: "军团"
+    pdc-key: "summon_max_count"
+    value-type: int
+    decimals: 0
+    combat: summon_max_count
+    scale: 1.0
+    lore: "&7军团: &f+%value%"
+
+  chain_mining_count:
+    display-name: "连锁"
+    pdc-key: "chain_mining_count"
+    value-type: int
+    decimals: 0
+    combat: chain_mining_count
+    scale: 1.0
+    lore: "&7连锁: &f+%value%"
+
+  chain_lumbering_count:
+    display-name: "砍树连锁"
+    pdc-key: "chain_lumbering_count"
+    value-type: int
+    decimals: 0
+    combat: chain_lumbering_count
+    scale: 1.0
+    lore: "&7砍树连锁: &f+%value%"
 
   # ===== 元素属性（与 status_chance 联动，详见 elements.yml）=====
   # 数值故意偏小：装备/MOD 提供一点元素值，命中按 status_chance 触发对应元素异常并叠层。
@@ -179,8 +252,6 @@ affixes:
     display-name: "火元素"
     pdc-key: "heat_damage"
     value-type: double
-    min: 0.5
-    max: 2.0
     decimals: 1
     combat: elemental
     scale: 1.0
@@ -190,8 +261,6 @@ affixes:
     display-name: "冰元素"
     pdc-key: "cold_damage"
     value-type: double
-    min: 0.5
-    max: 2.0
     decimals: 1
     combat: elemental
     scale: 1.0
@@ -201,8 +270,6 @@ affixes:
     display-name: "毒元素"
     pdc-key: "toxin_damage"
     value-type: double
-    min: 0.5
-    max: 2.0
     decimals: 1
     combat: elemental
     scale: 1.0
@@ -212,8 +279,6 @@ affixes:
     display-name: "电元素"
     pdc-key: "electric_damage"
     value-type: double
-    min: 0.5
-    max: 2.0
     decimals: 1
     combat: elemental
     scale: 1.0

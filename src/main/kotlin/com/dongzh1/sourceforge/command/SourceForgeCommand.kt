@@ -1,7 +1,7 @@
 package com.dongzh1.sourceforge.command
 
 import com.dongzh1.sourceforge.SourceForge
-import com.dongzh1.sourceforge.forge.ForgeMenu
+import com.dongzh1.sourceforge.forge.ForgeMenus
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -10,397 +10,709 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import java.text.DecimalFormat
 
+/**
+ * `/sourceforge` 命令入口。每个子命令拆成一个独立的 cmdXxx 私有方法（评审：onCommand 曾是
+ * 865 行、20+ 分支全堆在一个 when 块里的 god-method），onCommand 本身只做子命令名分发。
+ */
 class SourceForgeCommand(
     private val plugin: SourceForge
 ) : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         when (args.getOrNull(0)?.lowercase()) {
-            null, "forge" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以打开锻造界面")
-                    return true
-                }
-                player.openInventory(ForgeMenu(plugin).inventory)
-            }
-            "mods" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以打开改造界面")
-                    return true
-                }
-                player.openInventory(com.dongzh1.sourceforge.mod.EquipmentSelectMenu(plugin, player).inventory)
-            }
-            "upgrademod" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以打开 MOD 升级界面")
-                    return true
-                }
-                player.openInventory(com.dongzh1.sourceforge.mod.ModUpgradeMenu(plugin, player).inventory)
-            }
+            null, "forge" -> cmdForge(sender)
+            "mods" -> cmdMods(sender)
+            // MOD 段位升级已并入锻炉"强化"(2026-07-17，见 ForgeEnhanceMenu)，不再有独立的 upgrademod 命令。
             // 升级核心改由 CraftEngine 配置 + /ce 指令获取（SF 仅按 CE id "sourceforge:upgrade_core" 识别），故移除 SF 发放指令。
-            "giveblankmod" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                if (target == null) {
-                    sender.sendMessage("§e用法: /$label giveblankmod <玩家> [数量]")
-                    return true
-                }
-                val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                val item = com.dongzh1.sourceforge.item.CraftEngineHook.build("sourceforge:blank_mod", amount)
-                    ?: org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER, amount)
-                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 空白 MOD x$amount")
-            }
-            "givemod" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val query = args.getOrNull(2)
-                if (target == null || query == null) {
-                    sender.sendMessage("§e用法: /$label givemod <玩家> <MOD中文名或id> [数量]")
-                    return true
-                }
-                // 支持中文显示名 / 英文id / 唯一部分匹配（方便中文辨认，不必记英文id）
-                val modId = plugin.modService.resolveModId(query)
-                if (modId == null) {
-                    sender.sendMessage("§c[SourceForge] §f未找到 MOD: §e$query §7(按 Tab 可补全中文名/英文id)")
-                    return true
-                }
-                val amount = args.getOrNull(3)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
-                val item = plugin.modService.createModItem(modId, amount)
-                if (item == null) {
-                    sender.sendMessage("§c[SourceForge] §f无法生成 MOD: $modId")
-                    return true
-                }
-                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} §b${plugin.modService.modDisplayName(modId)} §7($modId) §fx$amount")
-            }
-            "givenightmare" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                if (target == null) {
-                    sender.sendMessage("§e用法: /$label givenightmare <玩家> [武器类别]")
-                    return true
-                }
-                val category = args.getOrNull(2)
-                if (category != null && category.lowercase() !in plugin.nightmareService.categories()) {
-                    sender.sendMessage("§c[SourceForge] §f未知武器类别: $category，可用: ${plugin.nightmareService.categories().joinToString(", ")}")
-                    return true
-                }
-                val item = plugin.nightmareService.createSealed(category, 1)
-                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 梦魇MOD (${category ?: "随机类别"})")
-            }
-            "reload" -> {
-                if (!requireAdmin(sender)) return true
-                plugin.reloadRuntime()
-                sender.sendMessage("§a[SourceForge] §f配置/脚本已重载")
-                sendValidationSummary(sender)
-            }
-            "validate" -> {
-                if (!requireAdmin(sender)) return true
-                sendValidationSummary(sender, verbose = true)
-            }
-            "giveequipment" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val equipmentId = args.getOrNull(2)
-                val tier = args.getOrNull(3)?.toIntOrNull() ?: 1
-                val amount = args.getOrNull(4)?.toIntOrNull() ?: 1
-                val affixes = args.getOrNull(5)?.toIntOrNull()
-                if (target == null || equipmentId == null) {
-                    sender.sendMessage("§e用法: /$label giveequipment <玩家> <装备ID> [等级] [数量] [词条数]")
-                    return true
-                }
-                if (equipmentId !in plugin.forgeConfig.equipment) {
-                    sender.sendMessage("§c[SourceForge] §f未知装备: $equipmentId")
-                    return true
-                }
-                var generated = 0
-                repeat(amount.coerceAtLeast(1)) {
-                    val item = plugin.itemService.createDirectEquipment(equipmentId, tier, affixes) ?: return@repeat
-                    target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                    generated++
-                }
-                sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 装备 $equipmentId 等级 $tier x$generated 词条数 ${affixes?.toString() ?: "默认"}")
-            }
-            "debug" -> {
-                if (!requireAdmin(sender)) return true
-                // /sf debug forgeinfo：诊断你准星指向的方块（6格内）的 CE 识别情况
-                if (args.getOrNull(1)?.equals("forgeinfo", true) == true) {
-                    val player = sender as? Player
-                    if (player == null) {
-                        sender.sendMessage("只有玩家可以使用此命令")
-                        return true
-                    }
-                    val block = player.getTargetBlockExact(6)
-                    if (block == null) {
-                        player.sendMessage("§c[forgeinfo] §f请把准星对准一个方块（6格内）")
-                        return true
-                    }
-                    val cfg = plugin.structureManager.config
-                    val hook = com.dongzh1.sourceforge.item.CraftEngineHook
-                    val isCe = hook.isCustomBlock(block)
-                    val blockId = hook.blockId(block)
-                    val handId = hook.itemId(player.inventory.itemInMainHand)
-                    val lines = listOf(
-                        "看向方块: ${block.type} @ ${block.x},${block.y},${block.z}",
-                        "isCustomBlock(CE): $isCe",
-                        "blockId(CE): ${blockId ?: "null(读取失败/非CE方块)"}",
-                        "是锻炉方块: ${blockId in cfg.forgeBlockIds}",
-                        "enabled=${cfg.enabled} coreId=${cfg.coreBlockId} hammerId=${cfg.hammerId}",
-                        "手持物品 CE id: ${handId ?: "null"}"
-                    )
-                    player.sendMessage("§6==== forgeinfo ====")
-                    lines.forEach { player.sendMessage("§7$it") }
-                    // 同步写入控制台日志，便于离线排查
-                    plugin.logger.info("[forgeinfo] ${player.name}: " + lines.joinToString(" | "))
-                    return true
-                }
-                // /sf debug fulltest [装备ID]：一次性自检（物品属性写入/属性总计/外部Provider/伤害推演/实打）
-                if (args.getOrNull(1)?.equals("fulltest", true) == true) {
-                    val player = sender as? Player
-                    if (player == null) {
-                        sender.sendMessage("只有玩家可以使用此命令")
-                        return true
-                    }
-                    runFullTest(player, args.getOrNull(2), args.getOrNull(3))
-                    return true
-                }
-                // /sf debug element <on|off>：开启后命中带元素+触发的装备时，打印触发计算与目标层数
-                if (args.getOrNull(1)?.equals("element", true) == true) {
-                    val player = sender as? Player
-                    if (player == null) {
-                        sender.sendMessage("只有玩家可以使用此命令")
-                        return true
-                    }
-                    val on = when (args.getOrNull(2)?.lowercase()) {
-                        "on", "true" -> true
-                        "off", "false" -> false
-                        null, "toggle" -> !plugin.statusManager.isDebug(player.uniqueId)
-                        else -> {
-                            sender.sendMessage("§e用法: /$label debug element <on|off>")
-                            return true
-                        }
-                    }
-                    plugin.statusManager.setDebug(player.uniqueId, on)
-                    sender.sendMessage("§a[SourceForge] §f元素触发调试已${if (on) "开启" else "关闭"}")
-                    return true
-                }
-                val target = args.getOrNull(1)?.lowercase()
-                val value = args.getOrNull(2)?.lowercase()
-                if (target !in setOf("combat", "betterhud") || value !in setOf("on", "off", "true", "false")) {
-                    sender.sendMessage("§e用法: /$label debug <combat|betterhud> <on|off>  |  /$label debug forgeinfo")
-                    return true
-                }
-                val enabled = value == "on" || value == "true"
-                val path = if (target == "combat") "debug.combat" else "betterhud.debug"
-                plugin.config.set(path, enabled)
-                plugin.saveConfig()
-                plugin.reloadAll()
-                val label2 = if (target == "combat") "战斗" else "BetterHud"
-                sender.sendMessage("§a[SourceForge] §f${label2}调试已${if (enabled) "开启" else "关闭"}")
-            }
-            "energy" -> {
-                val sub = args.getOrNull(1)?.lowercase()
-                when (sub) {
-                    "deduct" -> {
-                        val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
-                        val amount = args.getOrNull(3)?.toDoubleOrNull()
-                        if (target == null || amount == null || amount <= 0) {
-                            sender.sendMessage("§e用法: /$label energy deduct <玩家> <数量>")
-                            return true
-                        }
-                        val ok = plugin.energyService.deductEnergy(target, amount)
-                        if (ok) {
-                            sender.sendMessage("§a[SourceForge] §f已扣除 ${target.name} 能量 $amount, 剩余: ${"%.0f".format(plugin.energyService.getEnergyCurrent(target))}")
-                        } else {
-                            sender.sendMessage("§c[SourceForge] §f${target.name} 能量不足 ($amount), 当前: ${"%.0f".format(plugin.energyService.getEnergyCurrent(target))}")
-                        }
-                    }
-                    "get" -> {
-                        val target = args.getOrNull(2)?.let { Bukkit.getPlayerExact(it) } ?: (sender as? Player)
-                        if (target == null) {
-                            sender.sendMessage("§e用法: /$label energy get [玩家]")
-                            return true
-                        }
-                        val cur = plugin.energyService.getEnergyCurrent(target)
-                        val max = plugin.energyService.getEnergyMax(target)
-                        sender.sendMessage("§a[SourceForge] §f${target.name} 能量: ${"%.0f".format(cur)}/${"%.0f".format(max)}")
-                    }
-                    "set" -> {
-                        if (!sender.hasPermission("sourceforge.admin")) { sender.sendMessage("§c你没有权限"); return true }
-                        val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
-                        val amount = args.getOrNull(3)?.toDoubleOrNull()
-                        if (target == null || amount == null || amount < 0) {
-                            sender.sendMessage("§e用法: /$label energy set <玩家> <数量>")
-                            return true
-                        }
-                        plugin.energyService.setEnergy(target, amount)
-                        sender.sendMessage("§a[SourceForge] §f已设置 ${target.name} 能量: ${"%.0f".format(amount)}/${"%.0f".format(plugin.energyService.getEnergyMax(target))}")
-                    }
-                    else -> sender.sendMessage("§e用法: /$label energy <deduct|get|set> [玩家] [数量]")
-                }
-            }
-            "give" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val expression = args.getOrNull(2)
-                if (target == null || expression == null) {
-                    sender.sendMessage("§e用法: /$label give <玩家> <sf表达式> [数量]")
-                    return true
-                }
-                val amount = args.getOrNull(3)?.toIntOrNull() ?: 1
-                if (isEquipmentExpression(expression)) {
-                    var generated = 0
-                    repeat(amount.coerceAtLeast(1)) {
-                        val item = plugin.buildItemExpression(expression, target, 1) ?: return@repeat
-                        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                        generated++
-                    }
-                    if (generated <= 0) {
-                        sender.sendMessage("§c[SourceForge] §f无法生成物品: $expression")
-                        return true
-                    }
-                    sender.sendMessage("§a[SourceForge] §f已给予 ${target.name}: $expression x$generated")
-                } else {
-                    val item = plugin.buildItemExpression(expression, target, amount)
-                    if (item == null) {
-                        sender.sendMessage("§c[SourceForge] §f无法生成物品: $expression")
-                        return true
-                    }
-                    target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
-                    sender.sendMessage("§a[SourceForge] §f已给予 ${target.name}: $expression")
-                }
-            }
-            "testdamage", "mmdamage" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val amount = args.getOrNull(2)?.toDoubleOrNull()
-                if (target == null || amount == null || amount <= 0.0) {
-                    sender.sendMessage("§e用法: /$label testdamage <玩家> <伤害>")
-                    return true
-                }
-                target.damage(amount)
-                sender.sendMessage("§a[SourceForge] §f已对 ${target.name} 施加测试伤害: $amount")
-            }
-            "reroll" -> {
-                if (!requireAdmin(sender)) return true
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以重铸手持装备")
-                    return true
-                }
-                val item = player.inventory.itemInMainHand
-                if (!plugin.itemService.rerollEquipment(item)) {
-                    sender.sendMessage("§c[SourceForge] §f请手持 SourceForge 装备")
-                    return true
-                }
-                plugin.itemService.invalidateStatCache(player)
-                sender.sendMessage("§a[SourceForge] §f手持装备已重铸")
-            }
-            "upgrade" -> {
-                if (!requireAdmin(sender)) return true
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以升级手持装备")
-                    return true
-                }
-                val item = player.inventory.itemInMainHand
-                if (!plugin.itemService.upgradeEquipment(item)) {
-                    sender.sendMessage("§c[SourceForge] §f请手持未满级的 SourceForge 装备")
-                    return true
-                }
-                plugin.itemService.invalidateStatCache(player)
-                sender.sendMessage("§a[SourceForge] §f手持装备已升级")
-            }
-            "stats" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以使用此命令")
-                    return true
-                }
-                showStats(player)
-            }
-            "cd" -> {
-                val player = sender as? Player
-                if (player == null) {
-                    sender.sendMessage("只有玩家可以切换 CD 显示")
-                    return true
-                }
-                val enabled = when (args.getOrNull(1)?.lowercase()) {
-                    "on", "true" -> true
-                    "off", "false" -> false
-                    null, "toggle" -> !plugin.skillListener.isCdDisplayEnabled(player)
-                    else -> {
-                        sender.sendMessage("§e用法: /$label cd <on|off>")
-                        return true
-                    }
-                }
-                plugin.skillListener.setCdDisplay(player, enabled)
-                sender.sendMessage("§a[SourceForge] §f技能 CD 显示已${if (enabled) "开启" else "关闭"}")
-            }
-            "track", "nav", "navigate" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                if (target == null) {
-                    sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
-                    return true
-                }
-                if (args.getOrNull(2)?.equals("off", true) == true) {
-                    val had = plugin.navigationManager.stop(target)
-                    sender.sendMessage(if (had) "§a[SourceForge] §f已清空 ${target.name} 的全部追踪目标" else "§e[SourceForge] §f${target.name} 当前没有追踪目标")
-                    return true
-                }
-                val name = args.getOrNull(2)
-                val x = args.getOrNull(3)?.toDoubleOrNull()
-                val y = args.getOrNull(4)?.toDoubleOrNull()
-                val z = args.getOrNull(5)?.toDoubleOrNull()
-                if (name == null || x == null || y == null || z == null) {
-                    sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
-                    return true
-                }
-                val world = args.getOrNull(6) ?: target.world.name
-                val colorArg = args.getOrNull(7)
-                val resolved = com.dongzh1.sourceforge.nav.NavigationManager.resolveColor(colorArg) ?: run {
-                    sender.sendMessage("§c[SourceForge] §f未知颜色: $colorArg，可用命名色: ${com.dongzh1.sourceforge.nav.NavigationManager.COLORS.keys.joinToString(", ")}，或直接写 §b#RRGGBB")
-                    return true
-                }
-                plugin.navigationManager.track(target, name, x, y, z, world, resolved.hex, resolved.icon)
-                sender.sendMessage("§a[SourceForge] §f已为 §e${target.name} §f追踪 §b$name §7(${x.toInt()}, ${y.toInt()}, ${z.toInt()} @ $world) §f颜色 §b${resolved.label}§f，当前共 ${plugin.navigationManager.targetNames(target).size} 个目标")
-            }
-            "untrack" -> {
-                if (!requireAdmin(sender)) return true
-                val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
-                val name = args.getOrNull(2)
-                if (target == null || name == null) {
-                    sender.sendMessage("§e用法: /$label untrack <玩家> <目标名>")
-                    return true
-                }
-                val ok = plugin.navigationManager.untrack(target, name)
-                sender.sendMessage(if (ok) "§a[SourceForge] §f已移除 ${target.name} 的追踪目标 §b$name" else "§e[SourceForge] §f${target.name} 没有名为 §b$name §f的追踪目标")
-            }
-            else -> sender.sendMessage("§e用法: /$label <forge|mods|upgrademod|givemod|givenightmare|giveblankmod|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|debug>")
+            "giveblankmod" -> cmdGiveBlankMod(sender, label, args)
+            "givemod" -> cmdGiveMod(sender, label, args)
+            "givenightmare", "givedreammark", "giveriven" -> cmdGiveDreamMark(sender, label, args)
+            "givedreamcore", "givekuva" -> cmdGiveDreamCore(sender, label, args)
+            "dreammark", "riven" -> cmdDreamMark(sender, label, args)
+            "reload" -> cmdReload(sender)
+            "validate" -> cmdValidate(sender)
+            "giveequipment" -> cmdGiveEquipment(sender, label, args)
+            "giverelic" -> cmdGiveRelic(sender, label, args)
+            "debug" -> cmdDebug(sender, label, args)
+            "energy" -> cmdEnergy(sender, label, args)
+            "give" -> cmdGive(sender, label, args)
+            "testdamage", "mmdamage" -> cmdTestDamage(sender, label, args)
+            "reroll" -> cmdReroll(sender)
+            "upgrade" -> cmdUpgrade(sender)
+            "stats" -> cmdStats(sender)
+            "cd" -> cmdCd(sender, label, args)
+            "track", "nav", "navigate" -> cmdTrack(sender, label, args)
+            "untrack" -> cmdUntrack(sender, label, args)
+            "sect", "cult", "faction" -> cmdSect(sender, label, args)
+            else -> sender.sendMessage("§e用法: /$label <forge|mods|givemod|givedreammark|dreammark|givedreamcore|giveblankmod|giverelic|reload|validate|giveequipment|give|testdamage|mmdamage|reroll|upgrade|stats|track|sect|debug>")
         }
         return true
     }
 
+    // ==================== 子命令 ====================
+
+    private fun cmdForge(sender: CommandSender) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以打开锻造界面")
+            return
+        }
+        ForgeMenus.open(plugin, player, null)
+    }
+
+    private fun cmdSect(sender: CommandSender, label: String, args: Array<out String>) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用教派功能")
+            return
+        }
+        when (args.getOrNull(1)?.lowercase()) {
+            "npc" -> cmdSectNpc(sender)
+            null, "list" -> {
+                sender.sendMessage("§6========== 教派 ==========")
+                plugin.sectService.sects().forEach { sect ->
+                    sender.sendMessage("§e${sect.id} §f${sect.displayName} §7- ${sect.description.firstOrNull() ?: ""}")
+                }
+                sender.sendMessage("§7当前教派: §f${plugin.sectService.selected(player)?.displayName ?: "未选择"}")
+                sender.sendMessage("§7用法: §f/$label sect join <id> §7| §f/$label sect prepare §7| §f/$label sect status")
+            }
+            "join", "select" -> {
+                val id = args.getOrNull(2)
+                val sect = id?.let { plugin.sectService.select(player, it) }
+                if (sect == null) {
+                    sender.sendMessage("§c未知教派。可用: ${plugin.sectService.sects().joinToString(", ") { it.id }}")
+                } else {
+                    sender.sendMessage("§a[教派] §f已选择 §e${sect.displayName}§f。出行前使用 §e/$label sect prepare §f领取奖励。")
+                }
+            }
+            "buy", "purchase" -> {
+                val result = plugin.sectService.purchaseReward(player, args.getOrNull(2))
+                when (result.status) {
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.SUCCESS ->
+                        sender.sendMessage("§a[教派] §f已购买 §e${result.reward?.id ?: "蓝图"}§f，花费 §e${result.price.toInt()} §f金币。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.NO_SECT ->
+                        sender.sendMessage("§e[教派] §f请先加入并选择一个教派。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.UNKNOWN_REWARD ->
+                        sender.sendMessage("§c[教派] §f当前教派没有这件商品。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.NOT_FOR_SALE ->
+                        sender.sendMessage("§e[教派] §f这件物品不对外出售。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.ECONOMY_UNAVAILABLE ->
+                        sender.sendMessage("§c[教派] §f购买需要 Vault 经济系统支持。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.INSUFFICIENT_FUNDS ->
+                        sender.sendMessage("§c[教派] §f金币不足，需要 §e${result.price.toInt()} §f金币。")
+                    com.dongzh1.sourceforge.sect.SectPurchaseStatus.REWARD_BUILD_FAILED ->
+                        sender.sendMessage("§c[教派] §f商品生成失败，请联系管理员。")
+                }
+            }
+            "prepare", "departure" -> {
+                val result = plugin.sectService.prepareJourney(player)
+                when (result.status) {
+                    com.dongzh1.sourceforge.sect.JourneyPreparationStatus.SUCCESS ->
+                        sender.sendMessage("§a[教派] §f已完成出行准备，获得 §e${result.grantedRewards} §f件教派奖励。")
+                    com.dongzh1.sourceforge.sect.JourneyPreparationStatus.NO_SECT ->
+                        sender.sendMessage("§e[教派] §f请先选择教派: §e/$label sect join golden")
+                    com.dongzh1.sourceforge.sect.JourneyPreparationStatus.ALREADY_PREPARED ->
+                        sender.sendMessage("§e[教派] §f本次出行已经准备过了。")
+                    com.dongzh1.sourceforge.sect.JourneyPreparationStatus.NO_REWARDS ->
+                        sender.sendMessage("§a[教派] §f该教派本次没有配置奖励，已标记为准备完成。")
+                    com.dongzh1.sourceforge.sect.JourneyPreparationStatus.REWARD_BUILD_FAILED ->
+                        sender.sendMessage("§c[教派] §f奖励构建失败，请检查 sects/<教派id>.yml 配置。")
+                }
+            }
+            "finish", "end" -> sender.sendMessage(
+                if (plugin.sectService.finishJourney(player)) "§a[教派] §f已结束本次出行。"
+                else "§e[教派] §f当前没有进行中的出行。"
+            )
+            "status" -> {
+                val sect = plugin.sectService.selected(player)
+                sender.sendMessage("§6[教派] §f当前: §e${sect?.displayName ?: "未选择"}")
+                sender.sendMessage("§7出行准备: §f${if (plugin.sectService.isJourneyPrepared(player)) "已完成" else "未完成"}")
+                sender.sendMessage("§7黄金酒: §f${plugin.sectService.goldenWineRemainingSeconds(player)} 秒")
+            }
+            "leave" -> {
+                plugin.sectService.clearSelection(player)
+                sender.sendMessage("§a[教派] §f已离开当前教派。")
+            }
+            else -> sender.sendMessage("§e用法: /$label sect <list|join|prepare|finish|status|leave> [教派id]")
+        }
+    }
+
+    private fun cmdSectNpc(sender: CommandSender) {
+        sender.sendMessage("§7[教派] NPC 对话由 SourceTasks 驱动；请按教派文件中的 npc.id 使用 /snpc 创建或配置 NPC。")
+    }
+
+    private fun cmdMods(sender: CommandSender) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以打开改造界面")
+            return
+        }
+        player.openInventory(com.dongzh1.sourceforge.mod.EquipmentSelectMenu(plugin, player).inventory)
+    }
+
+    private fun cmdGiveBlankMod(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        if (target == null) {
+            sender.sendMessage("§e用法: /$label giveblankmod <玩家> [数量]")
+            return
+        }
+        val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        val item = com.dongzh1.sourceforge.item.CraftEngineHook.build("sourceforge:blank_mod", amount)
+            ?: org.bukkit.inventory.ItemStack(org.bukkit.Material.PAPER, amount)
+        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 空白 MOD x$amount")
+    }
+
+    private fun cmdGiveMod(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val query = args.getOrNull(2)
+        if (target == null || query == null) {
+            sender.sendMessage("§e用法: /$label givemod <玩家> <MOD中文名或id> [数量]")
+            return
+        }
+        // 支持中文显示名 / 英文id / 唯一部分匹配（方便中文辨认，不必记英文id）
+        val modId = plugin.modService.resolveModId(query)
+        if (modId == null) {
+            sender.sendMessage("§c[SourceForge] §f未找到 MOD: §e$query §7(按 Tab 可补全中文名/英文id)")
+            return
+        }
+        val amount = args.getOrNull(3)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        val item = plugin.modService.createModItem(modId, amount)
+        if (item == null) {
+            sender.sendMessage("§c[SourceForge] §f无法生成 MOD: $modId")
+            return
+        }
+        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} §b${plugin.modService.modDisplayName(modId)} §7($modId) §fx$amount")
+    }
+
+    private fun cmdGiveNightmare(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        if (target == null) {
+            sender.sendMessage("§e用法: /$label givenightmare <玩家> [武器类别]")
+            return
+        }
+        val category = args.getOrNull(2)
+        if (category != null && category.lowercase() !in plugin.nightmareService.categories()) {
+            sender.sendMessage("§c[SourceForge] §f未知武器类别: $category，可用: ${plugin.nightmareService.categories().joinToString(", ")}")
+            return
+        }
+        val item = plugin.nightmareService.createSealed(category, 1)
+        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 梦魇MOD (${category ?: "随机类别"})")
+    }
+
+    private fun cmdGiveDreamMark(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        if (target == null) {
+            sender.sendMessage("§e用法: /$label givedreammark <玩家> [遗物ID|近战|远程]")
+            return
+        }
+        val selector = args.getOrNull(2)
+        val definition = selector?.let { plugin.dreammarkRelics.get(it) }
+        if (selector != null && definition == null && !plugin.rivenService.resolvesGroup(selector)) {
+            val options = (plugin.dreammarkRelics.ids() + plugin.rivenService.groupIds()).joinToString(", ")
+            sender.sendMessage("§c[SourceForge] §f未知彼端遗纹类型: $selector，可用: $options")
+            return
+        }
+        val item = definition?.let { plugin.rivenService.createVeiled(it) }
+            ?: plugin.rivenService.createVeiled(selector)
+        if (item == null) {
+            sender.sendMessage("§c[SourceForge] §f无法生成彼端遗纹，请检查 dreammark.yml 与 dreammark-relics")
+            return
+        }
+        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 封缄彼端遗纹 (${selector ?: "随机类型"})")
+    }
+
+    private fun cmdGiveDreamCore(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        if (target == null) {
+            sender.sendMessage("§e用法: /$label givedreamcore <玩家> [数量]")
+            return
+        }
+        val amount = args.getOrNull(2)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        if (!com.dongzh1.sourceforge.item.CraftEngineHook.giveItem(target, "sourceforge:dream_core", amount)) {
+            sender.sendMessage("§c[SourceForge] §f无法生成梦髓晶核，请检查 CraftEngine 物品配置")
+            return
+        }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 梦髓晶核 x$amount")
+    }
+
+    private fun cmdDreamMark(sender: CommandSender, label: String, args: Array<out String>) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以操作彼端遗纹")
+            return
+        }
+        val item = player.inventory.itemInMainHand
+        when (args.getOrNull(1)?.lowercase()) {
+            "weave", "roll" -> {
+                val cost = plugin.rivenService.rerollCost(item)
+                when (plugin.rivenService.reroll(player, item)) {
+                    com.dongzh1.sourceforge.mod.RivenRollResult.SUCCESS -> sender.sendMessage("§5[彼端遗纹] §f已消耗 §d$cost 梦髓晶核§f，使用 /$label dreammark accept 或 /$label dreammark keep 选择结果")
+                    com.dongzh1.sourceforge.mod.RivenRollResult.INVALID_RIVEN -> sender.sendMessage("§c[彼端遗纹] §f请主手持有已苏醒的彼端遗纹")
+                    com.dongzh1.sourceforge.mod.RivenRollResult.SEALED -> sender.sendMessage("§c[彼端遗纹] §f封缄彼端遗纹不能梦织")
+                    com.dongzh1.sourceforge.mod.RivenRollResult.PENDING_SELECTION -> sender.sendMessage("§e[彼端遗纹] §f请先接受候选结果或保留当前遗纹词条")
+                    com.dongzh1.sourceforge.mod.RivenRollResult.INSUFFICIENT_DREAM_CORE -> sender.sendMessage("§c[彼端遗纹] §f梦髓晶核不足，本次梦织需要 §d${cost ?: 0}")
+                }
+            }
+            "accept" -> {
+                if (plugin.rivenService.acceptPending(item)) sender.sendMessage("§a[彼端遗纹] §f已接受新的遗纹词条")
+                else sender.sendMessage("§e[彼端遗纹] §f主手彼端遗纹没有待确认的候选词条")
+            }
+            "keep" -> {
+                if (plugin.rivenService.keepCurrent(item)) sender.sendMessage("§a[彼端遗纹] §f已保留当前遗纹词条")
+                else sender.sendMessage("§e[彼端遗纹] §f主手彼端遗纹没有待确认的候选词条")
+            }
+            else -> sender.sendMessage("§e用法: /$label dreammark <weave|accept|keep> §7(主手持有彼端遗纹)")
+        }
+    }
+
+    private fun cmdReload(sender: CommandSender) {
+        if (!requireAdmin(sender)) return
+        plugin.reloadRuntime()
+        sender.sendMessage("§a[SourceForge] §f配置/脚本已重载")
+        sendValidationSummary(sender)
+    }
+
+    private fun cmdValidate(sender: CommandSender) {
+        if (!requireAdmin(sender)) return
+        sendValidationSummary(sender, verbose = true)
+    }
+
+    private fun cmdGiveEquipment(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val equipmentId = args.getOrNull(2)
+        val tier = args.getOrNull(3)?.toIntOrNull() ?: 1
+        val amount = args.getOrNull(4)?.toIntOrNull() ?: 1
+        val affixes = args.getOrNull(5)?.toIntOrNull()
+        if (target == null || equipmentId == null) {
+            sender.sendMessage("§e用法: /$label giveequipment <玩家> <装备ID> [等级] [数量] [词条数]")
+            return
+        }
+        if (equipmentId !in plugin.forgeConfig.equipment) {
+            sender.sendMessage("§c[SourceForge] §f未知装备: $equipmentId")
+            return
+        }
+        var generated = 0
+        repeat(amount.coerceAtLeast(1)) {
+            val item = plugin.itemService.createDirectEquipment(equipmentId, tier, affixes) ?: return@repeat
+            target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+            generated++
+        }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 装备 $equipmentId 等级 $tier x$generated 词条数 ${affixes?.toString() ?: "默认"}")
+    }
+
+    private fun cmdGiveRelic(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val relicId = args.getOrNull(2)
+        if (target == null || relicId == null) {
+            sender.sendMessage("§e用法: /$label giverelic <玩家> <遗物ID> [数量]")
+            return
+        }
+        if (relicId !in plugin.relicService.relicIds()) {
+            sender.sendMessage("§c[SourceForge] §f未知遗物: $relicId")
+            return
+        }
+        if (relicId.equals("sourceforge:relic_dreammark", true)) {
+            sender.sendMessage("§e[SourceForge] §f梦潮纹理·遗物当前暂不可发放")
+            return
+        }
+        val amount = args.getOrNull(3)?.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        val item = com.dongzh1.sourceforge.item.CraftEngineHook.build(relicId, amount)
+        if (item == null) {
+            sender.sendMessage("§c[SourceForge] §f无法生成遗物: $relicId")
+            return
+        }
+        target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+        sender.sendMessage("§a[SourceForge] §f已给予 ${target.name} 遗物 $relicId x$amount")
+    }
+
+    private fun cmdDebug(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        when (args.getOrNull(1)?.lowercase()) {
+            "forgeinfo" -> cmdDebugForgeInfo(sender)
+            "pdc" -> cmdDebugPdc(sender)
+            "fulltest" -> cmdDebugFullTest(sender, args)
+            "element" -> cmdDebugElement(sender, label, args)
+            "combat" -> cmdDebugCombat(sender, label, args)
+            "enhancement" -> cmdDebugEnhancement(sender, label, args)
+            else -> cmdDebugToggle(sender, label, args)
+        }
+    }
+
+    /** /sf debug forgeinfo：诊断你准星指向的方块（6格内）的 CE 识别情况 */
+    private fun cmdDebugForgeInfo(sender: CommandSender) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用此命令")
+            return
+        }
+        val block = player.getTargetBlockExact(6)
+        if (block == null) {
+            player.sendMessage("§c[forgeinfo] §f请把准星对准一个方块（6格内）")
+            return
+        }
+        val cfg = plugin.structureManager.config
+        val hook = com.dongzh1.sourceforge.item.CraftEngineHook
+        val isCe = hook.isCustomBlock(block)
+        val blockId = hook.blockId(block)
+        val handId = hook.itemId(player.inventory.itemInMainHand)
+        val lines = listOf(
+            "看向方块: ${block.type} @ ${block.x},${block.y},${block.z}",
+            "isCustomBlock(CE): $isCe",
+            "blockId(CE): ${blockId ?: "null(读取失败/非CE方块)"}",
+            "是锻炉方块: ${blockId in cfg.forgeBlockIds}",
+            "enabled=${cfg.enabled} coreId=${cfg.coreBlockId} hammerId=${cfg.hammerId}",
+            "手持物品 CE id: ${handId ?: "null"}"
+        )
+        player.sendMessage("§6==== forgeinfo ====")
+        lines.forEach { player.sendMessage("§7$it") }
+        // 同步写入控制台日志，便于离线排查
+        plugin.logger.info("[forgeinfo] ${player.name}: " + lines.joinToString(" | "))
+    }
+
+    /** /sf debug pdc：输出主手物品全部 PDC 键值(含实际类型)，用来确定 CraftEngine `pdc:` 字段
+     * 最终落地到 Bukkit PersistentDataContainer 时到底是什么 key/类型，而不是靠猜。 */
+    private fun cmdDebugPdc(sender: CommandSender) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用此命令")
+            return
+        }
+        val item = player.inventory.itemInMainHand
+        if (item.type == org.bukkit.Material.AIR || !item.hasItemMeta()) {
+            player.sendMessage("§c[pdc] §f主手没有物品")
+            return
+        }
+        val pdc = item.itemMeta.persistentDataContainer
+        val keys = pdc.keys
+        val ceId = com.dongzh1.sourceforge.item.CraftEngineHook.itemId(item)
+        player.sendMessage("§6==== pdc (${item.type} / CE id=${ceId ?: "null"}) ====")
+        if (keys.isEmpty()) {
+            player.sendMessage("§e(空，没有任何 PDC key)")
+        } else {
+            keys.sortedBy { it.toString() }.forEach { key ->
+                val desc = describePdcValue(pdc, key)
+                player.sendMessage("§7$key §f= $desc")
+                plugin.logger.info("[debugpdc] ${player.name}: $key = $desc")
+            }
+        }
+    }
+
+    /** /sf debug fulltest [装备ID]：一次性自检（物品属性写入/属性总计/外部Provider/伤害推演/实打） */
+    private fun cmdDebugFullTest(sender: CommandSender, args: Array<out String>) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用此命令")
+            return
+        }
+        runFullTest(player, args.getOrNull(2), args.getOrNull(3))
+    }
+
+    /** /sf debug element <on|off>：开启后命中带元素+触发的装备时，打印触发计算与目标层数 */
+    private fun cmdDebugElement(sender: CommandSender, label: String, args: Array<out String>) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用此命令")
+            return
+        }
+        val on = when (args.getOrNull(2)?.lowercase()) {
+            "on", "true" -> true
+            "off", "false" -> false
+            null, "toggle" -> !plugin.statusManager.isDebug(player.uniqueId)
+            else -> {
+                sender.sendMessage("§e用法: /$label debug element <on|off>")
+                return
+            }
+        }
+        plugin.statusManager.setDebug(player.uniqueId, on)
+        sender.sendMessage("§a[SourceForge] §f元素触发调试已${if (on) "开启" else "关闭"}")
+    }
+
+    private fun cmdDebugCombat(sender: CommandSender, label: String, args: Array<out String>) {
+        val targetArg = args.getOrNull(2)?.lowercase()
+        if (targetArg in setOf("on", "off", "true", "false")) {
+            cmdDebugToggle(sender, label, args)
+            return
+        }
+        val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
+        val viewer = sender as? Player
+        if (target == null || viewer == null) {
+            sender.sendMessage("§e用法: /$label debug combat <on|off> 或 /$label debug combat <玩家> <on|off>")
+            return
+        }
+        val value = args.getOrNull(3)?.lowercase() ?: "toggle"
+        if (value !in setOf("on", "off", "true", "false", "toggle")) {
+            sender.sendMessage("§e用法: /$label debug combat <玩家> <on|off>")
+            return
+        }
+        val enabled = if (value == "toggle") !plugin.combatDebug.isWatching(viewer.uniqueId, target.uniqueId)
+        else value == "on" || value == "true"
+        plugin.combatDebug.setWatcher(viewer.uniqueId, target.uniqueId, enabled)
+        sender.sendMessage("§a[SourceForge] §f${target.name} 的战斗调试已${if (enabled) "开启" else "关闭"}，日志将发送给你")
+    }
+
+    private fun cmdDebugEnhancement(sender: CommandSender, label: String, args: Array<out String>) {
+        val operation = args.getOrNull(2)?.lowercase()
+        val targetLevel = when (operation) {
+            "reset5", "downgrade5" -> 5
+            "reset", "downgrade" -> args.getOrNull(3)?.toIntOrNull() ?: 5
+            else -> {
+                sender.sendMessage("§e用法: /$label debug enhancement reset5  或  /$label debug enhancement downgrade <等级>")
+                return
+            }
+        }
+        if (targetLevel !in 0..15) {
+            sender.sendMessage("§c[SourceForge] §f目标等级必须在 0 到 15 之间")
+            return
+        }
+        val changed = plugin.downgradeOnlineEnhancements(targetLevel)
+        sender.sendMessage("§a[SourceForge] §f已检查在线玩家完整库存，将高于 Lv.$targetLevel 的装备降至 Lv.$targetLevel，重算 $changed 件装备")
+    }
+
+    /** /sf debug <combat|betterhud> <on|off> */
+    private fun cmdDebugToggle(sender: CommandSender, label: String, args: Array<out String>) {
+        val target = args.getOrNull(1)?.lowercase()
+        val value = args.getOrNull(2)?.lowercase()
+        if (target !in setOf("combat", "betterhud") || value !in setOf("on", "off", "true", "false")) {
+            sender.sendMessage("§e用法: /$label debug <combat|betterhud> <on|off>  |  /$label debug forgeinfo")
+            return
+        }
+        val enabled = value == "on" || value == "true"
+        val path = if (target == "combat") "debug.combat" else "betterhud.debug"
+        plugin.config.set(path, enabled)
+        plugin.saveConfig()
+        plugin.reloadAll()
+        val label2 = if (target == "combat") "战斗" else "BetterHud"
+        sender.sendMessage("§a[SourceForge] §f${label2}调试已${if (enabled) "开启" else "关闭"}")
+    }
+
+    private fun cmdEnergy(sender: CommandSender, label: String, args: Array<out String>) {
+        val sub = args.getOrNull(1)?.lowercase()
+        when (sub) {
+            "deduct" -> {
+                val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
+                val amount = args.getOrNull(3)?.toDoubleOrNull()
+                if (target == null || amount == null || amount <= 0) {
+                    sender.sendMessage("§e用法: /$label energy deduct <玩家> <数量>")
+                    return
+                }
+                val ok = plugin.energyService.deductEnergy(target, amount)
+                if (ok) {
+                    sender.sendMessage("§a[SourceForge] §f已扣除 ${target.name} 能量 $amount, 剩余: ${"%.0f".format(plugin.energyService.getEnergyCurrent(target))}")
+                } else {
+                    sender.sendMessage("§c[SourceForge] §f${target.name} 能量不足 ($amount), 当前: ${"%.0f".format(plugin.energyService.getEnergyCurrent(target))}")
+                }
+            }
+            "get" -> {
+                val target = args.getOrNull(2)?.let { Bukkit.getPlayerExact(it) } ?: (sender as? Player)
+                if (target == null) {
+                    sender.sendMessage("§e用法: /$label energy get [玩家]")
+                    return
+                }
+                val cur = plugin.energyService.getEnergyCurrent(target)
+                val max = plugin.energyService.getEnergyMax(target)
+                sender.sendMessage("§a[SourceForge] §f${target.name} 能量: ${"%.0f".format(cur)}/${"%.0f".format(max)}")
+            }
+            "set" -> {
+                if (!sender.hasPermission("sourceforge.admin")) { sender.sendMessage("§c你没有权限"); return }
+                val target = Bukkit.getPlayerExact(args.getOrNull(2) ?: "")
+                val amount = args.getOrNull(3)?.toDoubleOrNull()
+                if (target == null || amount == null || amount < 0) {
+                    sender.sendMessage("§e用法: /$label energy set <玩家> <数量>")
+                    return
+                }
+                plugin.energyService.setEnergy(target, amount)
+                sender.sendMessage("§a[SourceForge] §f已设置 ${target.name} 能量: ${"%.0f".format(amount)}/${"%.0f".format(plugin.energyService.getEnergyMax(target))}")
+            }
+            else -> sender.sendMessage("§e用法: /$label energy <deduct|get|set> [玩家] [数量]")
+        }
+    }
+
+    private fun cmdGive(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val expression = args.getOrNull(2)
+        if (target == null || expression == null) {
+            sender.sendMessage("§e用法: /$label give <玩家> <sf表达式> [数量]")
+            return
+        }
+        val amount = args.getOrNull(3)?.toIntOrNull() ?: 1
+        if (isEquipmentExpression(expression)) {
+            var generated = 0
+            repeat(amount.coerceAtLeast(1)) {
+                val item = plugin.buildItemExpression(expression, target, 1) ?: return@repeat
+                target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+                generated++
+            }
+            if (generated <= 0) {
+                sender.sendMessage("§c[SourceForge] §f无法生成物品: $expression")
+                return
+            }
+            sender.sendMessage("§a[SourceForge] §f已给予 ${target.name}: $expression x$generated")
+        } else {
+            val item = plugin.buildItemExpression(expression, target, amount)
+            if (item == null) {
+                sender.sendMessage("§c[SourceForge] §f无法生成物品: $expression")
+                return
+            }
+            target.inventory.addItem(item).values.forEach { target.world.dropItemNaturally(target.location, it) }
+            sender.sendMessage("§a[SourceForge] §f已给予 ${target.name}: $expression")
+        }
+    }
+
+    private fun cmdTestDamage(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val amount = args.getOrNull(2)?.toDoubleOrNull()
+        if (target == null || amount == null || amount <= 0.0) {
+            sender.sendMessage("§e用法: /$label testdamage <玩家> <伤害>")
+            return
+        }
+        target.damage(amount)
+        sender.sendMessage("§a[SourceForge] §f已对 ${target.name} 施加测试伤害: $amount")
+    }
+
+    private fun cmdReroll(sender: CommandSender) {
+        if (!requireAdmin(sender)) return
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以重铸手持装备")
+            return
+        }
+        val item = player.inventory.itemInMainHand
+        if (!plugin.itemService.rerollEquipment(item)) {
+            sender.sendMessage("§c[SourceForge] §f请手持 SourceForge 装备")
+            return
+        }
+        plugin.itemService.invalidateStatCache(player)
+        sender.sendMessage("§a[SourceForge] §f手持装备已重铸")
+    }
+
+    private fun cmdUpgrade(sender: CommandSender) {
+        if (!requireAdmin(sender)) return
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以升级手持装备")
+            return
+        }
+        val item = player.inventory.itemInMainHand
+        if (!plugin.itemService.upgradeEquipment(item)) {
+            sender.sendMessage("§c[SourceForge] §f请手持未满级的 SourceForge 装备")
+            return
+        }
+        plugin.itemService.invalidateStatCache(player)
+        sender.sendMessage("§a[SourceForge] §f手持装备已升级")
+    }
+
+    private fun cmdStats(sender: CommandSender) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以使用此命令")
+            return
+        }
+        showStats(player)
+    }
+
+    private fun cmdCd(sender: CommandSender, label: String, args: Array<out String>) {
+        val player = sender as? Player
+        if (player == null) {
+            sender.sendMessage("只有玩家可以切换 CD 显示")
+            return
+        }
+        val enabled = when (args.getOrNull(1)?.lowercase()) {
+            "on", "true" -> true
+            "off", "false" -> false
+            null, "toggle" -> !plugin.skillListener.isCdDisplayEnabled(player)
+            else -> {
+                sender.sendMessage("§e用法: /$label cd <on|off>")
+                return
+            }
+        }
+        plugin.skillListener.setCdDisplay(player, enabled)
+        sender.sendMessage("§a[SourceForge] §f技能 CD 显示已${if (enabled) "开启" else "关闭"}")
+    }
+
+    private fun cmdTrack(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        if (target == null) {
+            sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
+            return
+        }
+        if (args.getOrNull(2)?.equals("off", true) == true) {
+            val had = plugin.navigationManager.stop(target)
+            sender.sendMessage(if (had) "§a[SourceForge] §f已清空 ${target.name} 的全部追踪目标" else "§e[SourceForge] §f${target.name} 当前没有追踪目标")
+            return
+        }
+        val name = args.getOrNull(2)
+        val x = args.getOrNull(3)?.toDoubleOrNull()
+        val y = args.getOrNull(4)?.toDoubleOrNull()
+        val z = args.getOrNull(5)?.toDoubleOrNull()
+        if (name == null || x == null || y == null || z == null) {
+            sender.sendMessage("§e用法: /$label track <玩家> <目标名> <x> <y> <z> [世界] [颜色]  |  /$label track <玩家> off")
+            return
+        }
+        val world = args.getOrNull(6) ?: target.world.name
+        val colorArg = args.getOrNull(7)
+        val resolved = com.dongzh1.sourceforge.nav.NavigationManager.resolveColor(colorArg) ?: run {
+            sender.sendMessage("§c[SourceForge] §f未知颜色: $colorArg，可用命名色: ${com.dongzh1.sourceforge.nav.NavigationManager.COLORS.keys.joinToString(", ")}，或直接写 §b#RRGGBB")
+            return
+        }
+        plugin.navigationManager.track(target, name, x, y, z, world, resolved.hex, resolved.icon)
+        sender.sendMessage("§a[SourceForge] §f已为 §e${target.name} §f追踪 §b$name §7(${x.toInt()}, ${y.toInt()}, ${z.toInt()} @ $world) §f颜色 §b${resolved.label}§f，当前共 ${plugin.navigationManager.targetNames(target).size} 个目标")
+    }
+
+    private fun cmdUntrack(sender: CommandSender, label: String, args: Array<out String>) {
+        if (!requireAdmin(sender)) return
+        val target = Bukkit.getPlayerExact(args.getOrNull(1) ?: "")
+        val name = args.getOrNull(2)
+        if (target == null || name == null) {
+            sender.sendMessage("§e用法: /$label untrack <玩家> <目标名>")
+            return
+        }
+        val ok = plugin.navigationManager.untrack(target, name)
+        sender.sendMessage(if (ok) "§a[SourceForge] §f已移除 ${target.name} 的追踪目标 §b$name" else "§e[SourceForge] §f${target.name} 没有名为 §b$name §f的追踪目标")
+    }
+
+    // ==================== Tab 补全 ====================
+
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("forge", "mods", "upgrademod", "givemod", "givenightmare", "giveblankmod", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "cd", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("forge", "mods", "givemod", "givedreammark", "dreammark", "givedreamcore", "giveblankmod", "giverelic", "reload", "validate", "giveequipment", "give", "testdamage", "mmdamage", "reroll", "upgrade", "stats", "track", "untrack", "sect", "cd", "debug").filter { it.startsWith(args[0], true) }
             2 -> when {
-                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("givenightmare", true) || args[0].equals("giveblankmod", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
-                args[0].equals("debug", true) -> listOf("combat", "betterhud", "forgeinfo", "element", "fulltest").filter { it.startsWith(args[1], true) }
+                args[0].equals("sect", true) || args[0].equals("cult", true) || args[0].equals("faction", true) -> listOf("list", "join", "buy", "prepare", "finish", "status", "leave", "npc").filter { it.startsWith(args[1], true) }
+                args[0].equals("giveequipment", true) || args[0].equals("give", true) || args[0].equals("givemod", true) || args[0].equals("givenightmare", true) || args[0].equals("givedreammark", true) || args[0].equals("giveriven", true) || args[0].equals("givedreamcore", true) || args[0].equals("givekuva", true) || args[0].equals("giveblankmod", true) || args[0].equals("giverelic", true) || args[0].equals("testdamage", true) || args[0].equals("mmdamage", true) || args[0].equals("track", true) || args[0].equals("untrack", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) }
+                args[0].equals("dreammark", true) -> listOf("weave", "accept", "keep").filter { it.startsWith(args[1], true) }
+                args[0].equals("debug", true) -> listOf("combat", "enhancement", "betterhud", "forgeinfo", "element", "fulltest", "pdc").filter { it.startsWith(args[1], true) }
                 args[0].equals("cd", true) -> listOf("on", "off").filter { it.startsWith(args[1], true) }
                 else -> emptyList()
             }
             3 -> when {
+                (args[0].equals("sect", true) || args[0].equals("cult", true) || args[0].equals("faction", true)) && args[1].equals("join", true) -> plugin.sectService.sects().map { it.id }.filter { it.startsWith(args[2], true) }
+                (args[0].equals("sect", true) || args[0].equals("cult", true) || args[0].equals("faction", true)) && args[1].equals("buy", true) ->
+                    (sender as? Player)?.let { plugin.sectService.purchasableRewardIds(it) } ?: emptyList()
+                (args[0].equals("sect", true) || args[0].equals("cult", true) || args[0].equals("faction", true)) && args[1].equals("npc", true) -> listOf("create", "remove", "open", "list", "prepare", "close").filter { it.startsWith(args[2], true) }
                 args[0].equals("giveequipment", true) -> plugin.forgeConfig.equipment.keys.filter { it.startsWith(args[2], true) }
                 args[0].equals("give", true) -> expressionSuggestions().filter { it.startsWith(args[2], true) }
                 args[0].equals("givemod", true) -> plugin.modService.modSuggestions().filter { it.startsWith(args[2], true) }
                 args[0].equals("giveblankmod", true) -> listOf("1", "8", "16", "64").filter { it.startsWith(args[2], true) }
-                args[0].equals("givenightmare", true) -> plugin.nightmareService.categories().filter { it.startsWith(args[2], true) }
+                args[0].equals("giverelic", true) -> plugin.relicService.relicIds().filter { it.startsWith(args[2], true) }
+            args[0].equals("givedreammark", true) ->
+                (plugin.dreammarkRelics.ids() + plugin.rivenService.groupIds()).filter { it.startsWith(args[2], true) }
+                args[0].equals("givedreamcore", true) -> listOf("1", "8", "16", "32", "64").filter { it.startsWith(args[2], true) }
+                args[0].equals("debug", true) && args[1].equals("enhancement", true) ->
+                    listOf("reset5", "downgrade", "reset").filter { it.startsWith(args[2], true) }
+                args[0].equals("debug", true) && args[1].equals("combat", true) ->
+                    (listOf("on", "off") + Bukkit.getOnlinePlayers().map { it.name }).filter { it.startsWith(args[2], true) }
                 args[0].equals("debug", true) -> listOf("on", "off").filter { it.startsWith(args[2], true) }
                 args[0].equals("track", true) || args[0].equals("nav", true) || args[0].equals("navigate", true) -> listOf("off").filter { it.startsWith(args[2], true) }
                 args[0].equals("untrack", true) -> (Bukkit.getPlayerExact(args[1])?.let { plugin.navigationManager.targetNames(it) } ?: emptyList()).filter { it.startsWith(args[2], true) }
@@ -409,6 +721,10 @@ class SourceForgeCommand(
             // track 的坐标/世界/颜色补全：默认补全 args[1] 指定玩家的当前坐标与所在世界。
             4 -> when {
                 args[0].equals("givemod", true) -> listOf("1", "5", "10").filter { it.startsWith(args[3], true) }
+                args[0].equals("debug", true) && args[1].equals("enhancement", true) ->
+                    listOf("5").filter { it.startsWith(args[3], true) }
+                args[0].equals("debug", true) && args[1].equals("combat", true) ->
+                    listOf("on", "off").filter { it.startsWith(args[3], true) }
                 isTrackAlias(args[0]) -> trackPlayerLoc(args[1])?.let { listOf(it.blockX.toString()) }?.filter { it.startsWith(args[3], true) } ?: emptyList()
                 else -> emptyList()
             }
@@ -470,7 +786,7 @@ class SourceForgeCommand(
 
     /**
      * 一次性自检：物品属性写入 / 属性总计(含外部Provider) / 伤害链路推演 / 看向实体实打。
-     * 用于快速定位“词条在但属性没加成 / 外部临时属性失效”等回归。
+     * 用于快速定位"词条在但属性没加成 / 外部临时属性失效"等回归。
      */
     private fun runFullTest(player: Player, equipmentArg: String?, skillArg: String?) {
         val svc = plugin.itemService
@@ -659,6 +975,24 @@ class SourceForgeCommand(
         player.sendMessage("§6======================================")
     }
 
+    /** 逐个尝试已知 PersistentDataType，返回第一个匹配上的类型+值(调试用，不追求性能)。 */
+    private fun describePdcValue(pdc: org.bukkit.persistence.PersistentDataContainer, key: org.bukkit.NamespacedKey): String {
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.STRING)?.let { return "STRING(\"$it\")" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.INTEGER)?.let { return "INT($it)" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.LONG)?.let { return "LONG($it)" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.DOUBLE)?.let { return "DOUBLE($it)" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.FLOAT)?.let { return "FLOAT($it)" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.BYTE)?.let { return "BYTE($it)" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.INTEGER_ARRAY)?.let { return "INT_ARRAY(${it.joinToString()})" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.LONG_ARRAY)?.let { return "LONG_ARRAY(${it.joinToString()})" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.BYTE_ARRAY)?.let { return "BYTE_ARRAY(${it.joinToString()})" }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.TAG_CONTAINER)?.let { nested ->
+            return "CONTAINER{" + nested.keys.joinToString(", ") { k -> "$k=" + describePdcValue(nested, k) } + "}"
+        }
+        pdc.get(key, org.bukkit.persistence.PersistentDataType.TAG_CONTAINER_ARRAY)?.let { arr -> return "CONTAINER_ARRAY[size=${arr.size}]" }
+        return "<unresolved type>"
+    }
+
     /** 反射调用 PlaceholderAPI 解析占位符；未装/未解析返回 null。 */
     private fun resolvePapi(player: Player, placeholder: String): String? = runCatching {
         val clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI")
@@ -730,12 +1064,12 @@ class SourceForgeCommand(
             totals,
             listOf("heat_damage", "cold_damage", "toxin_damage", "electric_damage")
         )
-
-        val displayedIds = defaultAffixOrder.toSet()
-        val extraAffixes = plugin.forgeConfig.affixes.keys.filter { it !in displayedIds }
-        if (extraAffixes.isNotEmpty()) {
-            sendAffixGroup(player, "其他属性", totals, extraAffixes)
-        }
+        sendAffixGroup(
+            player,
+            "召唤属性",
+            totals,
+            listOf("summon_damage", "summon_max_count")
+        )
 
         // 评分
         val totalScore = allItems.sumOf { plugin.itemService.readScore(it) }
@@ -767,28 +1101,11 @@ class SourceForgeCommand(
     }
 
     private companion object {
-        val defaultAffixOrder = listOf(
-            "base_damage",
-            "critical_chance",
-            "critical_damage",
-            "status_chance",
-            "armor",
-            "health",
-            "shield_capacity",
-            "energy_max",
-            "ability_strength",
-            "ability_duration",
-            "ability_efficiency",
-            "ability_range",
-            "heat_damage",
-            "cold_damage",
-            "toxin_damage",
-            "electric_damage"
-        )
         val percentAffixes = setOf(
             "critical_chance",
             "critical_damage",
             "status_chance",
+            "summon_damage",
             "ability_strength",
             "ability_duration",
             "ability_efficiency"

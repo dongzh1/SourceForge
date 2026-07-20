@@ -1,10 +1,10 @@
-# 基础MOD · 技能持续（法术护甲）— Warframe 延展
+# 基础MOD · 技能持续（护甲通用，2026-07-17 起物理/法术护甲合并）— Warframe 延展
 id: continuity
 display-name: "&3延展"
-item: "minecraft:clock"
-cost: 9
+item: "sourceforge:mod_continuity"
+cost: 8
 max-per-equipment: 1
-applicable-categories: [armor_magic]
+applicable-categories: [armor_physical, armor_magic]
 effects: { ability_duration: 0.12 }
 max-rank: 5
 upgrade-cost: 1

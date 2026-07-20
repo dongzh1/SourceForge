@@ -1,0 +1,29 @@
+# MOD卡·瘴毒核心（miasma_core）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_miasma_core:
+    material: prismarine_crystals
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_miasma_core_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_miasma_core
+    data:
+      item_name: "<!i><light_purple>瘴毒核心"
+      lore:
+        - "<!i><dark_gray>◆ <gray>元素 MOD  <dark_gray>│  <gray>占用 <yellow>11"
+        - "<!i><dark_gray>◆ <gray>段位  <aqua>◇◇◇◇ <gray>0/4"
+        - ""
+        - "<!i><light_purple>✦ 属性增幅"
+        - "<!i>  <dark_gray>▪ <gray>冰元素  <aqua>+0.2 <dark_gray>→ <green>+0.5"
+        - "<!i>  <dark_gray>▪ <gray>毒元素  <green>+0.2 <dark_gray>→ <green>+0.5"
+        - "<!i>  <dark_gray>▪ <gray>触发  <white>+3% <dark_gray>→ <green>+6%"
+        - ""
+        - "<!i><gold>✦ 效果说明"
+        - "<!i>  <dark_gray>▪ <dark_gray>同时叠加冰霜与剧毒"
+        - "<!i>  <dark_gray>▪ <dark_gray>单卡即可组成viral(病毒)元素反应"
+        - "<!i>  <dark_gray>▪ <dark_gray>单元素强度弱于专精卡(frostbite/venom满级2.0)，约六成强度"
+        - ""
+        - "<!i><gray>适用装备  <white>武器通用"

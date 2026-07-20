@@ -1,0 +1,26 @@
+# 技能MOD · 弹幕压制（suppression_barrage）— 枪械专属。装进枪械「Shift+F」技能触发栏。
+# Shift+F 同时抛出多枚弹丸，沿玩家面朝方向左右扇形均匀分布角度射出，每枚独立命中判定，
+# 各自造成 base_damage×dmg-mult 纯物理伤害（元素随武器元素MOD命中时自动附加）。
+# 脚本: skills/suppression_barrage.js（钩子 onActivate）；数值在 config.yml 的 suppression-barrage 段(可选，
+# 未配置则用脚本内嵌默认值：5发/±15°/8秒CD/×0.5倍伤害/20能量)。
+#
+# 【技术说明】本 MOD 依赖脚本引擎新增的 sf.beamAngled() 原语（当前 SfScriptApi.kt 还没有这个函数，
+# 见开发报告的"需要共享文件改动"部分给出的完整 diff）。sf.beam 只能沿玩家当前实际视线发射，没有角度
+# 偏移参数，无法直接做出扇形多连发；beamAngled 用纯向量数学把方向绕竖直轴旋转指定角度，不会改动玩家
+# 真实朝向，避免"临时转视角再转回来"带来的客户端画面抖动问题。
+id: suppression_barrage
+display-name: "&6弹幕压制"
+item: "sourceforge:mod_suppression_barrage"
+cost: 10
+max-per-equipment: 1
+applicable-categories: [firearm]
+tags: [skill]
+skill: true
+allowed-triggers: [shift_f]
+mana: "%cfg:suppression-barrage.mana|20% 能量"
+cooldown: "%cfgs:suppression-barrage.cooldown-ms|8000%秒"
+description:
+  - "&6Shift+F &7同时抛射 %cfg:suppression-barrage.pellets|5% 枚弹丸"
+  - "面朝方向 &f±%cfg:suppression-barrage.half-spread-deg|15%° &7扇形均匀散射"
+  - "每枚 &f独立判定命中&7，各自造成基础伤害 &f×%cfg:suppression-barrage.dmg-mult|0.5% &7纯物理伤害"
+  - "&8元素由武器上的元素MOD 命中时附加"

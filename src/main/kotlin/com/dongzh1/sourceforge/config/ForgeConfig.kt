@@ -1,4 +1,7 @@
 package com.dongzh1.sourceforge.config
+import com.dongzh1.sourceforge.enchant.EnchantBridgeConfig
+import com.dongzh1.sourceforge.item.CraftEngineHook
+import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -11,23 +14,32 @@ data class ForgeConfig(
     val forge: ForgeSystemConfig,
     val score: ScoreConfig,
     val combat: CombatConfig,
-    val itemDisplayNames: Map<String, String>,
     val equipment: Map<String, EquipmentConfig>,
+    val equipmentTiers: EquipmentTierConfig,
     val affixes: Map<String, AffixConfig>,
-    val recipes: Map<String, ForgeRecipe>,
     val modCapacity: ModCapacityConfig,
     val forgeUi: ForgeUiConfig,
+    val enchantBridge: EnchantBridgeConfig,
     val validationWarnings: List<String>
 ) {
-    fun displayName(id: String): String {
+    /**
+     * 材料/物品的"裸名"(无强制颜色)Component，聊天提示与GUI图标命名统一走这个口子：
+     * 1. CE 自定义物品直接读它自己配置的 data.item_name(CraftEngine 已经解析好的 Component)；
+     * 2. 否则原版物品用 minecraft 翻译键(item./block. 由 Material.isBlock 判断)交给客户端按自己的
+     *    语言/字体渲染——服务端不需要、也不应该为每个原版材料硬编码中文名。
+     * 3. 都对不上(比如 CE 未启用又不是合法原版 id)才退回 id 原始字符串。
+     */
+    fun bareNameComponent(id: String): Component {
         val normalized = id.trim().lowercase()
-        itemDisplayNames[normalized]?.let { return it }
-        itemDisplayNames[normalized.removePrefix("minecraft:")]?.let { return it }
-        return if (normalized.startsWith("minecraft:")) {
-            normalized.substringAfter("minecraft:").uppercase()
-        } else {
-            normalized
+        CraftEngineHook.build(id, 1)?.itemMeta?.displayName()?.let { return it }
+
+        val vanillaPath = normalized.substringAfter(':')
+        val material = Material.matchMaterial(normalized)
+        if (material != null) {
+            val prefix = if (material.isBlock) "block" else "item"
+            return Component.translatable("$prefix.minecraft.$vanillaPath")
         }
+        return Component.text(id)
     }
 
     fun equipmentDisplayName(id: String): String {
@@ -38,15 +50,11 @@ data class ForgeConfig(
         fun load(
             config: FileConfiguration,
             affixesConfig: YamlConfiguration = YamlConfiguration(),
-            recipesFile: File? = null,
             combatConfig: YamlConfiguration = YamlConfiguration(),
-            forgeUiFile: File? = null
+            forgeUiFile: File? = null,
+            enchantsConfig: YamlConfiguration = YamlConfiguration(),
+            equipmentFolder: File? = null
         ): ForgeConfig {
-            val itemDisplayNames = linkedMapOf<String, String>()
-            config.getConfigurationSection("item-display-names")?.getKeys(false)?.forEach { id ->
-                config.getString("item-display-names.$id")?.let { itemDisplayNames[id.lowercase()] = it }
-            }
-
             val affixes = linkedMapOf<String, AffixConfig>()
             config.getConfigurationSection("affixes")?.getKeys(false)?.forEach { id ->
                 val path = "affixes.$id"
@@ -57,28 +65,16 @@ data class ForgeConfig(
                 affixes[id] = loadAffix(affixesConfig, path, id)
             }
 
-            val equipment = linkedMapOf<String, EquipmentConfig>()
-            config.getConfigurationSection("equipment")?.getKeys(false)?.forEach { id ->
-                val path = "equipment.$id"
-                equipment[id] = EquipmentConfig(
-                    id = id,
-                    displayName = config.getString("$path.display-name", id)!!,
-                    material = parseMaterial(config.getString("$path.material"), Material.IRON_SWORD),
-                    ceId = config.getString("$path.ce-id")?.takeIf { it.isNotBlank() },
-                    weaponCategory = config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase(),
-                    chunkWorldLevelMode = config.getString("$path.chunkworld-level", "tier")!!,
-                    pixelShopPrice = config.getDouble("$path.pixelshop-price", 0.0),
-                    effectiveSlots = config.getStringList("$path.effective-slots")
-                        .ifEmpty { defaultEffectiveSlots(id, config.getString("$path.weapon-category", defaultWeaponCategory(id, config.getString("$path.material")))!!.lowercase()) }
-                        .map { it.lowercase() }
-                        .toSet(),
-                    baseLore = config.getStringList("$path.base-lore"),
-                    affixIds = config.getStringList("$path.affixes").ifEmpty { affixes.keys.toList() },
-                    tierAffixes = loadTierAffixes(config, "$path.tier-affixes")
-                )
-            }
-
-            val recipes = loadRecipes(recipesFile)
+            // 装备定义已从 config.yml 的 equipment: 段迁移到独立的 equipment/ 文件夹
+            // （支持任意深度中文子文件夹分类），见 EquipmentRegistry。
+            val (equipment, equipmentWarnings) = EquipmentRegistry.load(equipmentFolder, affixes)
+            // 装备品阶(强化花费倍率分级，见 EquipmentTierConfig)：同样放在 equipment/ 文件夹下，
+            // 用保留文件名 equipment-tiers.yml，EquipmentRegistry 已知要跳过它、不当装备定义解析。
+            val equipmentTiers = EquipmentTierConfig.load(
+                equipmentFolder?.let { File(it, EquipmentTierConfig.FILE_NAME) },
+                equipment
+            )
+            val forgeUi = loadForgeUi(forgeUiFile, config.getString("gui.title", "&0源质锻造")!!)
 
             return ForgeConfig(
                 guiTitle = config.getString("gui.title", "&0源质锻造")!!,
@@ -87,41 +83,20 @@ data class ForgeConfig(
                     enabled = config.getBoolean("betterhud.enabled", true),
                     skillCdPopup = config.getString("betterhud.skill-cd-popup", "sourceforge_skill_cd")!!,
                     navigatorPopup = config.getString("betterhud.navigator-popup", "sourceforge_navigator")!!,
+                    taskTrackerPopup = config.getString("betterhud.task-tracker-popup", "sourceforge_task_tracker")!!,
                     debug = config.getBoolean("betterhud.debug", false)
                 ),
                 forge = loadForgeSystem(config),
                 score = loadScore(config),
                 combat = loadCombat(combatConfig),
-                itemDisplayNames = itemDisplayNames,
                 equipment = equipment,
+                equipmentTiers = equipmentTiers,
                 affixes = affixes,
-                recipes = recipes,
                 modCapacity = loadModCapacity(config),
-                forgeUi = loadForgeUi(forgeUiFile, config.getString("gui.title", "&0源质锻造")!!),
-                validationWarnings = validate(recipes, equipment, affixes)
+                forgeUi = forgeUi,
+                enchantBridge = EnchantBridgeConfig.load(enchantsConfig),
+                validationWarnings = equipmentWarnings + validate(equipment, affixes) + validateForgeUiSlots(forgeUi)
             )
-        }
-
-        private fun loadRecipes(recipesFile: File?): Map<String, ForgeRecipe> {
-            if (recipesFile == null || !recipesFile.isFile) return emptyMap()
-            val yaml = YamlConfiguration.loadConfiguration(recipesFile)
-            val section = yaml.getConfigurationSection("recipes") ?: return emptyMap()
-            val result = linkedMapOf<String, ForgeRecipe>()
-            for (blueprintId in section.getKeys(false)) {
-                val path = "recipes.$blueprintId"
-                val materials = yaml.getMapList("$path.materials").mapNotNull { map ->
-                    val itemId = map["item"]?.toString() ?: return@mapNotNull null
-                    RecipeMaterial(itemId, map["amount"]?.toString()?.toIntOrNull() ?: 1)
-                }
-                result[blueprintId] = ForgeRecipe(
-                    blueprintId = blueprintId,
-                    equipmentId = yaml.getString("$path.equipment", blueprintId)!!,
-                    tier = yaml.getInt("$path.tier", 1).coerceAtLeast(1),
-                    timeSeconds = yaml.getDouble("$path.time-seconds", 60.0).coerceAtLeast(0.0),
-                    materials = materials
-                )
-            }
-            return result
         }
 
         /**
@@ -135,26 +110,67 @@ data class ForgeConfig(
             if (file == null || !file.isFile) return defaults
             val yaml = YamlConfiguration.loadConfiguration(file)
 
-            val slots = yaml.getConfigurationSection("slots")
-            val materialSlots = (slots?.getIntegerList("materials") ?: emptyList())
-                .takeIf { it.isNotEmpty() } ?: defaults.materialSlots
-            val barrierSlots = slots?.getIntegerList("barriers") ?: emptyList()
-
-            // title: 缺省键时用代码默认(带背景图字形);显式写空串 "" 则视为无背景图。
-            val title = if (yaml.isSet("title")) yaml.getString("title", "")!! else defaults.title
-
             return ForgeUiConfig(
-                size = yaml.getInt("size", defaults.size),
-                title = title,
-                blueprintSlot = slots?.getInt("blueprint", defaults.blueprintSlot) ?: defaults.blueprintSlot,
-                actionSlot = slots?.getInt("action", defaults.actionSlot) ?: defaults.actionSlot,
-                outputSlot = slots?.getInt("output", defaults.outputSlot) ?: defaults.outputSlot,
-                materialSlots = materialSlots,
-                barrierSlots = barrierSlots,
                 hammerButton = loadButton(yaml, "buttons.hammer", defaults.hammerButton),
                 progressButton = loadButton(yaml, "buttons.progress", defaults.progressButton),
                 collectButton = loadButton(yaml, "buttons.collect", defaults.collectButton),
-                fillerMaterial = parseMaterial(yaml.getString("filler-material"), defaults.fillerMaterial)
+                fillerMaterial = parseMaterial(yaml.getString("filler-material"), defaults.fillerMaterial),
+                craft = loadCraftUi(yaml, defaults.craft),
+                enhance = loadEnhanceUi(yaml, defaults.enhance),
+                upgrade = loadUpgradeUi(yaml, defaults.upgrade)
+            )
+        }
+
+        /** title: section 内缺省键时用代码默认;显式写空串 "" 则视为无背景图(当前项目实际生效的分支)。 */
+        private fun sectionTitle(section: org.bukkit.configuration.ConfigurationSection, defaults: String): String =
+            if (section.isSet("title")) section.getString("title", "")!! else defaults
+
+        private fun loadCraftUi(yaml: YamlConfiguration, defaults: ForgeCraftUiConfig): ForgeCraftUiConfig {
+            val section = yaml.getConfigurationSection("craft") ?: return defaults
+            val slots = section.getConfigurationSection("slots")
+            val materialSlots = (slots?.getIntegerList("materials") ?: emptyList())
+                .takeIf { it.isNotEmpty() } ?: defaults.materialSlots
+            return ForgeCraftUiConfig(
+                size = section.getInt("size", defaults.size),
+                title = sectionTitle(section, defaults.title),
+                blueprintSlot = slots?.getInt("blueprint", defaults.blueprintSlot) ?: defaults.blueprintSlot,
+                actionSlot = slots?.getInt("action", defaults.actionSlot) ?: defaults.actionSlot,
+                outputSlot = slots?.getInt("output", defaults.outputSlot) ?: defaults.outputSlot,
+                modeToggleSlot = slots?.getInt("mode-toggle", defaults.modeToggleSlot) ?: defaults.modeToggleSlot,
+                materialSlots = materialSlots,
+                barrierSlots = slots?.getIntegerList("barriers") ?: emptyList()
+            )
+        }
+
+        private fun loadEnhanceUi(yaml: YamlConfiguration, defaults: ForgeEnhanceUiConfig): ForgeEnhanceUiConfig {
+            val section = yaml.getConfigurationSection("enhance") ?: return defaults
+            val slots = section.getConfigurationSection("slots")
+            return ForgeEnhanceUiConfig(
+                size = section.getInt("size", defaults.size),
+                title = sectionTitle(section, defaults.title),
+                weaponSlot = slots?.getInt("weapon", defaults.weaponSlot) ?: defaults.weaponSlot,
+                actionSlot = slots?.getInt("action", defaults.actionSlot) ?: defaults.actionSlot,
+                outputSlot = slots?.getInt("output", defaults.outputSlot) ?: defaults.outputSlot,
+                modeToggleSlot = slots?.getInt("mode-toggle", defaults.modeToggleSlot) ?: defaults.modeToggleSlot,
+                barrierSlots = slots?.getIntegerList("barriers") ?: emptyList()
+            )
+        }
+
+        private fun loadUpgradeUi(yaml: YamlConfiguration, defaults: ForgeUpgradeUiConfig): ForgeUpgradeUiConfig {
+            val section = yaml.getConfigurationSection("upgrade") ?: return defaults
+            val slots = section.getConfigurationSection("slots")
+            val materialSlots = (slots?.getIntegerList("materials") ?: emptyList())
+                .takeIf { it.isNotEmpty() } ?: defaults.materialSlots
+            return ForgeUpgradeUiConfig(
+                size = section.getInt("size", defaults.size),
+                title = sectionTitle(section, defaults.title),
+                blueprintSlot = slots?.getInt("blueprint", defaults.blueprintSlot) ?: defaults.blueprintSlot,
+                upgradeWeaponSlot = slots?.getInt("upgrade-weapon", defaults.upgradeWeaponSlot) ?: defaults.upgradeWeaponSlot,
+                actionSlot = slots?.getInt("action", defaults.actionSlot) ?: defaults.actionSlot,
+                outputSlot = slots?.getInt("output", defaults.outputSlot) ?: defaults.outputSlot,
+                modeToggleSlot = slots?.getInt("mode-toggle", defaults.modeToggleSlot) ?: defaults.modeToggleSlot,
+                materialSlots = materialSlots,
+                barrierSlots = slots?.getIntegerList("barriers") ?: emptyList()
             )
         }
 
@@ -191,7 +207,7 @@ data class ForgeConfig(
             return ModCapacityConfig(guiTitle, capacityByCategory, maxModSlotsByCategory)
         }
 
-        private fun parseMaterial(raw: String?, fallback: Material): Material {
+        internal fun parseMaterial(raw: String?, fallback: Material): Material {
             if (raw.isNullOrBlank()) return fallback
             return Material.matchMaterial(raw.substringAfter("minecraft:", raw).uppercase()) ?: fallback
         }
@@ -213,8 +229,6 @@ data class ForgeConfig(
                 displayName = config.getString("$path.display-name", id)!!,
                 pdcKey = config.getString("$path.pdc-key", id)!!,
                 valueType = config.getString("$path.value-type", "double")!!.lowercase(),
-                min = config.getDouble("$path.min", 0.0),
-                max = config.getDouble("$path.max", 0.0),
                 decimals = config.getInt("$path.decimals", 1).coerceAtLeast(0),
                 combat = config.getString("$path.combat", id)!!.lowercase(),
                 scale = config.getDouble("$path.scale", 1.0),
@@ -227,7 +241,7 @@ data class ForgeConfig(
             )
         }
 
-        private fun defaultWeaponCategory(id: String, material: String?): String {
+        internal fun defaultWeaponCategory(id: String, material: String?): String {
             val normalizedId = id.lowercase()
             val normalizedMaterial = material?.substringAfter("minecraft:", material)?.lowercase().orEmpty()
             return when {
@@ -241,7 +255,7 @@ data class ForgeConfig(
             }
         }
 
-        private fun defaultEffectiveSlots(id: String, weaponCategory: String): List<String> {
+        internal fun defaultEffectiveSlots(id: String, weaponCategory: String): List<String> {
             if (!weaponCategory.startsWith("armor_")) return listOf("mainhand")
             val normalized = id.lowercase()
             return when {
@@ -253,7 +267,7 @@ data class ForgeConfig(
             }
         }
 
-        private fun loadTierAffixes(config: FileConfiguration, path: String): Map<Int, List<AffixRollConfig>> {
+        internal fun loadTierAffixes(config: FileConfiguration, path: String): Map<Int, List<AffixRollConfig>> {
             val result = linkedMapOf<Int, List<AffixRollConfig>>()
             config.getConfigurationSection(path)?.getKeys(false)?.forEach { tierKey ->
                 val tier = tierKey.toIntOrNull() ?: return@forEach
@@ -262,16 +276,18 @@ data class ForgeConfig(
             return result
         }
 
+        /**
+         * 词条现在是写死的固定值，不再是 {chance,min,max} 随机区间：
+         * `tier-affixes.<tier>.<affixId>` 直接是一个裸数字。
+         * 如果读到的不是数字（说明还是老结构没迁移），用 NaN 占位——
+         * [validateRolls] 会据此报出具体是哪个装备/等级/词条，[ForgeItemService] 会安全跳过而不是写入 NaN。
+         */
         private fun loadRolls(config: FileConfiguration, path: String): List<AffixRollConfig> {
             val section = config.getConfigurationSection(path) ?: return emptyList()
-            return section.getKeys(false).mapNotNull { affixId ->
-                val base = "$path.$affixId"
-                AffixRollConfig(
-                    affixId = affixId,
-                    chance = config.getDouble("$base.chance", 1.0).coerceAtLeast(0.0),
-                    min = config.getDouble("$base.min", 0.0),
-                    max = config.getDouble("$base.max", 0.0)
-                )
+            return section.getKeys(false).map { affixId ->
+                val raw = config.get("$path.$affixId")
+                val value = (raw as? Number)?.toDouble() ?: Double.NaN
+                AffixRollConfig(affixId = affixId, value = value)
             }
         }
 
@@ -306,25 +322,74 @@ data class ForgeConfig(
             )
         }
 
+        /**
+         * 锻造GUI槽位重叠校验(经济向重复物品漏洞防线)。2026-07-16 重构：锻造/强化/重铸已改成三个
+         * 完全独立的 Inventory(见 ForgeMenu/ForgeCraftMenu/ForgeEnhanceMenu/ForgeUpgradeMenu)，
+         * 不同模式之间的槽位数字重叠不再是问题(各自是不同的 Inventory 对象)；但同一模式自己内部
+         * 的功能槽(蓝图/武器/动作/产出/模式切换)仍必须互不相同、不能落在自己的 materials 展示槽里，
+         * 否则重演旧版"模式切换按钮被当成玩家真实物品在关闭界面时送出"那类重复物品漏洞。
+         */
+        private fun validateForgeUiSlots(ui: ForgeUiConfig): List<String> {
+            val warnings = mutableListOf<String>()
+            warnings += validateSlotSection(
+                "craft",
+                listOf(
+                    "blueprint" to ui.craft.blueprintSlot,
+                    "action" to ui.craft.actionSlot,
+                    "output" to ui.craft.outputSlot,
+                    "mode-toggle" to ui.craft.modeToggleSlot
+                ),
+                ui.craft.materialSlots
+            )
+            warnings += validateSlotSection(
+                "enhance",
+                listOf(
+                    "weapon" to ui.enhance.weaponSlot,
+                    "action" to ui.enhance.actionSlot,
+                    "output" to ui.enhance.outputSlot,
+                    "mode-toggle" to ui.enhance.modeToggleSlot
+                ),
+                emptyList()
+            )
+            warnings += validateSlotSection(
+                "upgrade",
+                listOf(
+                    "blueprint" to ui.upgrade.blueprintSlot,
+                    "upgrade-weapon" to ui.upgrade.upgradeWeaponSlot,
+                    "action" to ui.upgrade.actionSlot,
+                    "output" to ui.upgrade.outputSlot,
+                    "mode-toggle" to ui.upgrade.modeToggleSlot
+                ),
+                ui.upgrade.materialSlots
+            )
+            return warnings
+        }
+
+        private fun validateSlotSection(section: String, named: List<Pair<String, Int>>, materialSlots: List<Int>): List<String> {
+            val warnings = mutableListOf<String>()
+            for (i in named.indices) {
+                for (j in i + 1 until named.size) {
+                    val (nameA, slotA) = named[i]
+                    val (nameB, slotB) = named[j]
+                    if (slotA == slotB) {
+                        warnings += "锻造GUI[$section]槽位冲突: $nameA 与 $nameB 都指向槽位 $slotA" +
+                            "（同一界面内两个功能槽重叠，属重复物品漏洞风险，请检查 forge_gui.yml）"
+                    }
+                }
+            }
+            for ((name, slot) in named) {
+                if (slot in materialSlots) {
+                    warnings += "锻造GUI[$section]槽位冲突: $name(槽位 $slot) 与 materials 展示槽重叠，请检查 forge_gui.yml"
+                }
+            }
+            return warnings
+        }
+
         private fun validate(
-            recipes: Map<String, ForgeRecipe>,
             equipment: Map<String, EquipmentConfig>,
             affixes: Map<String, AffixConfig>
         ): List<String> {
             val warnings = mutableListOf<String>()
-            for (recipe in recipes.values) {
-                if (recipe.equipmentId !in equipment) {
-                    warnings += "配方 ${recipe.blueprintId} 引用了不存在的装备 ${recipe.equipmentId}"
-                }
-                if (recipe.materials.isEmpty()) {
-                    warnings += "配方 ${recipe.blueprintId} 没有配置 materials"
-                }
-                for (material in recipe.materials) {
-                    if (material.amount <= 0) {
-                        warnings += "配方 ${recipe.blueprintId} 材料 ${material.ceId} amount 必须大于 0"
-                    }
-                }
-            }
             for (item in equipment.values) {
                 for (affixId in item.affixIds) {
                     if (affixId !in affixes) {
@@ -351,8 +416,9 @@ data class ForgeConfig(
                     warnings += "$owner 引用了不存在的词条 ${roll.affixId}"
                     continue
                 }
-                if (roll.chance <= 0.0) warnings += "$owner 词条 ${roll.affixId} chance <= 0，不会出现"
-                if (roll.max > 0.0 && roll.max < roll.min) warnings += "$owner 词条 ${roll.affixId} max 小于 min"
+                if (roll.value.isNaN()) {
+                    warnings += "$owner 词条 ${roll.affixId} 不是固定数值（可能还是旧的 {chance,min,max} 结构没迁移），锻造时会跳过这条词条"
+                }
             }
         }
     }
@@ -366,6 +432,7 @@ data class BetterHudConfig(
     val enabled: Boolean,
     val skillCdPopup: String,
     val navigatorPopup: String,
+    val taskTrackerPopup: String,
     val debug: Boolean
 )
 
@@ -390,36 +457,32 @@ data class EquipmentConfig(
     val effectiveSlots: Set<String>,
     val baseLore: List<String>,
     val affixIds: List<String>,
-    val tierAffixes: Map<Int, List<AffixRollConfig>>
+    val tierAffixes: Map<Int, List<AffixRollConfig>>,
+    /** 是否允许铁砧完全自由操作(改名/修复/合并/附魔书附魔，走原版流程，不受 SourceEnchantListener
+     * 的白名单限制)。CE 战斗装备分类下的装备默认应该是 true——见 equipment 目录下 yml 里的 free-anvil-edit
+     * 字段与用户要求(2026-07-13)。非白名单附魔/诅咒仍会被 ForgeItemService.stripVanillaEnchantments
+     * 在战斗结算前清掉，所以这里放开铁砧本身是安全的。 */
+    val freeAnvilEdit: Boolean = false
 )
 
 /**
- * 锻造 GUI 布局配置（默认 5 行 / 45 格箱子界面，带 CraftEngine 自定义背景图）。
- * 由专用文件 forge_gui.yml 加载（见 ForgeConfig.loadForgeUi(file, fallbackTitle)），
- * 不再从主 config.yml 的 forge-ui 段读取。
+ * 锻造 GUI 布局配置。2026-07-16 重构：锻造/强化/重铸三态从"共用一个 Inventory、按 mode 解释
+ * 同一批槽位的含义"改成三个完全独立的界面各自持有独立的 Inventory 与槽位布局(见 [craft]/[enhance]/
+ * [upgrade]，以及 ForgeCraftMenu/ForgeEnhanceMenu/ForgeUpgradeMenu)——不同模式的槽位号即使数值
+ * 相同也毫无关系，从根上消除"某个模式的功能槽跟另一模式的功能槽撞在同一槽位号"这一类重复物品漏洞
+ * (历史事故：blueprint 与 mode-toggle 曾经共享同一个 Inventory、都指向槽位 20)。点击模式切换按钮时
+ * 关闭当前界面、打开另一模式对应的全新 Inventory(见 ForgeMenus)。
+ * 由专用文件 forge_gui.yml 加载（见 ForgeConfig.loadForgeUi），按钮外观(hammer/progress/collect)
+ * 与填充材质三态共用，槽位布局在各自的 craft:/enhance:/upgrade: 段独立配置。
  *
  * 所有文本字段（title / 按钮 name / lore）支持完整 MiniMessage，含 CE 标签
  * （<image>/<shift>/<font>/<i18n>/<gradient> 等），并兼容传统 §/& 颜色码。
- *
- * title: 容器标题字符串。默认含 <shift> 偏移 + sourceforge:forge_gui 背景图字形，
- * 由 CraftEngine 完整解析器渲染为 forge.png 背景图。
- * 留空（""）时回退到 config.yml 的 gui.title 文字标题。
- *
- * 当 title 设置了背景图时，空槽不再填灰玻璃（否则会盖住背景图）；
- * 仅 barrierSlots 列出的槽放屏障锁死，其余非功能槽留空（空气）。
  */
 data class ForgeUiConfig(
-    val size: Int = 45,
-    val title: String = "<shift:-8><image:sourceforge:forge_gui>",
-    val blueprintSlot: Int = 20,
-    val actionSlot: Int = 22,
-    val outputSlot: Int = 24,
-    val materialSlots: List<Int> = listOf(10, 11, 12, 13, 14, 15, 16),
-    val barrierSlots: List<Int> = emptyList(),
     val hammerButton: ForgeButtonConfig = ForgeButtonConfig(
         material = Material.IRON_AXE,
         name = "<green>开始锻造",
-        lore = listOf("<gray>放入蓝图开始锻造，或放入武器进行强化")
+        lore = listOf("<gray>放入蓝图开始锻造")
     ),
     val progressButton: ForgeButtonConfig = ForgeButtonConfig(
         material = Material.SPECTRAL_ARROW,
@@ -431,9 +494,55 @@ data class ForgeUiConfig(
         name = "<green>点击收取",
         lore = emptyList()
     ),
-    val fillerMaterial: Material = Material.GRAY_STAINED_GLASS_PANE
+    val fillerMaterial: Material = Material.GRAY_STAINED_GLASS_PANE,
+    val craft: ForgeCraftUiConfig = ForgeCraftUiConfig(),
+    val enhance: ForgeEnhanceUiConfig = ForgeEnhanceUiConfig(),
+    val upgrade: ForgeUpgradeUiConfig = ForgeUpgradeUiConfig()
+)
+
+/** 锻造模式独立界面：蓝图槽 + 材料展示 + 产出预览 + 动作/模式切换按钮。 */
+data class ForgeCraftUiConfig(
+    val size: Int = 45,
+    /** 留空（""）时回退到 config.yml 的 gui.title 文字标题；当前项目暂时禁用背景图(见 forge_gui.yml)。 */
+    val title: String = "",
+    val blueprintSlot: Int = 20,
+    val actionSlot: Int = 22,
+    val outputSlot: Int = 24,
+    /** 锻造/强化/重铸 三态切换按钮槽位(用户明确要求显式切换，不再靠"往蓝图槽塞什么"反推模式)。 */
+    val modeToggleSlot: Int = 23,
+    val materialSlots: List<Int> = listOf(10, 11, 12, 13, 14, 15, 16),
+    val barrierSlots: List<Int> = emptyList()
 ) {
-    /** 标题非空白即视为使用了背景图标题（避免用玻璃盖住背景）。 */
+    val hasBackground: Boolean get() = title.isNotBlank()
+}
+
+/** 强化模式独立界面：用户明确要求"强化只花钱不消耗材料"，所以只留一个武器槽——不留材料展示槽，
+ * 也不需要蓝图槽——外加产出(强化后)预览 + 动作/模式切换按钮。 */
+data class ForgeEnhanceUiConfig(
+    val size: Int = 45,
+    val title: String = "",
+    val weaponSlot: Int = 20,
+    val actionSlot: Int = 22,
+    val outputSlot: Int = 24,
+    val modeToggleSlot: Int = 23,
+    val barrierSlots: List<Int> = emptyList()
+) {
+    val hasBackground: Boolean get() = title.isNotBlank()
+}
+
+/** 重铸模式独立界面：蓝图槽 + 待重铸武器槽 + 材料展示 + 产出预览 + 动作/模式切换按钮。 */
+data class ForgeUpgradeUiConfig(
+    val size: Int = 45,
+    val title: String = "",
+    val blueprintSlot: Int = 20,
+    /** 待重铸武器槽——蓝图槽已被蓝图占用，装不下第二件东西。 */
+    val upgradeWeaponSlot: Int = 19,
+    val actionSlot: Int = 22,
+    val outputSlot: Int = 24,
+    val modeToggleSlot: Int = 23,
+    val materialSlots: List<Int> = listOf(10, 11, 12, 13, 14, 15, 16),
+    val barrierSlots: List<Int> = emptyList()
+) {
     val hasBackground: Boolean get() = title.isNotBlank()
 }
 
@@ -450,8 +559,16 @@ data class ForgeRecipe(
     val equipmentId: String,
     val tier: Int,
     val timeSeconds: Double,
-    val materials: List<RecipeMaterial>
+    val materials: List<RecipeMaterial>,
+    /** CREATE：从零锻造新装备（默认）。UPGRADE：蓝图原地重铸——把玩家主手武器换成 equipmentId/tier 的外观与属性。 */
+    val mode: ForgeRecipeMode = ForgeRecipeMode.CREATE,
+    /** UPGRADE 专用：允许重铸的武器类型；null 时回退到目标装备自己的 weapon-category。 */
+    val requiresWeaponCategory: String? = null,
+    /** UPGRADE 专用：输入武器的 sourceforge:tier 必须 >= 此值才能使用该蓝图。 */
+    val minTier: Int = 0
 )
+
+enum class ForgeRecipeMode { CREATE, UPGRADE }
 
 /** 配方所需材料：CE 物品 id + 数量。 */
 data class RecipeMaterial(
@@ -459,11 +576,10 @@ data class RecipeMaterial(
     val amount: Int
 )
 
+/** 装备某一等级的一条词条固定值（不再是随机区间）。value 为 NaN 表示配置未迁移完成，见 [ForgeConfig.validate]。 */
 data class AffixRollConfig(
     val affixId: String,
-    val chance: Double,
-    val min: Double,
-    val max: Double
+    val value: Double
 )
 
 data class AffixConfig(
@@ -471,8 +587,6 @@ data class AffixConfig(
     val displayName: String,
     val pdcKey: String,
     val valueType: String,
-    val min: Double,
-    val max: Double,
     val decimals: Int,
     val combat: String,
     val scale: Double,

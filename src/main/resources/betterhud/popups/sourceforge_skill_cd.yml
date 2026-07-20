@@ -1,0 +1,42 @@
+# SourceForge skill-cd popup.
+# Name MUST match SourceForge config.yml -> betterhud.skill-cd-popup
+# (default: sourceforge_skill_cd).
+# Shown/removed programmatically by SourceForge: it shows one entry per skill
+# (keyed by skill name) on cast and removes it when the cooldown ends.
+# Therefore: no 'triggers' block, and 'duration' is only a safety cap.
+sourceforge_skill_cd:
+  push: true
+  queue: true
+  key-mapping: true        # dedup/update entries by SourceForge's per-skill key
+
+  # Show at most 3 stacked entries; newest pushes the older ones along 'move'.
+  max-stack: 3
+  sort: LAST
+
+  # Each visible entry is offset upward 22px from the previous one.
+  move:
+    duration: 3
+    pixel:
+      x-equation: 0
+      y-equation: -22t
+
+  # Screen anchor for each layout entry.
+  # IMPORTANT (BetterHud 1.14.1): inside a POPUP, the per-layout anchor uses
+  #   gui:   {x, y}  -> screen percent  (x: 0 left / 50 center / 100 right,
+  #                                       y: 0 top  / 50 middle / 100 bottom)
+  #   pixel: {x, y}  -> fixed pixel offset added on top of the gui anchor
+  # Flat 'x:'/'y:' (the HUD-file convention) is NOT read here and would be
+  # ignored, leaving the popup pinned to the top-left corner.
+  # Placed lower-center for now so it's clearly visible; move later.
+  layouts:
+    1:
+      name: sourceforge_skill_cd_layout
+      gui:
+        x: 50
+        y: 70
+      pixel:
+        x: 0
+        y: 0
+
+  # Safety cap only (10 min). Real removal is driven by SourceForge at CD end.
+  duration: 12000

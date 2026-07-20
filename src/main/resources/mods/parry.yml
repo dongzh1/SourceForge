@@ -1,13 +1,16 @@
 # 技能MOD · 震刀（parry）— SF 原生格挡，不走 MythicMobs
+# 【触发栏技能】skill:true + allowed-triggers:[right] → 只能装进武器的「右键」技能触发栏。
 # 右键持有该武器 展开架势窗口；窗口内被命中 完全免疫该次伤害（单次格挡）。
 # 参数(窗口时长/MANA消耗/冷却/减速)在 config.yml 的 parry 段调整。
 id: parry
 display-name: "&b震刀"
-item: "minecraft:prismarine_crystals"
-cost: 12
+item: "sourceforge:mod_parry"
+cost: 10
 max-per-equipment: 1
 applicable-categories: [melee_light, melee_heavy, polearm]
 tags: [skill]
+skill: true
+allowed-triggers: [right]
 mana: "%cfg:parry.mana-cost|8% 能量"
 cooldown: "%cfgs:parry.cooldown-ms|500%秒"
 description:

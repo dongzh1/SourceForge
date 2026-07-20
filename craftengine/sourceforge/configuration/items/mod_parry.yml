@@ -1,0 +1,24 @@
+# MOD卡·震刀（parry）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18 改版：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_parry:
+    material: prismarine_crystals
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_parry_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_parry
+    data:
+      item_name: "<!i><aqua>震刀"
+      lore:
+        - "<!i><dark_gray>◆ <gray>右键技能 MOD  <dark_gray>│  <gray>占用 <yellow>10"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>8 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>0.5秒"
+        - "<!i>  <dark_gray>▪ <white>右键 <gray>展开架势，窗口 <white>5 秒"
+        - "<!i>  <dark_gray>▪ 窗口内被命中 <green>完全免疫 <gray>该次伤害"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器  <dark_gray>│  <gray>安装位置  <white>右键技能槽"

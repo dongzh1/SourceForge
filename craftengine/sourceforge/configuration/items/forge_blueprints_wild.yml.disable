@@ -1,0 +1,110 @@
+# 荒野武器蓝图材料（数值策划 03_武器品质与顶级武器.md / 04_荒野世界与战利品守护者.md 设计意图落地）。
+#
+# 【核实结论 · 请勿凭空扩展】
+# - forge_blueprint_lv{N}：04 号文档掉落表示例写的是 "forge_blueprint_lv20" 这类按等级数字命名的物品，
+#   但真实 SourceForge 蓝图机制（config.yml `blueprints:` 段 + recipes.yml）是按"装备类型"命名蓝图
+#   （如 sourceforge:blueprint_short_sword → 固定产出 short_sword 装备，tier 写死不随机），压根没有
+#   "蓝图=等级band" 这个维度。SourceWild 侧 loot.yml 已核实过这一点并明确注释放弃引用 lv<N> 命名。
+#   本文件是按用户指令新建这 5 档"荒野等级band蓝图"物品本体（CE 物品定义），但如实标注：
+#     recipes.yml 目前没有、也不能安全新增这 5 个物品的锻造配方——因为对应的“武器 equipment: 等级band
+#     变体”（例如 short_sword_l25、longsword_l35 这类，参照防具 bulwark_helmet_l25/l35/l42/l50 的模式）
+#     在 config.yml 的 equipment: 段里根本不存在（equipment: 段目前只有 4 套防具做了 _l25/_l35/_l42/_l50
+#     变体，武器仍只有 tier1-3 的旧版 blueprint-tier 条目）。且本任务被明确要求不得改动 equipment: 段。
+#     故这 5 个物品目前是"荒野掉落 → 收藏/待接线材料"，尚未接入实际合成产出，接线需等武器侧的
+#     equipment: 等级band变体建成后，由后续任务在 recipes.yml 补 sourceforge:forge_blueprint_lv{N} 配方。
+# - apex_blueprint_shard：03 号文档"顶级武器仅首领/世界Boss掉专属蓝图"+"碎片集齐合成"设计的落地物。
+#   SourceWild 侧 src/main/resources/loot.yml 的 void_elite 箱表已经在引用 "ce:sourceforge:apex_blueprint_shard"
+#   （占位，注释写明未核实真实存在），本文件正是把这个占位 id 建成真实物品，闭合该处引用。
+#   顶级蓝图的"合成配方"（碎片×N → apex_*_blueprint）同理未落地，留待后续任务。
+#
+# 【贴图占位说明】texture 目前只有 blueprint_short_sword.png / short_sword.png 两张真实资源；
+# 本文件未新增任何 png 资源，5 档蓝图沿用与 sourceforge:blueprint_short_sword 相同的贴图（都是"图纸"
+# 视觉语义，可接受），apex_blueprint_shard 不写 texture，直接用基础材质 shulker_shell 的原版外观。
+#
+# 材质选择避让说明：sourceforge.yml 内已用 echo_shard(forge_ward_sigil)/amethyst_shard(focus_crystal)，
+# mod_items.yml 已用 nether_star；mods/redirection.yml 的 MOD 触发物是原版 minecraft:prismarine_shard，
+# 若把 apex_blueprint_shard 也做成 prismarine_shard 材质会与该 MOD 的触发判定物品外观撞车，故改用
+# 未被占用的 shulker_shell（同时贴合"雷暴虚空/the_end环境"+"世界Boss碎片"的主题联想）。
+
+items:
+  # ===== 5 档荒野武器等级band蓝图（对应 04 号文档五座荒野代表点 12/25/35/42/50）=====
+  sourceforge:forge_blueprint_lv12:
+    material: paper
+    data:
+      item-name: "<!i><green>蓝图: 荒野武器图纸〔迷雾林地 · Lv12〕"
+      lore:
+        - "<!i><gray>荒野: 迷雾林地(wild_grove) · 元素基调: 剧毒(toxin)"
+        - "<!i><gray>等级band: 1–12 · 代表点 Lv12"
+        - "<!i><gray>产出: 战利品守护者箱(grove_guardian)/精英箱(grove_elite)"
+        - "<!i><dark_gray>接线待补: 需武器 equipment 等级band变体建成后方可锻造"
+    texture: sourceforge:item/blueprint_short_sword
+
+  sourceforge:forge_blueprint_lv25:
+    material: paper
+    data:
+      item-name: "<!i><gold>蓝图: 荒野武器图纸〔炽炎地狱 · Lv25〕"
+      lore:
+        - "<!i><gray>荒野: 炽炎地狱(wild_nether) · 元素基调: 灼热(heat)"
+        - "<!i><gray>等级band: 12–25 · 代表点 Lv25"
+        - "<!i><gray>产出: 战利品守护者箱(nether_guardian)/精英箱(nether_elite)"
+        - "<!i><dark_gray>接线待补: 需武器 equipment 等级band变体建成后方可锻造"
+    texture: sourceforge:item/blueprint_short_sword
+
+  sourceforge:forge_blueprint_lv35:
+    material: paper
+    data:
+      item-name: "<!i><aqua>蓝图: 荒野武器图纸〔冰封苔原 · Lv35〕"
+      lore:
+        - "<!i><gray>荒野: 冰封苔原(wild_frost) · 元素基调: 冰冷(cold)"
+        - "<!i><gray>等级band: 22–35 · 代表点 Lv35"
+        - "<!i><gray>产出: 战利品守护者箱(frost_guarded)/精英箱(frost_elite)"
+        - "<!i><dark_gray>接线待补: 需武器 equipment 等级band变体建成后方可锻造"
+    texture: sourceforge:item/blueprint_short_sword
+
+  sourceforge:forge_blueprint_lv42:
+    material: paper
+    data:
+      item-name: "<!i><dark_green>蓝图: 荒野武器图纸〔剧毒沼泽 · Lv42〕"
+      lore:
+        - "<!i><gray>荒野: 剧毒沼泽(wild_swamp) · 元素基调: 剧毒(toxin)"
+        - "<!i><gray>等级band: 30–42 · 代表点 Lv42"
+        - "<!i><gray>产出: 战利品守护者箱(swamp_guardian)/精英箱(swamp_elite)"
+        - "<!i><dark_gray>接线待补: 需武器 equipment 等级band变体建成后方可锻造"
+    texture: sourceforge:item/blueprint_short_sword
+
+  sourceforge:forge_blueprint_lv50:
+    material: paper
+    data:
+      item-name: "<!i><light_purple>蓝图: 荒野武器图纸〔雷暴虚空 · Lv50〕"
+      lore:
+        - "<!i><gray>荒野: 雷暴虚空(wild_void) · 元素基调: 闪电(electric)"
+        - "<!i><gray>等级band: 40–50 · 代表点 Lv50"
+        - "<!i><gray>产出: 战利品守护者箱(void_guardian)/精英箱(void_elite)"
+        - "<!i><dark_gray>接线待补: 需武器 equipment 等级band变体建成后方可锻造"
+    texture: sourceforge:item/blueprint_short_sword
+
+  # ===== 顶级武器蓝图碎片（03 号文档"集齐碎片合成顶级蓝图"设计）=====
+  # SourceWild loot.yml 的 void_elite 表已引用 ce:sourceforge:apex_blueprint_shard（weight 3），
+  # 本条目落地该占位 id。合成配方（碎片×N → apex_*_blueprint）未落地，留待后续任务。
+  sourceforge:apex_blueprint_shard:
+    material: shulker_shell
+    data:
+      item-name: "<!i><red><bold>顶级蓝图碎片</bold></red>"
+      lore:
+        - "<!i><gray>集齐一定数量后可合成对应"
+        - "<!i><gray>顶级武器蓝图(apex_*_blueprint)"
+        - "<!i><gray>主要产出: 雷暴虚空(wild_void) 精英箱 / 世界Boss·深渊之主"
+        - "<!i><dark_gray>合成配方待补(见 03 号文档「六、获取与经济闭环」)"
+
+categories:
+  sourceforge:forge_blueprints_wild:
+    name: <!i><white>SourceForge 荒野蓝图</white>
+    hidden: true
+    icon: sourceforge:apex_blueprint_shard
+    list:
+      - sourceforge:forge_blueprint_lv12
+      - sourceforge:forge_blueprint_lv25
+      - sourceforge:forge_blueprint_lv35
+      - sourceforge:forge_blueprint_lv42
+      - sourceforge:forge_blueprint_lv50
+      - sourceforge:apex_blueprint_shard

@@ -1,0 +1,25 @@
+# MOD卡·疾风撤退（wind_retreat）独立物品文件，不并入其它文件，避免并行任务冲突。2026-07-18：
+# 64x64 背景+图标一次烤死，不再是 layer0共享框+layer1专属图标 的运行时合成。
+items:
+  sourceforge:mod_wind_retreat:
+    material: diamond_sword
+    model:
+      type: minecraft:model
+      path: sourceforge:item/mod_wind_retreat_card
+      generation:
+        parent: minecraft:item/generated
+        textures:
+          layer0: sourceforge:item/mod_wind_retreat
+    data:
+      item_name: "<!i><aqua>疾风撤退"
+      lore:
+        - "<!i><dark_gray>◆ <gray>技能 MOD  <dark_gray>│  <gray>占用 <yellow>7"
+        - "<!i><dark_gray>◆ <gray>触发方式  <white>Shift+右键 <dark_gray>· <gray>技能栏"
+        - ""
+        - "<!i><aqua>✦ 技能效果"
+        - "<!i>  <dark_gray>▪ <gray>能量消耗  <aqua>16 能量"
+        - "<!i>  <dark_gray>▪ <gray>冷却时间  <white>6秒"
+        - "<!i>  <dark_gray>▪ <white>Shift+右键 <gray>向后急退，获得短暂迅捷"
+        - "<!i>  <dark_gray>▪ <light_purple>撤退后 2.5 秒内接『月华斩』×1.35"
+        - ""
+        - "<!i><gray>适用装备  <white>近战武器"
